@@ -56075,7 +56075,7 @@
     "sale": 500,
     "wholesale": 470,
     "purchase": 455,
-    "stock": 11,
+    "stock": 9,
     "ProductID": 1995,
     "ProductCode": "001995",
     "ProductName": "Masti Afreen",
@@ -56088,14 +56088,14 @@
     "SalePrice": 500,
     "WholesalePrice": 470,
     "PurchasePrice": 455,
-    "AvailableQty": 11,
+    "AvailableQty": 9,
     "StockDebug": {
       "BaseStockSource": "Product_OpeningStock",
       "BaseStock": 17,
       "ProductOpeningStock": 0,
       "ProductOpeningQty": 17,
       "StockProductQty": 0,
-      "SoldQty": 6,
+      "SoldQty": 8,
       "SalesReturnQty": 0
     }
   },
@@ -94949,7 +94949,7 @@
     "sale": 400,
     "wholesale": 390,
     "purchase": 370,
-    "stock": 32,
+    "stock": 31,
     "ProductID": 817,
     "ProductCode": "000817",
     "ProductName": "Masti Zara",
@@ -94962,14 +94962,14 @@
     "SalePrice": 400,
     "WholesalePrice": 390,
     "PurchasePrice": 370,
-    "AvailableQty": 32,
+    "AvailableQty": 31,
     "StockDebug": {
       "BaseStockSource": "Product_OpeningStock",
       "BaseStock": 43,
       "ProductOpeningStock": 32,
       "ProductOpeningQty": 43,
       "StockProductQty": 0,
-      "SoldQty": 11,
+      "SoldQty": 12,
       "SalesReturnQty": 0
     }
   },

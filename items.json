@@ -88212,14 +88212,14 @@
     "SalePrice": 30,
     "WholesalePrice": 23.5,
     "PurchasePrice": 20,
-    "AvailableQty": 3368,
+    "AvailableQty": 3366,
     "StockDebug": {
       "BaseStockSource": "Product_OpeningStock",
       "BaseStock": 3390,
       "ProductOpeningStock": 3368,
       "ProductOpeningQty": 3390,
       "StockProductQty": 0,
-      "SoldQty": 22,
+      "SoldQty": 24,
       "SalesReturnQty": 0
     }
   },

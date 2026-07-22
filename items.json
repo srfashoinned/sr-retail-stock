@@ -60588,14 +60588,14 @@
     "SalePrice": 25,
     "WholesalePrice": 20,
     "PurchasePrice": 18,
-    "AvailableQty": 121,
+    "AvailableQty": 109,
     "StockDebug": {
       "BaseStockSource": "Product_OpeningStock",
       "BaseStock": 121,
       "ProductOpeningStock": 0,
       "ProductOpeningQty": 121,
       "StockProductQty": 0,
-      "SoldQty": 0,
+      "SoldQty": 12,
       "SalesReturnQty": 0
     }
   },
@@ -80436,14 +80436,14 @@
     "SalePrice": 40,
     "WholesalePrice": 40,
     "PurchasePrice": 34,
-    "AvailableQty": 671,
+    "AvailableQty": 651,
     "StockDebug": {
       "BaseStockSource": "Product_OpeningStock",
       "BaseStock": 746,
       "ProductOpeningStock": 0,
       "ProductOpeningQty": 746,
       "StockProductQty": 0,
-      "SoldQty": 75,
+      "SoldQty": 95,
       "SalesReturnQty": 0
     }
   },

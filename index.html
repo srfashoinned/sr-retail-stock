@@ -2280,5 +2280,86 @@ scrollEl.addEventListener("scroll", onScroll, {passive:true});
 window.addEventListener("resize",()=>{ measureCardHeight(); rebuildOffsets(); vsRender(true); });
 loadData();
 </script>
+<script>
+/* ===== SR FASHION - REMEMBER APP STATE ===== */
+(function () {
+  const STATE_KEY = "sr_psd_saved_state_v1";
+
+  function getSearchBox() {
+    return document.querySelector('input[type="search"]') ||
+           document.querySelector('input[placeholder*="Name"]');
+  }
+
+  function saveState() {
+    try {
+      const searchBox = getSearchBox();
+
+      const state = {
+        search: searchBox ? searchBox.value : "",
+        scrollX: window.scrollX || 0,
+        scrollY: window.scrollY || 0,
+        time: Date.now()
+      };
+
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.log("State save skipped", e);
+    }
+  }
+
+  function restoreState() {
+    try {
+      const state = JSON.parse(
+        localStorage.getItem(STATE_KEY) || "{}"
+      );
+
+      setTimeout(function () {
+        const searchBox = getSearchBox();
+
+        if (searchBox && state.search) {
+          searchBox.value = state.search;
+
+          searchBox.dispatchEvent(
+            new Event("input", { bubbles: true })
+          );
+        }
+
+        setTimeout(function () {
+          window.scrollTo(
+            Number(state.scrollX) || 0,
+            Number(state.scrollY) || 0
+          );
+        }, 300);
+
+      }, 1000);
+
+    } catch (e) {
+      console.log("State restore skipped", e);
+    }
+  }
+
+  document.addEventListener("input", saveState, true);
+  document.addEventListener("change", saveState, true);
+
+  document.addEventListener(
+    "click",
+    function () {
+      setTimeout(saveState, 150);
+    },
+    true
+  );
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") {
+      saveState();
+    }
+  });
+
+  window.addEventListener("pagehide", saveState);
+  window.addEventListener("beforeunload", saveState);
+  window.addEventListener("load", restoreState);
+})();
+</script>
+
 </body>
 </html>

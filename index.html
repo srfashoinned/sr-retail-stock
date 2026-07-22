@@ -443,9 +443,44 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
   display:flex;gap:8px;
 }
 #pim-footer-hint{font-size:11px;color:var(--muted);text-align:center;padding:0 14px 12px;flex-shrink:0}
+
+/* ===== SR PSD PURE HOME GOLD v1 ===== */
+:root{--sr-gold:#ffc542;--sr-gold2:#d79a00;--sr-bg:#070707;--sr-panel:#101010;--sr-line:#3b2b08}
+#sr-appbar{height:58px;display:flex;align-items:center;gap:10px;padding:8px 12px;position:sticky;top:0;z-index:8000;background:rgba(5,5,5,.97);border-bottom:1px solid #2e2208;backdrop-filter:blur(14px)}
+#sr-hamb{width:42px;height:42px;border:1px solid #705000;border-radius:12px;background:#130e03;color:var(--sr-gold);font-size:25px;line-height:1;cursor:pointer}
+#sr-brand{font-size:21px;font-weight:1000;letter-spacing:2px;color:var(--sr-gold);white-space:nowrap}
+#sr-spacer{flex:1}.sr-pill{border:1px solid #393014;background:#101010;color:#a99b7c;border-radius:999px;padding:7px 10px;font-size:11px}
+#sr-refresh{width:40px;height:40px;border:1px solid #45340c;border-radius:11px;background:#111;color:#ffd35c;font-size:19px}
+#sr-pull{position:fixed;top:64px;left:50%;transform:translate(-50%,-90px);z-index:7999;background:#171006;border:1px solid #765300;color:#ffd45c;padding:9px 15px;border-radius:999px;font-weight:900;transition:.18s;pointer-events:none}
+#sr-pull.show{transform:translate(-50%,0)}
+#sr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;opacity:0;pointer-events:none;transition:.25s}
+#sr-drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,370px);z-index:9001;background:linear-gradient(180deg,#090909,#130d02);border-right:1px solid #795500;transform:translateX(-105%);transition:.28s cubic-bezier(.2,.8,.2,1);box-shadow:25px 0 60px #000;overflow:auto}
+#sr-overlay.open{opacity:1;pointer-events:auto}#sr-drawer.open{transform:none}
+#sr-dhead{padding:20px 16px 15px;border-bottom:1px solid #3c2d0b;display:flex;align-items:center;justify-content:space-between}.sr-dlogo{font-size:23px;font-weight:1000;color:var(--sr-gold);letter-spacing:2px}.sr-x{width:39px;height:39px;border:1px solid #5d450e;border-radius:10px;background:#120d04;color:#ffd35c;font-size:19px}
+.sr-nav{padding:12px}.sr-navbtn{width:100%;display:flex;align-items:center;gap:13px;text-align:left;border:1px solid transparent;background:transparent;color:#eee;padding:14px;border-radius:13px;font-size:15px;font-weight:850;margin:3px 0}.sr-navbtn:hover,.sr-navbtn.active{background:linear-gradient(90deg,#2a1c02,#151006);border-color:#5e4309;color:#ffd35c}.sr-ico{width:28px;text-align:center;font-size:19px}.sr-navbtn small{display:block;color:#887d68;font-size:11px;font-weight:500;margin-top:2px}
+#sr-drawer-section{padding:4px 12px 18px}.sr-mini{border:1px solid #42320d;background:#0d0c09;border-radius:12px;padding:13px;margin:8px 0;color:#ddd;font-size:13px}
+#sr-screen{display:none;position:fixed;inset:58px 0 0;z-index:7000;background:#080808;color:#eee;overflow:auto;padding:18px}#sr-screen.open{display:block}.sr-screen-title{font-size:25px;font-weight:1000;color:#ffd15a;margin-bottom:5px}.sr-screen-sub{color:#8e826c;margin-bottom:18px}
+.sr-feature{border:1px solid #44320b;background:linear-gradient(145deg,#12100b,#0b0b0b);border-radius:15px;padding:15px;margin:10px 0}.sr-feature b{color:#ffd15a}.sr-feature button{margin-top:10px;border:1px solid #765300;background:#1a1203;color:#ffd15a;border-radius:10px;padding:10px 13px;font-weight:800}
+#sr-quote-cart{display:grid;gap:9px}.sr-qrow{border:1px solid #44320b;background:#100d07;border-radius:13px;padding:12px}.sr-qgrid{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.sr-qgrid input{min-width:0;background:#080808;border:1px solid #5b430d;color:#fff;border-radius:9px;padding:10px;font-size:16px}.sr-del{background:#281010!important;border-color:#6b2424!important;color:#ff9b9b!important;margin:0!important}
+#sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
+body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
+#sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
+@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}}
 </style>
-</head>
+<style>#hdr{display:none!important}body{padding-top:0!important}</style></head>
 <body>
+<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand">SR PSD</div><div id="sr-spacer"></div><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
+<div id="sr-pull">↓ Pull to refresh</div><div id="sr-overlay"></div>
+<aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
+<button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
+<button class="sr-navbtn" data-view="search"><span class="sr-ico">⌕</span><span>Search<small>Jump directly to product search</small></span></button>
+<button class="sr-navbtn" data-view="scan"><span class="sr-ico">▣</span><span>Scan<small>Camera barcode scanner</small></span></button>
+<button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quote<small>Cart, rates, quantity & print</small></span></button>
+<button class="sr-navbtn" data-view="stock"><span class="sr-ico">▤</span><span>Stock<small>Low/out stock & intelligence</small></span></button>
+<button class="sr-navbtn" data-view="more"><span class="sr-ico">•••</span><span>More<small>Favorites, history & settings</small></span></button>
+</nav><div id="sr-drawer-section"><div class="sr-mini">🔊 Loud sounds enabled<br><small>Long beep on successful barcode scan.</small></div><div class="sr-mini">↕ Pull down from the top of Home to refresh.</div></div></aside>
+<section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
+
 
 <div id="hdr">
   <div id="logo" onclick="goHome()">SR PSD</div>
@@ -2361,5 +2396,40 @@ loadData();
 })();
 </script>
 
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);let ac=null,quote=false,cart=[];
+function tone(f=620,d=.09,v=.95,type="square"){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();let o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+function tap(){tone(500,.055,.7)} function good(){tone(780,.11,1);setTimeout(()=>tone(1080,.16,1),85)}
+window.srLongBeep=()=>{tone(1150,.7,1);if(navigator.vibrate)navigator.vibrate([250,70,250])};
+document.addEventListener("pointerdown",e=>{if(e.target.closest("button,.chip,.stock-chip,.pb,.c,.group-btn,.brand-btn"))tap()},{passive:true});
+function drawer(on){$("sr-drawer").classList.toggle("open",on);$("sr-overlay").classList.toggle("open",on)}
+$("sr-hamb").onclick=()=>drawer(true);$("sr-x").onclick=$("sr-overlay").onclick=()=>drawer(false);$("sr-refresh").onclick=()=>location.reload();
+function home(){ $("sr-screen").classList.remove("open");drawer(false);window.scrollTo({top:0,behavior:"smooth"})}
+function screen(title,sub,body){$("sr-screen").innerHTML=`<div class="sr-screen-title">${title}</div><div class="sr-screen-sub">${sub}</div>${body}`;$("sr-screen").classList.add("open");drawer(false)}
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".sr-navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");let v=b.dataset.view;
+if(v==="home")return home();
+if(v==="search"){home();setTimeout(()=>{$("search")?.focus();$("search")?.scrollIntoView({behavior:"smooth",block:"center"})},150);return}
+if(v==="scan"){drawer(false);if(!navigator.mediaDevices?.getUserMedia){alert("Camera requires HTTPS on phones/tablets. Use the secure HTTPS version.");return}openScanner();return}
+if(v==="quote"){renderQuoteScreen();return}
+if(v==="stock"){screen("Stock","Inventory intelligence without cluttering Home",`<div class="sr-feature"><b>⚠ Low Stock</b><br>Use the Low Stock filter on Home for items ≤5.</div><div class="sr-feature"><b>✕ Out of Stock</b><br>Instantly isolate zero-stock products from Home.</div><div class="sr-feature"><b>⏳ Stock Age / Expiry</b><br>15 / 30 / 60 / 90+ day intelligence appears when entry-date or expiry fields exist in exported data.</div>`);return}
+if(v==="more"){screen("More","Utilities kept away from your daily product-search screen",`<div class="sr-feature"><b>⭐ Favorites</b><br>Frequently used products can be pinned on this device.</div><div class="sr-feature"><b>🕘 Quotation History</b><br>Saved locally on this device.</div><div class="sr-feature"><b>🔊 Sound & Haptics</b><br>Loud feedback and long scan beep are enabled.<br><button onclick="srLongBeep()">Test loud beep</button></div><div class="sr-feature"><b>⚡ Admin</b><br><button onclick="document.getElementById('admin-btn')?.click()">Open Admin</button></div>`);return}
+});
+function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
+function renderQuoteScreen(){let q=0,t=0,rows=cart.map((x,i)=>{q+=+x.qty||0;t+=(+x.qty||0)*(+x.rate||0);return `<div class="sr-qrow"><b>${x.name}</b><div style="color:#8e826c;font-size:12px">${x.alias||""} · ${x.type.toUpperCase()}</div><div class="sr-qgrid"><input type="number" value="${x.qty}" oninput="srQEdit(${i},'qty',this.value)" title="Quantity"><input type="number" value="${x.rate}" oninput="srQEdit(${i},'rate',this.value)" title="Rate"><button class="sr-del" onclick="srQDel(${i})">✕</button></div></div>`}).join("")||`<div class="sr-feature">Cart is empty. Tap <b>Start Quotation</b>, return Home, search a product, then tap MRP / Sale / Wholesale.</div>`;
+screen("Quotation",`${cart.length} lines · ${q} qty · ${money(t)}`,`<div class="sr-feature"><b>${quote?"Quotation mode is ON":"Quotation mode is OFF"}</b><br><button onclick="srToggleQuote()">${quote?"Stop Quotation":"Start Quotation"}</button></div><div id="sr-quote-cart">${rows}</div><div class="sr-feature"><b>Total ${money(t)}</b><br><button onclick="window.print()">🖨 Print / 3-inch Bluetooth Printer</button> <button onclick="srClearCart()">Clear</button></div>`)}
+window.srToggleQuote=()=>{quote=!quote;document.body.classList.toggle("sr-quote",quote);$("sr-cartbadge").style.display=(quote||cart.length)?"block":"none";good();home();toast(quote?"🧾 Quotation ON — tap a price":"Quotation OFF")};
+window.srQEdit=(i,k,v)=>{cart[i][k]=Math.max(0,+v||0);saveCart();renderQuoteScreen()};window.srQDel=i=>{cart.splice(i,1);saveCart();renderQuoteScreen()};window.srClearCart=()=>{if(confirm("Clear quotation?")){cart=[];saveCart();renderQuoteScreen()}};
+function saveCart(){let q=0,t=0;cart.forEach(x=>{q+=+x.qty||0;t+=(+x.qty||0)*(+x.rate||0)});$("sr-cartbadge").textContent=`🛒 ${q} · ${money(t)}`;$("sr-cartbadge").style.display=(quote||cart.length)?"block":"none";try{localStorage.setItem("sr_cart_gold_v1",JSON.stringify(cart))}catch(e){}}
+$("sr-cartbadge").onclick=renderQuoteScreen;try{cart=JSON.parse(localStorage.getItem("sr_cart_gold_v1")||"[]")}catch(e){}saveCart();
+window.srAddPrice=function(ri,type,e){e&&e.stopPropagation();if(!quote){if(type==="mrp"){copyItem(ri,e);return}return openExp(ri,type,e)}let it=raw[ri],rate=+(type==="mrp"?it.mrp:type==="sale"?it.sale:it.wholesale)||0,key=ri+"|"+type,row=cart.find(x=>x.key===key);if(row)row.qty++;else cart.push({key,ri,type,name:it.name||"",alias:it.alias||"",rate,qty:1});saveCart();good();toast("🛒 Added · "+(it.name||"Product"))}
+const observer=new MutationObserver(()=>{let cards=document.querySelectorAll(".c");cards.forEach(c=>{if(c.dataset.srprice)return;c.dataset.srprice="1";let onclicks=[[".pb.m","mrp"],[".pb.s","sale"],[".pb.w","wholesale"]];onclicks.forEach(([sel,type])=>{let p=c.querySelector(sel);if(!p)return;let m=(p.getAttribute("onclick")||"").match(/\((\d+)/);if(m)p.setAttribute("onclick",`srAddPrice(${m[1]},'${type}',event)`)})})});
+observer.observe(document.body,{childList:true,subtree:true});
+let sy=0,pulling=false;document.addEventListener("touchstart",e=>{if(window.scrollY<=2&&e.touches.length===1){sy=e.touches[0].clientY;pulling=true}},{passive:true});document.addEventListener("touchmove",e=>{if(!pulling)return;let d=e.touches[0].clientY-sy;if(d>35){$("sr-pull").classList.add("show");$("sr-pull").textContent=d>95?"↻ Release to refresh":"↓ Pull to refresh"}},{passive:true});document.addEventListener("touchend",e=>{if(!pulling)return;pulling=false;let shown=$("sr-pull").classList.contains("show"),release=$("sr-pull").textContent.includes("Release");$("sr-pull").classList.remove("show");if(shown&&release){good();setTimeout(()=>location.reload(),180)}},{passive:true});
+const oldResult=window.onScanResult;window.onScanResult=function(code){srLongBeep();try{$("scan-code").textContent="✓ "+code}catch(e){}setTimeout(()=>{closeScanner();home();let q=$("search");if(q){q.value=code;try{query=code}catch(e){}applyAll();setTimeout(()=>{let c=document.querySelector(".c");if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.animate([{outline:"4px solid #ffc542"},{outline:"0 solid transparent"}],{duration:1500})}},180)}toast("✓ BARCODE FOUND · "+code)},220)};
+setTimeout(()=>{try{$("sr-count").textContent=(raw?.length||0).toLocaleString("en-IN")+" items"}catch(e){}},1200);
+})();
+</script>
 </body>
 </html>

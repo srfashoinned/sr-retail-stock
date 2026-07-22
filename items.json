@@ -492,14 +492,14 @@
     "SalePrice": 550,
     "WholesalePrice": 445,
     "PurchasePrice": 405,
-    "AvailableQty": 19,
+    "AvailableQty": 18,
     "StockDebug": {
       "BaseStockSource": "Stock_Product",
       "BaseStock": 24,
       "ProductOpeningStock": 24,
       "ProductOpeningQty": 0,
       "StockProductQty": 24,
-      "SoldQty": 5,
+      "SoldQty": 6,
       "SalesReturnQty": 0
     }
   },

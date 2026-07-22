@@ -166,6 +166,13 @@ async function exportStock() {
                 RETAIL DADDY BASE STOCK SOURCE SELECTION
                 ====================================================
 
+                IMPORTANT:
+                We choose ONE base stock source.
+
+                Retail Daddy can store the same opening/base stock
+                in multiple tables. Adding them together would
+                duplicate or triple-count the stock.
+
                 Verified examples:
 
                 BMW Plain:
@@ -188,9 +195,6 @@ async function exportStock() {
 
                 New products:
                 Stock_Product Qty - Sold + Return
-
-                We choose ONE base source so duplicate stock
-                representations are not double/triple counted.
             */
 
             let baseStock = 0;
@@ -218,6 +222,53 @@ async function exportStock() {
                 + salesReturnQty;
 
             return {
+
+                /*
+                    ====================================================
+                    WEBSITE-COMPATIBLE FIELDS
+                    ====================================================
+
+                    These lowercase fields are required by the
+                    existing SR PSD website/index.html.
+                */
+
+                name: item.ProductName || "",
+
+                alias: item.ProductCode || "",
+
+                barcode: String(item.Barcode || ""),
+
+                group:
+                    item.PartGroup ||
+                    item.SubCategory ||
+                    item.Category ||
+                    "",
+
+                mrp:
+                    Number(item.MRP || 0),
+
+                sale:
+                    Number(item.SalePrice || 0),
+
+                wholesale:
+                    Number(item.WholesalePrice || 0),
+
+                purchase:
+                    Number(item.PurchasePrice || 0),
+
+                stock:
+                    Number(availableQty.toFixed(3)),
+
+                /*
+                    ====================================================
+                    ORIGINAL RETAIL DADDY FIELDS
+                    ====================================================
+
+                    These are retained so our verified exporter,
+                    diagnostics and future development continue
+                    to work exactly as before.
+                */
+
                 ProductID: item.ProductID,
 
                 ProductCode: item.ProductCode || "",
@@ -241,21 +292,30 @@ async function exportStock() {
                 /*
                     Diagnostic fields.
 
-                    Keep these temporarily.
-                    They allow us to identify exactly where a mismatch
-                    comes from without guessing.
+                    These allow us to identify exactly where
+                    a stock mismatch comes from without guessing.
                 */
+
                 StockDebug: {
-                    BaseStockSource: baseStockSource,
-                    BaseStock: Number(baseStock.toFixed(3)),
+
+                    BaseStockSource:
+                        baseStockSource,
+
+                    BaseStock:
+                        Number(baseStock.toFixed(3)),
+
                     ProductOpeningStock:
                         Number(productOpeningStock.toFixed(3)),
+
                     ProductOpeningQty:
                         Number(productOpeningQty.toFixed(3)),
+
                     StockProductQty:
                         Number(stockProductQty.toFixed(3)),
+
                     SoldQty:
                         Number(soldQty.toFixed(3)),
+
                     SalesReturnQty:
                         Number(salesReturnQty.toFixed(3))
                 }
@@ -299,6 +359,7 @@ async function exportStock() {
         console.log("Positive Stock :", positiveStock);
         console.log("Zero Stock     :", zeroStock);
         console.log("Negative Stock :", negativeStock);
+
         console.log(
             "Total Quantity :",
             Number(totalQuantity.toFixed(3))
@@ -335,14 +396,17 @@ async function exportStock() {
             );
 
             if (matches.length === 0) {
+
                 console.log("");
                 console.log(name, "- NOT FOUND");
+
                 continue;
             }
 
             for (const p of matches) {
 
                 console.log("");
+
                 console.log(
                     p.ProductName,
                     "| PID:",
@@ -411,9 +475,12 @@ async function exportStock() {
         if (pool) {
 
             try {
+
                 await pool.close();
                 console.log("Database connection closed.");
+
             } catch (closeError) {
+
                 console.error(
                     "Error closing database connection:",
                     closeError

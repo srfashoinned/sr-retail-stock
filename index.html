@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SR Psd</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--surf:#111113;--card:#18181b;
+  --bord:rgba(255,255,255,0.08);
+  --gold:#f5c542;--green:#22c55e;--blue:#60a5fa;--purple:#c084fc;--red:#f87171;
+  --txt:#e4e4e7;--muted:#71717a;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column}
+#hdr{flex-shrink:0;height:52px;padding:0 14px;display:flex;align-items:center;gap:10px;background:rgba(9,9,11,0.97);border-bottom:1px solid var(--bord);z-index:50}
+#logo{font-size:20px;font-weight:900;letter-spacing:2px;color:var(--gold);white-space:nowrap;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+#logo:active{opacity:.7}
+#hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+#badge{font-size:11px;color:var(--muted);background:var(--surf);border:1px solid var(--bord);padding:2px 8px;border-radius:20px;font-variant-numeric:tabular-nums}
+#refresh-btn{width:34px;height:34px;flex-shrink:0;border-radius:9px;background:var(--surf);border:1.5px solid var(--bord);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:border-color .15s,color .15s}
+#refresh-btn:active{opacity:.7}
+#refresh-btn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
+#admin-btn{font-size:12px;font-weight:700;background:transparent;color:var(--gold);border:1.5px solid var(--gold);padding:5px 12px;border-radius:7px;cursor:pointer;font-family:inherit}
+#admin-btn.on{background:var(--gold);color:#000}
+#ctrl{flex-shrink:0;padding:10px 14px 6px;display:flex;flex-direction:column;gap:7px}
+#search-row{display:flex;gap:8px;align-items:center}
+#search{flex:1;background:var(--surf);border:1.5px solid var(--bord);border-radius:10px;padding:10px 14px;font-size:15px;color:var(--txt);outline:none;font-family:inherit}
+#search:focus{border-color:var(--gold)}
+#search::placeholder{color:var(--muted)}
+#scan-btn{width:42px;height:42px;flex-shrink:0;border-radius:10px;background:var(--surf);border:1.5px solid var(--bord);color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center}
+#scan-btn.on{border-color:var(--gold);color:var(--gold)}
+.chip{white-space:nowrap;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid var(--bord);background:var(--surf);color:var(--muted);cursor:pointer;flex-shrink:0;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#000}
+#stock-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#stock-row::-webkit-scrollbar{display:none}
+.stock-chip{white-space:nowrap;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid var(--bord);background:var(--surf);color:var(--muted);cursor:pointer;flex-shrink:0;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.stock-chip[data-stock="all"].on{background:var(--gold);border-color:var(--gold);color:#000}
+.stock-chip[data-stock="in"].on{background:rgba(34,197,94,0.18);border-color:var(--green);color:var(--green)}
+.stock-chip[data-stock="low"].on{background:rgba(245,197,66,0.18);border-color:var(--gold);color:var(--gold)}
+.stock-chip[data-stock="out"].on{background:rgba(248,113,113,0.18);border-color:var(--red);color:var(--red)}
+#brand-modal-bg{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+#brand-modal-bg.show{display:flex}
+#brand-modal{background:var(--card);border:1px solid var(--bord);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:75vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+#brand-modal-bg.show #brand-modal{transform:translateY(0)}
+#brand-modal-hdr{padding:16px 16px 10px;border-bottom:1px solid var(--bord);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#brand-modal-title{font-size:15px;font-weight:800;color:var(--txt)}
+#brand-modal-close{background:var(--surf);border:1px solid var(--bord);color:var(--muted);width:28px;height:28px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+#brand-search-wrap{padding:10px 16px 6px;flex-shrink:0}
+#brand-search{width:100%;background:var(--surf);border:1.5px solid var(--bord);border-radius:8px;padding:8px 12px;font-size:14px;color:var(--txt);outline:none;font-family:inherit}
+#brand-search:focus{border-color:var(--blue)}
+#brand-search::placeholder{color:var(--muted)}
+#brand-list{overflow-y:auto;padding:6px 10px 20px;flex:1}
+.brand-item{display:flex;align-items:center;justify-content:space-between;padding:12px 10px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:var(--txt);border-bottom:1px solid var(--bord);-webkit-tap-highlight-color:transparent;letter-spacing:.4px}
+.brand-item:last-child{border-bottom:none}
+.brand-item:active{background:var(--surf)}
+.brand-item.selected{color:var(--blue);font-weight:700}
+.brand-item .brand-count{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.brand-item.selected .brand-count{color:rgba(96,165,250,0.6)}
+.brand-tick{color:var(--blue);font-size:14px;margin-left:8px;opacity:0}
+.brand-item.selected .brand-tick{opacity:1}
+#grp-btn{display:flex;align-items:center;gap:8px;background:var(--surf);border:1.5px solid var(--bord);border-radius:10px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);width:100%;text-align:left;transition:border-color .15s}
+#grp-btn:active{background:#222}
+#grp-btn.active{border-color:var(--gold);color:var(--gold)}
+#grp-btn .grp-arrow{margin-left:auto;font-size:11px;opacity:.5}
+#grp-btn .grp-tag{background:var(--gold);color:#000;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.3px}
+#brand-btn{display:flex;align-items:center;gap:8px;background:var(--surf);border:1.5px solid var(--bord);border-radius:10px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);width:100%;text-align:left;transition:border-color .15s}
+#brand-btn:active{background:#222}
+#brand-btn.active{border-color:var(--blue);color:var(--blue)}
+#brand-btn .brand-arrow{margin-left:auto;font-size:11px;opacity:.5}
+#brand-btn .brand-tag{background:var(--blue);color:#000;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.3px}
+#grp-modal-bg{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+#grp-modal-bg.show{display:flex}
+#grp-modal{background:var(--card);border:1px solid var(--bord);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:75vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+#grp-modal-bg.show #grp-modal{transform:translateY(0)}
+#grp-modal-hdr{padding:16px 16px 10px;border-bottom:1px solid var(--bord);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#grp-modal-title{font-size:15px;font-weight:800;color:var(--txt)}
+#grp-modal-close{background:var(--surf);border:1px solid var(--bord);color:var(--muted);width:28px;height:28px;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+#grp-search-wrap{padding:10px 16px 6px;flex-shrink:0}
+#grp-search{width:100%;background:var(--surf);border:1.5px solid var(--bord);border-radius:8px;padding:8px 12px;font-size:14px;color:var(--txt);outline:none;font-family:inherit}
+#grp-search:focus{border-color:var(--gold)}
+#grp-search::placeholder{color:var(--muted)}
+#grp-list{overflow-y:auto;padding:6px 10px 20px;flex:1}
+.grp-item{display:flex;align-items:center;justify-content:space-between;padding:12px 10px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--txt);border-bottom:1px solid var(--bord);-webkit-tap-highlight-color:transparent}
+.grp-item:last-child{border-bottom:none}
+.grp-item:active{background:var(--surf)}
+.grp-item.selected{color:var(--gold);font-weight:700}
+.grp-item .grp-count{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.grp-item.selected .grp-count{color:rgba(245,197,66,0.6)}
+.grp-tick{color:var(--gold);font-size:14px;margin-left:8px;opacity:0}
+.grp-item.selected .grp-tick{opacity:1}
+#sort-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#sort-row::-webkit-scrollbar{display:none}
+#pf{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+#pf label{font-size:11px;color:var(--muted);white-space:nowrap}
+.pi{width:68px;background:var(--surf);border:1.5px solid var(--bord);border-radius:7px;padding:5px 8px;font-size:12px;color:var(--txt);outline:none;font-family:inherit;font-variant-numeric:tabular-nums}
+.pi:focus{border-color:var(--gold)}
+#pf-go{padding:5px 10px;border-radius:7px;background:var(--gold);border:none;color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+#pf-clr{padding:5px 9px;border-radius:7px;background:var(--surf);border:1px solid var(--bord);color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit}
+#status{flex-shrink:0;padding:2px 14px 4px;font-size:11px;color:var(--muted)}
+#scroll{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch}
+#scroll::-webkit-scrollbar{width:3px}
+#scroll::-webkit-scrollbar-thumb{background:var(--bord);border-radius:3px}
+#spacer{width:1px;pointer-events:none}
+#stage{position:absolute;top:0;left:0;right:0}
+.c{position:absolute;left:14px;right:14px;background:var(--card);border:1px solid var(--bord);border-radius:12px;padding:16px;cursor:pointer}
+.c.exp{border-color:rgba(245,197,66,0.3)}
+.c-name{font-size:17px;font-weight:700;line-height:1.15;color:var(--txt)}
+.c-alias{font-size:11px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.prices{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pb{border-radius:8px;padding:7px 10px}
+.pb.m{background:rgba(245,197,66,0.1);border:1px solid rgba(245,197,66,0.22)}
+.pb.s{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.22);position:relative}
+.pb.w{background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.22);position:relative}
+.pb.k{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.18)}
+.pb.p{background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.22)}
+.pb.s.shareable,.pb.w.shareable{cursor:pointer;transition:transform .12s,box-shadow .12s}
+.pb.s.shareable:active{transform:scale(0.96)}
+.pb.w.shareable:active{transform:scale(0.96)}
+.pb.s.shareable:hover{border-color:rgba(34,197,94,0.6);box-shadow:0 0 0 2px rgba(34,197,94,0.15)}
+.pb.w.shareable:hover{border-color:rgba(96,165,250,0.6);box-shadow:0 0 0 2px rgba(96,165,250,0.15)}
+.share-badge{position:absolute;top:5px;right:6px;font-size:9px;opacity:0.5;pointer-events:none}
+.pl{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;opacity:.65}
+.pb.m .pl{color:var(--gold)}.pb.s .pl{color:var(--green)}.pb.w .pl{color:var(--blue)}.pb.k .pl{color:var(--red)}.pb.p .pl{color:var(--purple)}
+.pv{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:1px}
+.pb.m .pv{color:var(--gold)}.pb.s .pv{color:var(--green)}.pb.w .pv{color:var(--blue)}.pb.k .pv{color:var(--red)}.pb.p .pv{color:var(--purple)}
+.det{display:none;border-top:1px solid var(--bord);margin-top:10px;padding-top:10px}
+.c.exp .det{display:block}
+.drow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.drow span:first-child{color:var(--muted)}
+.drow span:last-child{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;max-width:60%}
+.act{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.ab{flex:1;min-width:60px;padding:7px 4px;border-radius:7px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit}
+.ab.cp{background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25)}
+.ab.sh{background:rgba(34,197,94,0.10);color:var(--green);border:1px solid rgba(34,197,94,0.20)}
+.ab.ig{background:rgba(192,132,252,0.12);color:var(--purple);border:1px solid rgba(192,132,252,0.25)}
+.ab.wa{background:rgba(37,211,102,0.12);color:#25d366;border:1px solid rgba(37,211,102,0.3)}
+#welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:14px}
+#welcome .w-logo{font-size:52px;font-weight:900;letter-spacing:5px;color:var(--gold);line-height:1}
+#welcome .w-sub{font-size:18px;font-weight:800;letter-spacing:3px;color:var(--txt)}
+#welcome .w-line{width:40px;height:2px;background:var(--gold);border-radius:2px;opacity:.5}
+#welcome .w-hint{font-size:13px;color:var(--muted);line-height:1.7;max-width:220px}
+#scan-ov{position:fixed;inset:0;z-index:200;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center}
+#scan-ov.show{display:flex}
+#scan-vid{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+#scan-ui{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
+#scan-frame{width:260px;height:130px;border:2px solid var(--gold);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,0.6);position:relative;overflow:hidden}
+#scan-line{position:absolute;left:0;right:0;height:2px;background:var(--gold);box-shadow:0 0 6px var(--gold);animation:sl 1.8s ease-in-out infinite}
+@keyframes sl{0%,100%{top:2px}50%{top:calc(100% - 4px)}}
+#scan-hint{margin-top:22px;color:rgba(255,255,255,0.7);font-size:14px;text-align:center}
+#scan-code{margin-top:8px;color:var(--gold);font-size:13px;min-height:18px;font-variant-numeric:tabular-nums}
+#scan-close{margin-top:22px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 26px;border-radius:30px;font-size:14px;cursor:pointer;font-family:inherit}
+
+/* ── ADMIN MODAL ── */
+#adm-ov{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center}
+#adm-ov.show{display:flex}
+#adm-box{background:var(--card);border:1px solid var(--bord);border-radius:16px;padding:24px;width:88%;max-width:320px}
+#adm-title{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px}
+#adm-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+#adm-bio-btn{width:100%;padding:12px;border-radius:10px;background:rgba(245,197,66,0.1);border:1.5px solid rgba(245,197,66,0.35);color:var(--gold);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:background .15s}
+#adm-bio-btn:active{background:rgba(245,197,66,0.2)}
+#adm-bio-btn.hidden{display:none}
+#adm-divider{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+#adm-divider span{font-size:11px;color:var(--muted);white-space:nowrap}
+#adm-divider::before,#adm-divider::after{content:'';flex:1;height:1px;background:var(--bord)}
+#adm-pw{width:100%;background:var(--surf);border:1.5px solid var(--bord);border-radius:9px;padding:12px;font-size:20px;color:var(--txt);letter-spacing:8px;text-align:center;outline:none;font-family:inherit}
+#adm-pw:focus{border-color:var(--gold)}
+#adm-pw.err{border-color:var(--red);animation:sh .3s}
+#adm-pw.ok{border-color:var(--green)}
+@keyframes sh{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+#dots{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--bord);border:1.5px solid var(--muted);transition:all .15s}
+.dot.f{background:var(--gold);border-color:var(--gold)}
+.dot.e{background:var(--red);border-color:var(--red)}
+.dot.g{background:var(--green);border-color:var(--green)}
+#adm-msg{font-size:12px;text-align:center;margin-top:8px;height:16px;color:var(--muted)}
+#adm-msg.e{color:var(--red)}#adm-msg.g{color:var(--green)}
+#adm-btns{display:flex;gap:8px;margin-top:16px}
+#adm-cancel{flex:1;padding:10px;border-radius:9px;background:var(--surf);border:1px solid var(--bord);color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit}
+#adm-login{flex:2;padding:10px;border-radius:9px;background:var(--gold);border:none;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* ── IMAGE VIEWER MODAL (old — kept but replaced by new) ── */
+#img-ov{position:fixed;inset:0;z-index:170;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center}
+#img-ov.show{display:flex}
+#img-box{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center;gap:0;padding:0 0 20px}
+#img-hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--bord)}
+#img-title-wrap{display:flex;flex-direction:column;gap:2px}
+#img-title{font-size:15px;font-weight:800;color:var(--txt)}
+#img-subtitle{font-size:11px;color:var(--muted)}
+#img-close{background:rgba(255,255,255,0.08);border:1px solid var(--bord);color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#img-main{position:relative;width:100%;display:flex;align-items:center;justify-content:center;min-height:260px;padding:16px}
+#img-el{max-width:100%;max-height:60vh;border-radius:12px;object-fit:contain;display:block}
+#img-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 20px;color:var(--muted);text-align:center}
+#img-placeholder .img-icon{font-size:48px;opacity:.4}
+#img-placeholder .img-msg{font-size:13px;line-height:1.6;max-width:200px}
+#img-nav{display:flex;gap:10px;align-items:center;margin-top:4px}
+.img-nav-btn{background:rgba(255,255,255,0.06);border:1px solid var(--bord);color:var(--txt);width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.img-nav-btn:active{background:rgba(255,255,255,0.15)}
+#img-counter{font-size:12px;color:var(--muted);min-width:50px;text-align:center;font-variant-numeric:tabular-nums}
+#img-info{width:100%;padding:10px 18px 0;font-size:12px;color:var(--muted);text-align:center}
+
+/* ── EXPORT IMAGE MODAL ── */
+#exp-ov{position:fixed;inset:0;z-index:170;background:rgba(0,0,0,0.92);display:none;align-items:flex-end;justify-content:center}
+#exp-ov.show{display:flex}
+#exp-box{background:var(--card);border:1px solid var(--bord);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:18px 18px 30px;display:flex;flex-direction:column;gap:12px}
+#exp-title{font-size:15px;font-weight:800;color:#25d366;display:flex;align-items:center;gap:8px}
+#exp-preview-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--bord);background:#000;display:flex;justify-content:center}
+#exp-canvas{max-width:100%;display:block}
+#exp-btns{display:flex;gap:8px}
+#exp-wa{flex:2;padding:12px;border-radius:10px;background:#25d366;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+#exp-save{flex:1;padding:12px;border-radius:10px;background:var(--surf);border:1px solid var(--bord);color:var(--txt);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+#exp-cancel{flex:1;padding:12px;border-radius:10px;background:var(--surf);border:1px solid var(--bord);color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit}
+#exp-price-hint{font-size:12px;color:var(--muted);text-align:center}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:#27272a;border:1px solid var(--bord);border-radius:30px;padding:9px 18px;font-size:13px;white-space:nowrap;z-index:300;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;padding:0 1px}
+.grp-hdr{position:absolute;left:14px;right:14px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);padding:4px 0 3px;border-bottom:1px solid rgba(245,197,66,0.2)}
+
+/* ═══════════════════════════════════════
+   NEW: PRODUCT IMAGE MANAGER MODAL
+═══════════════════════════════════════ */
+#pim-ov{
+  position:fixed;inset:0;z-index:190;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+#pim-ov.show{display:flex}
+#pim-box{
+  background:var(--card);border:1px solid var(--bord);
+  border-radius:22px 22px 0 0;
+  width:100%;max-width:540px;
+  max-height:92vh;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#pim-ov.show #pim-box{transform:translateY(0)}
+
+/* Handle bar */
+#pim-handle{width:36px;height:4px;background:var(--bord);border-radius:4px;margin:10px auto 0;flex-shrink:0}
+
+/* Header */
+#pim-hdr{
+  padding:14px 16px 10px;
+  border-bottom:1px solid var(--bord);
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+#pim-title-col{flex:1;min-width:0}
+#pim-title{font-size:15px;font-weight:800;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pim-alias{font-size:11px;color:var(--muted);margin-top:1px}
+#pim-count-badge{
+  font-size:11px;font-weight:700;
+  background:rgba(192,132,252,0.15);
+  border:1px solid rgba(192,132,252,0.3);
+  color:var(--purple);
+  padding:2px 9px;border-radius:20px;
+  white-space:nowrap;flex-shrink:0;
+}
+#pim-close{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--surf);border:1px solid var(--bord);
+  color:var(--muted);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+/* Token bar */
+#pim-token-bar{
+  padding:8px 14px;
+  background:rgba(245,197,66,0.04);
+  border-bottom:1px solid var(--bord);
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
+}
+#pim-token-bar.hidden{display:none}
+#pim-token-label{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+#pim-token-input{
+  flex:1;background:var(--surf);border:1.5px solid var(--bord);
+  border-radius:7px;padding:6px 10px;
+  font-size:12px;color:var(--txt);outline:none;font-family:inherit;
+  font-variant-numeric:tabular-nums;
+}
+#pim-token-input:focus{border-color:var(--gold)}
+#pim-token-input::placeholder{color:var(--muted)}
+#pim-token-save{
+  padding:6px 12px;border-radius:7px;
+  background:var(--gold);border:none;
+  color:#000;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+  white-space:nowrap;flex-shrink:0;
+}
+#pim-token-clear{
+  padding:6px 10px;border-radius:7px;
+  background:var(--surf);border:1px solid var(--bord);
+  color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;
+  white-space:nowrap;flex-shrink:0;
+}
+#pim-token-status{font-size:10px;white-space:nowrap;flex-shrink:0}
+#pim-token-status.ok{color:var(--green)}
+#pim-token-status.no{color:var(--muted)}
+
+/* Fullscreen viewer overlay */
+#pim-fs-ov{
+  position:fixed;inset:0;z-index:210;
+  background:#000;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+}
+#pim-fs-ov.show{display:flex}
+#pim-fs-img{max-width:100%;max-height:100vh;object-fit:contain;display:block;touch-action:none;transform-origin:center center;transition:transform 0.05s linear;user-select:none;-webkit-user-select:none}
+#pim-fs-close{
+  position:absolute;top:14px;right:14px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);
+  color:#fff;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;z-index:1;
+}
+#pim-fs-prev,#pim-fs-next{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.18);
+  color:#fff;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;z-index:1;
+}
+#pim-fs-prev{left:10px}
+#pim-fs-next{right:10px}
+#pim-fs-counter{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.6);border-radius:20px;
+  padding:4px 14px;font-size:12px;color:rgba(255,255,255,0.8);
+  font-variant-numeric:tabular-nums;
+}
+
+/* Scroll area */
+#pim-scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#pim-scroll::-webkit-scrollbar{width:3px}
+#pim-scroll::-webkit-scrollbar-thumb{background:var(--bord);border-radius:3px}
+
+/* Loading state */
+#pim-loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:50px 20px;gap:14px;
+}
+#pim-loading .pim-spin{
+  width:28px;height:28px;border:3px solid var(--bord);
+  border-top-color:var(--purple);border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+#pim-loading .pim-load-txt{font-size:13px;color:var(--muted)}
+
+/* Image grid */
+#pim-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;padding:12px;
+}
+.pim-cell{
+  position:relative;aspect-ratio:1/1;border-radius:10px;
+  overflow:hidden;background:var(--surf);border:1px solid var(--bord);
+  cursor:pointer;
+}
+.pim-cell img{width:100%;height:100%;object-fit:cover;display:block}
+.pim-cell .pim-del{
+  position:absolute;top:4px;right:4px;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(248,113,113,0.85);border:none;
+  color:#fff;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s;z-index:2;
+}
+.pim-cell:hover .pim-del{opacity:1}
+.pim-cell .pim-del.show{opacity:1}/* always show on touch */
+.pim-cell .pim-num{
+  position:absolute;bottom:4px;left:5px;
+  font-size:10px;font-weight:700;color:rgba(255,255,255,0.7);
+  text-shadow:0 1px 3px rgba(0,0,0,0.8);
+  font-variant-numeric:tabular-nums;
+  pointer-events:none;
+}
+
+/* Upload add-cell */
+.pim-add-cell{
+  aspect-ratio:1/1;border-radius:10px;
+  background:rgba(192,132,252,0.06);
+  border:1.5px dashed rgba(192,132,252,0.35);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;cursor:pointer;transition:background .15s,border-color .15s;
+}
+.pim-add-cell:active{background:rgba(192,132,252,0.14)}
+.pim-add-cell .pim-add-icon{font-size:22px}
+.pim-add-cell .pim-add-txt{font-size:10px;font-weight:600;color:rgba(192,132,252,0.8)}
+.pim-add-cell.locked{
+  background:rgba(113,113,122,0.06);
+  border-color:rgba(113,113,122,0.2);
+  cursor:not-allowed;
+}
+.pim-add-cell.locked .pim-add-icon{opacity:.35}
+.pim-add-cell.locked .pim-add-txt{color:var(--muted)}
+
+/* Camera cell */
+.pim-cam-cell{
+  aspect-ratio:1/1;border-radius:10px;
+  background:rgba(96,165,250,0.06);
+  border:1.5px dashed rgba(96,165,250,0.35);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;cursor:pointer;transition:background .15s;
+}
+.pim-cam-cell:active{background:rgba(96,165,250,0.14)}
+.pim-cam-cell .pim-add-icon{font-size:22px}
+.pim-cam-cell .pim-add-txt{font-size:10px;font-weight:600;color:rgba(96,165,250,0.8)}
+.pim-cam-cell.locked{
+  background:rgba(113,113,122,0.06);
+  border-color:rgba(113,113,122,0.2);
+  cursor:not-allowed;
+}
+.pim-cam-cell.locked .pim-add-icon{opacity:.35}
+.pim-cam-cell.locked .pim-add-txt{color:var(--muted)}
+
+/* Empty state */
+#pim-empty{
+  display:flex;flex-direction:column;align-items:center;
+  padding:36px 24px;gap:10px;text-align:center;
+}
+#pim-empty .pim-empty-icon{font-size:44px;opacity:.35}
+#pim-empty .pim-empty-txt{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* Upload progress */
+#pim-progress{
+  padding:10px 14px;border-top:1px solid var(--bord);
+  display:none;align-items:center;gap:10px;flex-shrink:0;
+}
+#pim-progress.show{display:flex}
+#pim-prog-bar-wrap{flex:1;height:5px;background:var(--bord);border-radius:5px;overflow:hidden}
+#pim-prog-bar{height:100%;width:0%;background:var(--purple);border-radius:5px;transition:width .2s}
+#pim-prog-txt{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* Footer actions */
+#pim-footer{
+  padding:10px 14px 20px;
+  border-top:1px solid var(--bord);
+  flex-shrink:0;
+  display:flex;gap:8px;
+}
+#pim-footer-hint{font-size:11px;color:var(--muted);text-align:center;padding:0 14px 12px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <div id="logo" onclick="goHome()">SR PSD</div>
+  <div id="hdr-right">
+    <div id="badge">—</div>
+    <button id="refresh-btn" onclick="refreshData()" title="Refresh data">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </button>
+    <button id="admin-btn" onclick="openAdm()">⚡ Admin</button>
+  </div>
+</div>
+
+<div id="ctrl">
+  <div id="search-row">
+    <input id="search" type="search" placeholder="🔍  Name, alias, barcode…" autocomplete="off" spellcheck="false" inputmode="search">
+    <button id="scan-btn" onclick="openScanner()" title="Scan barcode">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+        <line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/>
+        <line x1="13" y1="8" x2="13" y2="11"/><line x1="16" y1="8" x2="16" y2="16"/>
+        <line x1="13" y1="14" x2="13" y2="16"/>
+      </svg>
+    </button>
+  </div>
+  <div id="sort-row">
+    <div class="chip on" data-sort="df">Default</div>
+    <div class="chip" data-sort="grp">By Group</div>
+    <div class="chip" data-sort="na">A – Z</div>
+    <div class="chip" data-sort="sa">Price ↑</div>
+    <div class="chip" data-sort="sd">Price ↓</div>
+  </div>
+  <div id="stock-row">
+    <div class="stock-chip on" data-stock="all">📦 All Stock</div>
+    <div class="stock-chip" data-stock="in">✅ In Stock</div>
+    <div class="stock-chip" data-stock="low">⚠️ Low Stock (≤5)</div>
+    <div class="stock-chip" data-stock="out">❌ Out of Stock</div>
+  </div>
+  <button id="brand-btn" onclick="openBrandModal()">
+    <span>🏷️</span>
+    <span id="brand-btn-label">All Brands</span>
+    <span class="brand-arrow">▼</span>
+  </button>
+  <button id="grp-btn" onclick="openGrpModal()">
+    <span>🗂️</span>
+    <span id="grp-btn-label">All Groups</span>
+    <span class="grp-arrow">▼</span>
+  </button>
+  <div id="pf">
+    <label>₹ Sale:</label>
+    <input class="pi" id="pmin" type="number" placeholder="Min" inputmode="numeric">
+    <span style="color:var(--muted);font-size:12px">–</span>
+    <input class="pi" id="pmax" type="number" placeholder="Max" inputmode="numeric">
+    <button id="pf-go" onclick="applyPF()">Go</button>
+    <button id="pf-clr" onclick="clearPF()">✕</button>
+  </div>
+</div>
+
+<div id="status"></div>
+
+<div id="scroll">
+  <div id="spacer"></div>
+  <div id="stage"></div>
+</div>
+
+<!-- SCANNER -->
+<div id="scan-ov">
+  <video id="scan-vid" autoplay muted playsinline></video>
+  <div id="scan-ui">
+    <div id="scan-frame"><div id="scan-line"></div></div>
+    <div id="scan-hint">Point at any barcode or QR code</div>
+    <div id="scan-code"></div>
+    <button id="scan-close" onclick="closeScanner()">✕ Close</button>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div id="adm-ov">
+  <div id="adm-box">
+    <div id="adm-title">ADMIN</div>
+    <div id="adm-sub">Unlock with fingerprint or PIN</div>
+    <button id="adm-bio-btn" onclick="doBiometric()" class="hidden">
+      <span style="font-size:22px">👆</span>
+      <span>Use Fingerprint / Face ID</span>
+    </button>
+    <div id="adm-divider" class="hidden"><span>or enter PIN</span></div>
+    <input id="adm-pw" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="• • • •" autocomplete="off"
+      oninput="onPwInput(this)" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="dots">
+      <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+      <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+    </div>
+    <div id="adm-msg"></div>
+    <div id="adm-btns">
+      <button id="adm-cancel" onclick="closeAdm()">Cancel</button>
+      <button id="adm-login" onclick="doLogin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- OLD IMAGE VIEWER MODAL (kept intact, not used by new feature) -->
+<div id="img-ov">
+  <div id="img-box">
+    <div id="img-hdr">
+      <div id="img-title-wrap">
+        <div id="img-title">Product Images</div>
+        <div id="img-subtitle"></div>
+      </div>
+      <button id="img-close" onclick="closeImgViewer()">✕</button>
+    </div>
+    <div id="img-main">
+      <img id="img-el" src="" alt="Product" style="display:none" onerror="imgLoadError()" onload="imgLoaded()">
+      <div id="img-placeholder">
+        <div class="img-icon">🖼️</div>
+        <div class="img-msg" id="img-msg">No image available for this product yet.</div>
+      </div>
+    </div>
+    <div id="img-nav" style="display:none">
+      <button class="img-nav-btn" onclick="imgPrev()">‹</button>
+      <div id="img-counter">1 / 1</div>
+      <button class="img-nav-btn" onclick="imgNext()">›</button>
+    </div>
+    <div id="img-info"></div>
+  </div>
+</div>
+
+<!-- EXPORT IMAGE MODAL -->
+<div id="exp-ov">
+  <div id="exp-box">
+    <div id="exp-title">📲 Share Image</div>
+    <div id="exp-price-hint"></div>
+    <div id="exp-preview-wrap">
+      <canvas id="exp-canvas" width="540" height="560"></canvas>
+    </div>
+    <div id="exp-btns">
+      <button id="exp-wa" onclick="doExpWA()">📲 Send on WhatsApp</button>
+      <button id="exp-cancel" onclick="closeExp()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- GROUP PICKER MODAL -->
+<div id="grp-modal-bg">
+  <div id="grp-modal">
+    <div id="grp-modal-hdr">
+      <div id="grp-modal-title">Select Group</div>
+      <button id="grp-modal-close" onclick="closeGrpModal()">✕</button>
+    </div>
+    <div id="grp-search-wrap">
+      <input id="grp-search" type="search" placeholder="Search groups…" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="grp-list"></div>
+  </div>
+</div>
+
+<!-- BRAND MODAL -->
+<div id="brand-modal-bg">
+  <div id="brand-modal">
+    <div id="brand-modal-hdr">
+      <div id="brand-modal-title">Select Brand</div>
+      <button id="brand-modal-close" onclick="closeBrandModal()">✕</button>
+    </div>
+    <div id="brand-search-wrap">
+      <input id="brand-search" type="search" placeholder="Search brands…" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="brand-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     NEW: PRODUCT IMAGE MANAGER MODAL
+═══════════════════════════════════════ -->
+<div id="pim-ov">
+  <div id="pim-box">
+    <div id="pim-handle"></div>
+
+    <!-- Header -->
+    <div id="pim-hdr">
+      <div id="pim-title-col">
+        <div id="pim-title">Product Images</div>
+        <div id="pim-alias"></div>
+      </div>
+      <div id="pim-count-badge">0 / 10</div>
+      <button id="pim-close" onclick="closePim()">✕</button>
+    </div>
+
+    <!-- GitHub Token bar -->
+    <div id="pim-token-bar">
+      <span id="pim-token-label">🔑 GitHub Token:</span>
+      <input id="pim-token-input" type="password" placeholder="ghp_… paste token here" autocomplete="off" spellcheck="false">
+      <button id="pim-token-save" onclick="pimSaveToken()">Save</button>
+      <button id="pim-token-clear" onclick="pimClearToken()" style="display:none">Clear</button>
+      <span id="pim-token-status" class="no">No token</span>
+    </div>
+
+    <!-- Scrollable content -->
+    <div id="pim-scroll">
+      <!-- Loading -->
+      <div id="pim-loading">
+        <div class="pim-spin"></div>
+        <div class="pim-load-txt">Loading images…</div>
+      </div>
+
+      <!-- Grid (shown after load) -->
+      <div id="pim-grid" style="display:none"></div>
+
+      <!-- Empty state (shown when no images + no token) -->
+      <div id="pim-empty" style="display:none">
+        <div class="pim-empty-icon">🖼️</div>
+        <div class="pim-empty-txt">No images yet for this product.<br>Add a GitHub token above and upload photos.</div>
+      </div>
+    </div>
+
+    <!-- Upload progress bar -->
+    <div id="pim-progress">
+      <div id="pim-prog-bar-wrap"><div id="pim-prog-bar"></div></div>
+      <div id="pim-prog-txt">Uploading…</div>
+    </div>
+
+    <!-- Footer hint -->
+    <div id="pim-footer-hint"></div>
+  </div>
+</div>
+
+<!-- Fullscreen image viewer -->
+<div id="pim-fs-ov">
+  <button id="pim-fs-close" onclick="closePimFs()">✕</button>
+  <button id="pim-fs-prev" onclick="pimFsNav(-1)">‹</button>
+  <img id="pim-fs-img" src="" alt="">
+  <button id="pim-fs-next" onclick="pimFsNav(1)">›</button>
+  <div id="pim-fs-counter">1 / 1</div>
+  <button id="pim-fs-wa" onclick="pimFsShareWA()" title="Share on WhatsApp" style="position:absolute;bottom:20px;right:18px;background:rgba(37,211,102,0.18);border:1.5px solid rgba(37,211,102,0.5);color:#25d366;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">📲</button>
+  <div id="pim-fs-zoom-hint" style="position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);border-radius:20px;padding:4px 14px;font-size:11px;color:rgba(255,255,255,0.6);pointer-events:none;opacity:1;transition:opacity 1.5s">Pinch to zoom · Double-tap to reset</div>
+</div>
+
+<!-- Hidden file inputs -->
+<input id="pim-file-input" type="file" accept="image/*" multiple style="display:none" onchange="pimHandleFiles(this.files)">
+<input id="pim-cam-input" type="file" accept="image/*" capture="environment" style="display:none" onchange="pimHandleFiles(this.files)">
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<canvas id="gen-canvas" style="display:none" width="540" height="700"></canvas>
+
+<script>
+/* ═══════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════ */
+const PASS  = "7865";
+const SHOP_NAME    = "SR FASHION";
+const SHOP_ADDRESS = "GN Azad College Road, Vasant Nagar, Pusad – 445 204";
+const SHOP_PHONE   = "7588756668";
+
+/* GitHub image storage config */
+const GH_OWNER  = 'srfashoinned';
+const GH_REPO   = 'image-storage-psd';
+const GH_BRANCH = 'main';
+const MAX_IMAGES = 10;
+
+const IMAGE_SOURCE   = 'local';
+const IMAGE_BASE_URL = 'images/';
+
+function getImageUrls(it){
+  if(it.images && it.images.length){
+    return it.images.map(f => IMAGE_BASE_URL + f);
+  }
+  const alias = (it.alias || '').replace(/[^a-zA-Z0-9_\-]/g,'');
+  if(!alias) return [];
+  return [
+    IMAGE_BASE_URL + alias + '.jpg',
+    IMAGE_BASE_URL + alias + '.png',
+    IMAGE_BASE_URL + alias + '.jpeg',
+    IMAGE_BASE_URL + alias + '.webp'
+  ];
+}
+
+const GAP   = 16;
+let CARD_COLLAPSED_H = 160;
+const BUFFER = 4;
+const GRP_HDR_H = 26;
+const LOW_STOCK_THRESHOLD = 5;
+
+function measureCardHeight(){
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;top:-9999px;left:14px;right:14px;visibility:hidden;pointer-events:none;z-index:-1';
+  probe.innerHTML = cardHTML({name:'Probe Item',alias:'PRB001',mrp:999,sale:799,wholesale:699,stock:10}, -1, 0, '');
+  const inner = probe.firstElementChild;
+  if(inner){ inner.style.position='relative'; inner.style.top='auto'; inner.style.left='auto'; inner.style.right='auto'; }
+  document.body.appendChild(probe);
+  const h = probe.firstElementChild ? probe.firstElementChild.offsetHeight : 160;
+  document.body.removeChild(probe);
+  CARD_COLLAPSED_H = h + 2;
+}
+
+function measureExpandedCard(ri){
+  const el = stage.querySelector('.c[data-ri="' + ri + '"]');
+  if(el) expandedHeights[ri] = el.offsetHeight + 4;
+}
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let raw      = [];
+let pool     = [];
+let heights  = [];
+let offsets  = [];
+let isAdmin  = false;
+let activeGroup = '';
+let pMin     = null;
+let pMax     = null;
+let query    = '';
+let activeSort = 'df';
+let activeStock = 'all';
+let activeBrand = '';
+let expanded = new Set();
+let expandedHeights = {};
+let vsStart  = 0;
+let vsEnd    = 0;
+let totalH   = 0;
+let scrollEl, spacer, stage;
+
+let expItem  = null;
+let expPrice = 'sale';
+
+/* image viewer state (old modal — untouched) */
+let imgItem     = null;
+let imgUrls     = [];
+let imgCurIdx   = 0;
+let imgTryIdx   = 0;
+
+/* ═══════════════════════════════════════════
+   LOAD DATA
+═══════════════════════════════════════════ */
+async function loadData(){
+  try{
+    const r = await fetch("items.json?t="+Date.now());
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    raw = await r.json();
+    document.getElementById("badge").textContent = raw.length.toLocaleString()+" items";
+    buildGroupChips();
+    buildBrandChips();
+  }catch(e){}
+  showWelcome();
+  initBiometric();
+  pimInitToken();
+}
+
+async function refreshData(){
+  const btn = document.getElementById("refresh-btn");
+  btn.classList.add("spinning");
+  try{
+    const r = await fetch("items.json?t="+Date.now());
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    raw = await r.json();
+    document.getElementById("badge").textContent = raw.length.toLocaleString()+" items";
+    buildGroupChips();
+    buildBrandChips();
+    applyAll();
+    toast("🔄 Refreshed — "+raw.length.toLocaleString()+" items");
+  }catch(e){
+    toast("❌ Refresh failed: "+e.message);
+  }finally{
+    setTimeout(()=>btn.classList.remove("spinning"), 600);
+  }
+}
+
+function showWelcome(){
+  spacer.style.height = '0px';
+  stage.innerHTML = `
+    <div id="welcome">
+      <div class="w-logo">SR</div>
+      <div class="w-sub">FASHION PUSAD</div>
+      <div class="w-line"></div>
+      <div class="w-hint">Search or scan a product above to find items instantly</div>
+    </div>`;
+  document.getElementById("status").textContent = '';
+}
+
+function goHome(){
+  document.getElementById("search").value = '';
+  query = ''; pMin = null; pMax = null; activeGroup = ''; activeStock = 'all'; activeBrand = '';
+  document.getElementById("pmin").value = '';
+  document.getElementById("pmax").value = '';
+  activeSort='df';
+  document.querySelectorAll("#sort-row .chip").forEach(c=>c.classList.remove("on"));
+  const defChip=document.querySelector("#sort-row .chip[data-sort='df']");
+  if(defChip)defChip.classList.add("on");
+  document.querySelectorAll("#stock-row .stock-chip").forEach(c=>c.classList.remove("on"));
+  document.querySelector("#stock-row .stock-chip[data-stock='all']").classList.add("on");
+  document.getElementById('brand-btn-label').textContent = 'All Brands';
+  document.getElementById('brand-btn').classList.remove('active');
+  document.getElementById("grp-btn-label").textContent = "All Groups";
+  document.getElementById("grp-btn").classList.remove("active");
+  showWelcome();
+}
+
+/* ═══ STOCK FILTER ═══ */
+document.getElementById("stock-row").addEventListener("click", function(e){
+  const c = e.target.closest(".stock-chip[data-stock]");
+  if(!c) return;
+  document.querySelectorAll("#stock-row .stock-chip").forEach(x=>x.classList.remove("on"));
+  c.classList.add("on");
+  activeStock = c.dataset.stock;
+  applyAll();
+});
+
+function stockMatches(it){
+  if(activeStock === 'all') return true;
+  const s = it.stock;
+  if(s === null || s === undefined || s === '' || s === '–' || s === '-'){
+    return activeStock === 'out';
+  }
+  const n = parseFloat(String(s));
+  if(isNaN(n)) return activeStock === 'out';
+  if(n <= 0)  return activeStock === 'out';
+  if(n <= LOW_STOCK_THRESHOLD) return activeStock === 'low';
+  return activeStock === 'in';
+}
+
+/* ═══ GROUP MODAL ═══ */
+let allGroups = [];
+function buildGroupChips(){
+  const countMap = {};
+  raw.forEach(it=>{ const g=it.group||''; countMap[g]=(countMap[g]||0)+1; });
+  allGroups = Object.keys(countMap).filter(Boolean).sort();
+}
+
+let allBrands = [];
+function buildBrandChips(){
+  const brandSet = new Set();
+  raw.forEach(it=>{
+    const first = (it.name||'').trim().split(/\s+/)[0];
+    if(/^[A-Z]{2,6}$/.test(first)) brandSet.add(first);
+  });
+  allBrands = [...brandSet].sort();
+}
+
+function openBrandModal(){
+  renderBrandList('');
+  document.getElementById('brand-modal-bg').classList.add('show');
+  setTimeout(()=>document.getElementById('brand-search').focus(), 200);
+}
+function closeBrandModal(){
+  document.getElementById('brand-modal-bg').classList.remove('show');
+  document.getElementById('brand-search').value='';
+}
+
+function renderBrandList(filter){
+  const f = filter.trim().toLowerCase();
+  const countMap = {};
+  raw.forEach(it=>{
+    const first = (it.name||'').trim().split(/\s+/)[0];
+    if(/^[A-Z]{2,6}$/.test(first)) countMap[first]=(countMap[first]||0)+1;
+  });
+  let brands = allBrands;
+  if(f) brands = brands.filter(b=>b.toLowerCase().includes(f));
+  let html = `<div class="brand-item${activeBrand===''?' selected':''}" onclick="selectBrand('')">
+    <span>All Brands</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span class="brand-count">${raw.length.toLocaleString()}</span>
+      <span class="brand-tick">✓</span>
+    </span>
+  </div>`;
+  if(!brands.length){
+    html += `<div style="text-align:center;padding:30px;font-size:13px;color:var(--muted)">No brands found</div>`;
+  } else {
+    brands.forEach(b=>{
+      const cnt = countMap[b]||0;
+      const sel = activeBrand===b;
+      html += `<div class="brand-item${sel?' selected':''}" onclick="selectBrand('${b}')">
+        <span>${b}</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="brand-count">${cnt.toLocaleString()}</span>
+          <span class="brand-tick">✓</span>
+        </span>
+      </div>`;
+    });
+  }
+  document.getElementById('brand-list').innerHTML = html;
+}
+
+function selectBrand(b){
+  activeBrand = b;
+  const btn = document.getElementById('brand-btn');
+  const label = document.getElementById('brand-btn-label');
+  if(b){
+    label.innerHTML = `<span class="brand-tag">${b}</span>`;
+    btn.classList.add('active');
+  } else {
+    label.textContent = 'All Brands';
+    btn.classList.remove('active');
+  }
+  closeBrandModal();
+  applyAll();
+}
+
+document.getElementById('brand-search').addEventListener('input', function(){
+  renderBrandList(this.value);
+});
+document.getElementById('brand-modal-bg').addEventListener('click', function(e){
+  if(e.target===this) closeBrandModal();
+});
+
+function openGrpModal(){
+  renderGrpList('');
+  document.getElementById("grp-modal-bg").classList.add("show");
+  setTimeout(()=>document.getElementById("grp-search").focus(), 200);
+}
+function closeGrpModal(){
+  document.getElementById("grp-modal-bg").classList.remove("show");
+  document.getElementById("grp-search").value='';
+}
+
+function renderGrpList(filter){
+  const f = filter.trim().toLowerCase();
+  const countMap = {};
+  raw.forEach(it=>{ const g=it.group||''; countMap[g]=(countMap[g]||0)+1; });
+  let groups = allGroups;
+  if(f) groups = groups.filter(g=>g.toLowerCase().includes(f));
+  let html = `<div class="grp-item${activeGroup===''?' selected':''}" onclick="selectGroup('')">
+    <span>All Groups</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span class="grp-count">${raw.length.toLocaleString()}</span>
+      <span class="grp-tick">✓</span>
+    </span>
+  </div>`;
+  if(!groups.length){
+    html += `<div style="text-align:center;padding:30px;font-size:13px;color:var(--muted)">No groups found</div>`;
+  } else {
+    groups.forEach(g=>{
+      const cnt = countMap[g]||0;
+      const sel = activeGroup===g;
+      html += `<div class="grp-item${sel?' selected':''}" onclick="selectGroup('${g.replace(/'/g,"\\'")}')">
+        <span>${g}</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="grp-count">${cnt.toLocaleString()}</span>
+          <span class="grp-tick">✓</span>
+        </span>
+      </div>`;
+    });
+  }
+  document.getElementById("grp-list").innerHTML = html;
+}
+
+function selectGroup(g){
+  activeGroup = g;
+  const btn = document.getElementById("grp-btn");
+  const label = document.getElementById("grp-btn-label");
+  if(g){
+    label.innerHTML = `<span class="grp-tag">${g}</span>`;
+    btn.classList.add("active");
+  } else {
+    label.textContent = "All Groups";
+    btn.classList.remove("active");
+  }
+  closeGrpModal();
+  applyAll();
+}
+
+document.getElementById("grp-search").addEventListener("input", function(){
+  renderGrpList(this.value);
+});
+document.getElementById("grp-modal-bg").addEventListener("click", function(e){
+  if(e.target===this) closeGrpModal();
+});
+
+/* ═══ SORT ═══ */
+document.getElementById("sort-row").addEventListener("click",function(e){
+  const c=e.target.closest(".chip[data-sort]");
+  if(!c) return;
+  document.querySelectorAll("#sort-row .chip").forEach(x=>x.classList.remove("on"));
+  c.classList.add("on");
+  activeSort=c.dataset.sort;
+  applyAll();
+});
+
+/* ═══ FILTER + SORT ═══ */
+function pn(v){ return v==null||v===''?0:parseFloat(String(v).replace(/[^0-9.]/g,''))||0; }
+
+function applyAll(){
+  const q = query.trim().toLowerCase();
+  const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='';
+  if(!hasFilter){ showWelcome(); return; }
+  expanded.clear();
+  expandedHeights = {};
+  let out = [];
+  for(let i=0;i<raw.length;i++){
+    const it = raw[i];
+    if(activeGroup && it.group!==activeGroup) continue;
+    if(pMin!==null && pn(it.sale)<pMin) continue;
+    if(pMax!==null && pn(it.sale)>pMax) continue;
+    if(!stockMatches(it)) continue;
+    if(activeBrand){
+      const first = (it.name||'').trim().split(/\s+/)[0];
+      if(first !== activeBrand) continue;
+    }
+    if(q){
+      const n=(it.name||'').toLowerCase();
+      const a=(it.alias||'').toLowerCase();
+      const b=(it.barcode||'').toLowerCase();
+      const g=(it.group||'').toLowerCase();
+      if(!n.includes(q)&&!a.includes(q)&&!b.includes(q)&&!g.includes(q)) continue;
+    }
+    out.push(i);
+  }
+  if(activeSort==='grp')  out.sort((a,b)=>((raw[a].group||'').localeCompare(raw[b].group||'')) || (raw[a].name||'').localeCompare(raw[b].name||''));
+  else if(activeSort==='na') out.sort((a,b)=>(raw[a].name||'').localeCompare(raw[b].name||''));
+  else if(activeSort==='sa') out.sort((a,b)=>pn(raw[a].sale)-pn(raw[b].sale));
+  else if(activeSort==='sd') out.sort((a,b)=>pn(raw[b].sale)-pn(raw[a].sale));
+
+  pool = out;
+  measureCardHeight();
+  rebuildOffsets();
+
+  const sortLabel = activeSort==='grp'?' · sorted by group':activeSort==='na'?' · A–Z':activeSort==='sa'?' · price ↑':activeSort==='sd'?' · price ↓':'';
+  const stockLabel = activeStock==='in'?' · in stock':activeStock==='low'?' · low stock':activeStock==='out'?' · out of stock':'';
+  const brandLabel = activeBrand ? ' · '+activeBrand : '';
+  document.getElementById("status").textContent =
+    (pool.length===raw.length
+      ? raw.length.toLocaleString()+" items"
+      : pool.length.toLocaleString()+" of "+raw.length.toLocaleString()+" items")
+    + sortLabel + stockLabel + brandLabel;
+
+  scrollEl.scrollTop = 0;
+  vsRender(true);
+}
+
+function rebuildOffsets(){
+  heights  = new Array(pool.length).fill(CARD_COLLAPSED_H);
+  offsets  = new Array(pool.length);
+  let top  = 18;
+  for(let i=0;i<pool.length;i++){
+    if(activeSort==='grp'){
+      const grp = raw[pool[i]].group||'';
+      const prevGrp = i>0?(raw[pool[i-1]].group||''):'__NONE__';
+      if(grp!==prevGrp) top += GRP_HDR_H;
+    }
+    offsets[i] = top;
+    const ri = pool[i];
+    const h = expanded.has(ri) ? (expandedHeights[ri] || CARD_COLLAPSED_H * 2) : CARD_COLLAPSED_H;
+    top += h + GAP;
+  }
+  totalH = top + 60;
+  spacer.style.height = totalH + 'px';
+}
+
+function vsRender(force){
+  if(!pool.length){
+    spacer.style.height='0px';
+    stage.innerHTML='<div style="text-align:center;padding:50px 20px;font-size:14px;color:var(--muted)">No items found</div>';
+    return;
+  }
+  const scrollTop = scrollEl.scrollTop;
+  const viewH     = scrollEl.clientHeight;
+  let first = bsearchFirst(scrollTop - BUFFER * CARD_COLLAPSED_H);
+  let last  = bsearchLast(scrollTop + viewH + BUFFER * CARD_COLLAPSED_H);
+  first = Math.max(0, first);
+  last  = Math.min(pool.length-1, last);
+  if(!force && first===vsStart && last===vsEnd) return;
+  vsStart = first; vsEnd = last;
+  const q = query.trim().toLowerCase();
+  let html = '';
+  for(let vi=first;vi<=last;vi++){
+    if(activeSort==='grp'){
+      const grp = raw[pool[vi]].group||'';
+      const prevGrp = vi>0?(raw[pool[vi-1]].group||''):'__NONE__';
+      if(grp!==prevGrp){
+        const hdrTop = offsets[vi] - GRP_HDR_H;
+        html += `<div class="grp-hdr" style="top:${hdrTop}px">${grp||'No Group'}</div>`;
+      }
+    }
+    html += cardHTML(raw[pool[vi]], pool[vi], offsets[vi], q);
+  }
+  stage.innerHTML = html;
+}
+
+function bsearchFirst(targetTop){
+  let lo=0, hi=offsets.length-1;
+  while(lo<hi){
+    const mid=(lo+hi)>>1;
+    if(offsets[mid]<targetTop) lo=mid+1; else hi=mid;
+  }
+  return lo;
+}
+function bsearchLast(targetBottom){
+  let lo=0, hi=offsets.length-1;
+  while(lo<hi){
+    const mid=(lo+hi+1)>>1;
+    if(offsets[mid]<=targetBottom) lo=mid; else hi=mid-1;
+  }
+  return lo;
+}
+
+/* ═══ CARD HTML ═══ */
+function fmt(v){
+  if(v==null||v==='') return '–';
+  const n=parseFloat(String(v).replace(/[^0-9.]/g,''));
+  return isNaN(n)?String(v):'₹'+n.toLocaleString('en-IN');
+}
+function hl(t,q){
+  if(!q||!t) return t||'';
+  const i=t.toLowerCase().indexOf(q);
+  if(i<0) return t;
+  return t.slice(0,i)+'<mark>'+t.slice(i,i+q.length)+'</mark>'+t.slice(i+q.length);
+}
+function marginStr(it){
+  const s=pn(it.sale),p=pn(it.purchase);
+  if(!s||!p) return '';
+  return ' <span style="font-size:10px;color:var(--green);font-weight:600">('+Math.round((s-p)/s*100)+'%)</span>';
+}
+
+function cardHTML(it, ri, topPx, q){
+  const exp = expanded.has(ri);
+  const purchBlock = isAdmin
+    ?`<div class="pb p"><div class="pl">Purchase</div><div class="pv">${fmt(it.purchase)}${marginStr(it)}</div></div>`:'';
+  const detHTML = exp?`
+    <div class="det">
+      ${it.barcode?`<div class="drow"><span>Barcode</span><span>${it.barcode}</span></div>`:''}
+      ${it.brand?`<div class="drow"><span>Brand</span><span>${it.brand}</span></div>`:''}
+      ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
+      <div class="act">
+        <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
+      </div>
+    </div>`:'';
+
+  return `<div class="c${exp?' exp':''}" style="top:${topPx}px" data-ri="${ri}" onclick="toggleCard(${ri})">
+    <div class="c-name">${hl(it.name||'',q)}</div>
+    ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
+    ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
+    <div class="prices">
+      <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
+      <div class="pb s shareable" onclick="openExp(${ri},'sale',event)" title="Tap to share Sale price image">
+        <span class="share-badge">📤</span>
+        <div class="pl">Sale Price</div>
+        <div class="pv">${fmt(it.sale)}</div>
+      </div>
+      <div class="pb w shareable" onclick="openExp(${ri},'wholesale',event)" title="Tap to share Wholesale price image">
+        <span class="share-badge">📤</span>
+        <div class="pl">Wholesale</div>
+        <div class="pv">${fmt(it.wholesale)}</div>
+      </div>
+      <div class="pb k"><div class="pl">Stock</div><div class="pv">${it.stock??'–'}</div></div>
+      ${purchBlock}
+    </div>
+    ${detHTML}
+  </div>`;
+}
+
+/* ═══ TOGGLE EXPAND ═══ */
+function toggleCard(ri){
+  const wasExpanded = expanded.has(ri);
+  if(wasExpanded){
+    expanded.delete(ri);
+    delete expandedHeights[ri];
+    rebuildOffsets();
+    spacer.style.height = totalH + 'px';
+    vsRender(true);
+  } else {
+    expanded.add(ri);
+    if(!expandedHeights[ri]) expandedHeights[ri] = CARD_COLLAPSED_H * 3;
+    rebuildOffsets();
+    spacer.style.height = totalH + 'px';
+    vsRender(true);
+    measureExpandedCard(ri);
+    rebuildOffsets();
+    spacer.style.height = totalH + 'px';
+    vsRender(true);
+  }
+  const vi = pool.indexOf(ri);
+  if(vi>=0){
+    const cardTop = offsets[vi];
+    const scrollTop = scrollEl.scrollTop;
+    if(cardTop < scrollTop) scrollEl.scrollTop = cardTop - 14;
+  }
+}
+
+let rafPending=false;
+function onScroll(){
+  if(rafPending) return;
+  rafPending=true;
+  requestAnimationFrame(()=>{ vsRender(false); rafPending=false; });
+}
+
+let searchTimer;
+document.getElementById("search").addEventListener("input",function(){
+  query=this.value;
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(applyAll,100);
+});
+
+function applyPF(){
+  const mn=document.getElementById("pmin").value;
+  const mx=document.getElementById("pmax").value;
+  pMin=mn!==''?parseFloat(mn):null;
+  pMax=mx!==''?parseFloat(mx):null;
+  applyAll();
+  toast(`₹${mn||'0'} – ₹${mx||'∞'}`);
+}
+function clearPF(){
+  document.getElementById("pmin").value='';
+  document.getElementById("pmax").value='';
+  pMin=null; pMax=null; applyAll(); toast("Price filter cleared");
+}
+['pmin','pmax'].forEach(id=>{
+  document.getElementById(id).addEventListener("keydown",e=>{ if(e.key==='Enter') applyPF(); });
+});
+
+/* ═══════════════════════════════════════════
+   OLD IMAGE VIEWER (kept intact, unused now)
+═══════════════════════════════════════════ */
+function openImgViewer(ri, e){
+  if (e) e.stopPropagation();
+  const it = raw[ri];
+  if (!it) { alert('Product not found.'); return; }
+  const alias = encodeURIComponent((it.alias || it.barcode || it.name || '').trim());
+  if (!alias) { alert('No product alias found.'); return; }
+  const url = 'https://srfashoinned.github.io/image-storage-psd/?alias=' + alias;
+  window.open(url, '_blank');
+}
+
+function closeImgViewer(){
+  document.getElementById('img-ov').classList.remove('show');
+  const el = document.getElementById('img-el');
+  el.src = '';
+  el.style.display = 'none';
+  imgItem = null; imgUrls = []; imgCurIdx = 0; imgTryIdx = 0;
+}
+function loadImgAt(idx){
+  if(idx >= imgUrls.length){
+    showImgPlaceholder('No image found for this product.');
+    return;
+  }
+  imgCurIdx = idx;
+  const el = document.getElementById('img-el');
+  const ph = document.getElementById('img-placeholder');
+  ph.style.display = 'none';
+  el.style.display = 'none';
+  el.src = imgUrls[idx];
+}
+function imgLoaded(){
+  const el = document.getElementById('img-el');
+  const ph = document.getElementById('img-placeholder');
+  el.style.display = 'block';
+  ph.style.display = 'none';
+  updateImgNav();
+}
+function imgLoadError(){
+  imgTryIdx++;
+  if(imgTryIdx < imgUrls.length && !imgItem.images){ loadImgAt(imgTryIdx); }
+  else { showImgPlaceholder('No image found.'); }
+}
+function showImgPlaceholder(msg){
+  const el = document.getElementById('img-el');
+  const ph = document.getElementById('img-placeholder');
+  el.style.display = 'none';
+  ph.style.display = 'flex';
+  document.getElementById('img-msg').textContent = msg;
+  document.getElementById('img-nav').style.display = 'none';
+}
+function updateImgNav(){
+  const nav = document.getElementById('img-nav');
+  const counter = document.getElementById('img-counter');
+  if(imgItem && imgItem.images && imgItem.images.length > 1){
+    nav.style.display = 'flex';
+    counter.textContent = (imgCurIdx+1) + ' / ' + imgItem.images.length;
+  } else {
+    nav.style.display = 'none';
+  }
+}
+function imgPrev(){
+  if(!imgItem || !imgItem.images) return;
+  const newIdx = (imgCurIdx - 1 + imgItem.images.length) % imgItem.images.length;
+  imgTryIdx = newIdx; loadImgAt(newIdx);
+}
+function imgNext(){
+  if(!imgItem || !imgItem.images) return;
+  const newIdx = (imgCurIdx + 1) % imgItem.images.length;
+  imgTryIdx = newIdx; loadImgAt(newIdx);
+}
+document.getElementById('img-ov').addEventListener('click', function(e){
+  if(e.target === this) closeImgViewer();
+});
+
+/* ═══════════════════════════════════════════
+   EXPORT IMAGE
+═══════════════════════════════════════════ */
+function openExp(ri, priceType, e){
+  e && e.stopPropagation();
+  expItem  = raw[ri];
+  expPrice = priceType;
+  const hint = document.getElementById('exp-price-hint');
+  hint.textContent = priceType === 'sale' ? '💚 Sharing Sale Price' : '💙 Sharing Wholesale Price';
+  hint.style.color = priceType === 'sale' ? '#22c55e' : '#60a5fa';
+  document.getElementById('exp-ov').classList.add('show');
+  drawExpCard(document.getElementById('exp-canvas'));
+  /* Pre-load product images for this item in background */
+  expLoadImages(expItem);
+}
+
+function closeExp(){
+  document.getElementById('exp-ov').classList.remove('show');
+  expItem = null;
+  expLoadedImages = [];
+}
+
+let expLoadedImages = []; /* [{name, url, sha}] pre-fetched for current expItem */
+async function expLoadImages(it){
+  expLoadedImages = [];
+  const alias = (it.alias || it.barcode || it.name || '').trim();
+  if(!alias) return;
+  /* If pimCurrentItem matches, reuse already-loaded images */
+  if(pimCurrentItem && (pimCurrentItem.alias||pimCurrentItem.name||'').trim() === alias && pimImages.length){
+    expLoadedImages = pimImages;
+    return;
+  }
+  /* Otherwise fetch from GitHub */
+  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/products/${encodeURIComponent(alias)}?ref=${GH_BRANCH}&t=${Date.now()}`;
+  try{
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if(pimToken) headers['Authorization'] = 'Bearer ' + pimToken;
+    const r = await fetch(apiUrl, { headers });
+    if(!r.ok) return;
+    const files = await r.json();
+    expLoadedImages = files
+      .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
+      .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}))
+      .map(f=>({name:f.name, url:f.download_url, sha:f.sha}));
+  }catch(_){}
+}
+
+async function doExpWA(){
+  if(!expItem) return;
+  const it = expItem;
+  const priceLabel = expPrice === 'sale' ? 'Sale' : 'Wholesale';
+  const priceVal   = fmt(it[expPrice]);
+  const mrpVal = pn(it.mrp), saleVal = pn(it[expPrice]);
+  const disc = mrpVal > saleVal ? mrpVal - saleVal : 0;
+  const discPct = mrpVal > 0 && disc > 0 ? (disc/mrpVal*100).toFixed(2) : 0;
+  const emoji = disc > 0 ? discountEmoji(parseFloat(discPct)) : '';
+  const discLine = disc > 0 ? `\nDiscount: ₹${disc.toLocaleString('en-IN')}  (${discPct}%)  ${emoji}` : '';
+  const text = `${it.alias || '–'}${it.group ? '\n' + it.group : ''}\n\n💰 *${priceLabel}: ${priceVal}*${discLine}`;
+
+  /* Ask if user wants to include product images */
+  const hasImages = expLoadedImages && expLoadedImages.length > 0;
+  let includeImages = false;
+  if(hasImages){
+    includeImages = confirm(`Include ${expLoadedImages.length} product image${expLoadedImages.length>1?'s':''} along with the price card?`);
+  }
+
+  if(navigator.share && navigator.canShare){
+    try{
+      const priceCardBlob = await getExpBlob();
+      const files = [new File([priceCardBlob], (it.alias||'product')+'_price.png', {type:'image/png'})];
+      if(includeImages){
+        for(const pi of expLoadedImages){
+          try{
+            const r = await fetch(pi.url);
+            const b = await r.blob();
+            files.push(new File([b], pi.name, {type: b.type||'image/jpeg'}));
+          }catch(_){}
+        }
+      }
+      if(navigator.canShare({files})){
+        await navigator.share({ files, title: it.name, text });
+        closeExp(); return;
+      }
+      if(navigator.canShare({files:[files[0]]})){
+        await navigator.share({ files:[files[0]], title: it.name, text });
+        closeExp(); return;
+      }
+    }catch(err){
+      if(err.name==='AbortError'){ closeExp(); return; }
+    }
+  }
+  const waUrl = 'https://wa.me/?text=' + encodeURIComponent(text);
+  window.open(waUrl, '_blank');
+  toast("📲 Opened WhatsApp");
+  closeExp();
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+function discountEmoji(pct){
+  if(pct >= 40) return '🤩';
+  if(pct >= 30) return '🔥';
+  if(pct >= 20) return '😍';
+  if(pct >= 10) return '😊';
+  return '🎉';
+}
+
+function drawExpCard(canvas){
+  if(!expItem) return;
+  const it  = expItem;
+  const W   = 540;
+  const PAD = 32;
+  const INNER = W - PAD * 2;
+  const FONT  = '-apple-system, BlinkMacSystemFont, Arial, sans-serif';
+  const fmtNum = v => {
+    if(v==null||v==='') return '–';
+    const n = parseFloat(String(v).replace(/[^0-9.]/g,''));
+    return isNaN(n) ? String(v) : '₹' + n.toLocaleString('en-IN');
+  };
+  canvas.width  = W;
+  canvas.height = 900;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0d0d10';
+  ctx.fillRect(0, 0, W, canvas.height);
+  ctx.fillStyle = '#f5c542';
+  ctx.fillRect(0, 0, 6, canvas.height);
+  let y = 32;
+  ctx.textBaseline = 'top';
+  if(it.alias){
+    ctx.font = `bold 28px ${FONT}`;
+    ctx.fillStyle = '#f5c542';
+    ctx.fillText(it.alias, PAD, y);
+    y += 38;
+  }
+  if(it.group){
+    ctx.font = `500 14px ${FONT}`;
+    ctx.fillStyle = '#71717a';
+    ctx.fillText(it.group, PAD, y);
+    y += 24;
+  }
+  y += 10;
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+  y += 20;
+  const mrpVal  = pn(it.mrp);
+  const priceVal = pn(it[expPrice]);
+  const discount = mrpVal > 0 && priceVal > 0 ? mrpVal - priceVal : 0;
+  const discPct  = mrpVal > 0 && discount > 0 ? (discount / mrpVal * 100) : 0;
+  ctx.font = `bold 11px ${FONT}`;
+  ctx.fillStyle = '#52525b';
+  ctx.fillText('MRP', PAD, y);
+  y += 18;
+  const mrpStr = fmtNum(it.mrp);
+  ctx.font = `500 20px ${FONT}`;
+  ctx.fillStyle = '#52525b';
+  ctx.fillText(mrpStr, PAD, y);
+  if(discount > 0){
+    const sw = ctx.measureText(mrpStr).width;
+    ctx.beginPath();
+    ctx.strokeStyle = '#52525b';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(PAD, y + 10);
+    ctx.lineTo(PAD + sw, y + 10);
+    ctx.stroke();
+  }
+  y += 32;
+  const priceLabel = expPrice === 'sale' ? 'SALE PRICE' : 'WHOLESALE PRICE';
+  const priceStr   = fmtNum(it[expPrice]);
+  const priceColor = expPrice === 'sale' ? '#22c55e' : '#60a5fa';
+  const priceBg    = expPrice === 'sale' ? 'rgba(34,197,94,0.10)' : 'rgba(96,165,250,0.10)';
+  const priceBord  = expPrice === 'sale' ? 'rgba(34,197,94,0.45)' : 'rgba(96,165,250,0.45)';
+  let priceFontSize = 56;
+  ctx.font = `bold ${priceFontSize}px ${FONT}`;
+  while(priceFontSize > 22 && ctx.measureText(priceStr).width > INNER - 48){
+    priceFontSize -= 2;
+    ctx.font = `bold ${priceFontSize}px ${FONT}`;
+  }
+  const boxH = 22 + priceFontSize + 22;
+  roundRect(ctx, PAD, y, INNER, boxH, 16);
+  ctx.fillStyle = priceBg; ctx.fill();
+  ctx.strokeStyle = priceBord; ctx.lineWidth = 1.5;
+  roundRect(ctx, PAD, y, INNER, boxH, 16); ctx.stroke();
+  ctx.font = `bold 11px ${FONT}`;
+  ctx.fillStyle = priceColor;
+  ctx.textBaseline = 'top';
+  ctx.fillText(priceLabel, PAD + 20, y + 14);
+  ctx.font = `bold ${priceFontSize}px ${FONT}`;
+  ctx.fillStyle = priceColor;
+  ctx.fillText(priceStr, PAD + 20, y + 22);
+  y += boxH + 18;
+  if(discount > 0){
+    const emoji = discountEmoji(discPct);
+    const discStr = `You save  ${fmtNum(discount)}  (${discPct.toFixed(2)}%)  ${emoji}`;
+    ctx.font = `bold 15px ${FONT}`;
+    const dW = ctx.measureText(discStr).width;
+    const dPillW = Math.min(dW + 32, INNER);
+    const dPillH = 32;
+    roundRect(ctx, PAD, y, dPillW, dPillH, 8);
+    ctx.fillStyle = 'rgba(34,197,94,0.08)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(34,197,94,0.25)'; ctx.lineWidth = 1;
+    roundRect(ctx, PAD, y, dPillW, dPillH, 8); ctx.stroke();
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText(discStr, PAD + 16, y + 8);
+    y += dPillH + 18;
+  }
+  y += 8;
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+  y += 20;
+  ctx.font = `bold 22px ${FONT}`;
+  ctx.fillStyle = '#f5c542';
+  ctx.textBaseline = 'top';
+  ctx.fillText(SHOP_NAME, PAD, y);
+  y += 30;
+  ctx.font = `14px ${FONT}`;
+  ctx.fillStyle = '#71717a';
+  ctx.fillText(SHOP_ADDRESS, PAD, y);
+  y += 22;
+  ctx.font = `14px ${FONT}`;
+  ctx.fillStyle = '#52525b';
+  ctx.fillText('\u{1F4DE} ' + SHOP_PHONE, PAD, y);
+  y += 24;
+  const finalH = y + 20;
+  const imgData = ctx.getImageData(0, 0, W, Math.min(finalH, canvas.height));
+  canvas.height = finalH;
+  canvas.width  = W;
+  ctx.fillStyle = '#0d0d10';
+  ctx.fillRect(0, 0, W, finalH);
+  ctx.fillStyle = '#f5c542';
+  ctx.fillRect(0, 0, 6, finalH);
+  ctx.putImageData(imgData, 0, 0);
+}
+
+async function getExpBlob(){
+  const offscreen = document.getElementById('gen-canvas');
+  drawExpCard(offscreen);
+  await new Promise(r => setTimeout(r, 80));
+  return new Promise(res => offscreen.toBlob(res, 'image/png', 0.95));
+}
+
+
+/* ═══ SCANNER ═══ */
+let scanStream=null, scanLoop=null, codeReader=null, zxingReady=false;
+
+async function openScanner(){
+  document.getElementById("scan-ov").classList.add("show");
+  document.getElementById("scan-btn").classList.add("on");
+  document.getElementById("scan-code").textContent='';
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});
+    scanStream=stream;
+    const vid=document.getElementById("scan-vid");
+    vid.srcObject=stream; await vid.play();
+    if('BarcodeDetector' in window){
+      const bd=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','data_matrix','pdf417']});
+      const canvas=document.createElement('canvas');
+      const ctx=canvas.getContext('2d');
+      scanLoop=setInterval(async()=>{
+        if(!vid.readyState||vid.readyState<2) return;
+        canvas.width=vid.videoWidth; canvas.height=vid.videoHeight;
+        ctx.drawImage(vid,0,0);
+        try{ const c=await bd.detect(canvas); if(c.length) onScanResult(c[0].rawValue); }catch(_){}
+      },300);
+    } else {
+      if(!zxingReady){
+        document.getElementById("scan-code").textContent='Loading scanner…';
+        await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+        zxingReady=true;
+        document.getElementById("scan-code").textContent='';
+      }
+      stream.getTracks().forEach(t=>t.stop()); scanStream=null;
+      codeReader=new ZXing.BrowserMultiFormatReader();
+      const devices=await codeReader.listVideoInputDevices();
+      const devId=devices.length>1?devices[devices.length-1].deviceId:devices[0]?.deviceId;
+      await codeReader.decodeFromVideoDevice(devId,'scan-vid',r=>{ if(r) onScanResult(r.getText()); });
+    }
+  }catch(e){ toast("Camera: "+e.message); closeScanner(); }
+}
+
+function onScanResult(code){
+  document.getElementById("scan-code").textContent='✓ '+code;
+  setTimeout(()=>{
+    closeScanner();
+    document.getElementById("search").value=code;
+    query=code; applyAll(); toast("📷 "+code);
+  },400);
+}
+function closeScanner(){
+  document.getElementById("scan-ov").classList.remove("show");
+  document.getElementById("scan-btn").classList.remove("on");
+  if(scanLoop){ clearInterval(scanLoop); scanLoop=null; }
+  if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
+  if(codeReader){ try{codeReader.reset();}catch(_){} codeReader=null; }
+  const v=document.getElementById("scan-vid");
+  if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
+}
+
+/* ═══ COPY / SHARE ═══ */
+function copyItem(ri,e){
+  e&&e.stopPropagation();
+  const it=raw[ri];
+  const t=[`📦 ${it.name} (${it.alias})`,`MRP: ${fmt(it.mrp)}`,`Sale: ${fmt(it.sale)}`,`Wholesale: ${fmt(it.wholesale)}`,`Stock: ${it.stock??'–'}`,isAdmin&&it.purchase?`Purchase: ${fmt(it.purchase)}`:''  ].filter(Boolean).join('\n');
+  navigator.clipboard.writeText(t).then(()=>toast("📋 Copied"));
+}
+function shareItem(ri,e){
+  e&&e.stopPropagation();
+  const it=raw[ri];
+  const t=`${it.name} (${it.alias})\nMRP: ${fmt(it.mrp)} | Sale: ${fmt(it.sale)} | Wholesale: ${fmt(it.wholesale)}`;
+  if(navigator.share) navigator.share({title:it.name,text:t}).catch(()=>{});
+  else navigator.clipboard.writeText(t).then(()=>toast("📤 Copied"));
+}
+
+/* ═══════════════════════════════════════════
+   ADMIN — BIOMETRIC + PIN
+═══════════════════════════════════════════ */
+const BIO_KEY = 'sr_adm_bio_cred';
+
+async function initBiometric(){
+  if(!window.PublicKeyCredential) return;
+  try{
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(available){
+      document.getElementById('adm-bio-btn').classList.remove('hidden');
+      document.getElementById('adm-divider').classList.remove('hidden');
+    }
+  }catch(_){}
+}
+
+function openAdm(){
+  if(isAdmin){ logout(); return; }
+  document.getElementById("adm-ov").classList.add("show");
+  setTimeout(()=>document.getElementById("adm-pw").focus(), 150);
+}
+function closeAdm(){
+  document.getElementById("adm-ov").classList.remove("show");
+  resetPw();
+}
+function resetPw(){
+  const p=document.getElementById("adm-pw");
+  p.value=''; p.className='';
+  document.getElementById("adm-msg").textContent='';
+  document.getElementById("adm-msg").className='';
+  [0,1,2,3].forEach(i=>dot(i,''));
+}
+function onPwInput(el){
+  const v=el.value;
+  [0,1,2,3].forEach(i=>dot(i,i<v.length?'f':''));
+  if(v.length===4) setTimeout(doLogin,100);
+}
+function dot(i,c){
+  const d=document.getElementById("d"+i);
+  d.className='dot';
+  if(c) d.classList.add(c);
+}
+function doLogin(){
+  const pw=document.getElementById("adm-pw");
+  if(pw.value===PASS){
+    [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
+    const m=document.getElementById("adm-msg"); m.textContent='✓ Granted'; m.className='g';
+    isAdmin=true;
+    setTimeout(()=>{ closeAdm(); document.getElementById("admin-btn").textContent='🔓 Logout'; document.getElementById("admin-btn").classList.add("on"); vsRender(true); toast("🔓 Admin on"); },550);
+  }else{
+    pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
+    const m=document.getElementById("adm-msg"); m.textContent='✗ Wrong PIN'; m.className='e';
+    setTimeout(()=>{ pw.value=''; pw.className=''; m.textContent=''; [0,1,2,3].forEach(i=>dot(i,'')); },900);
+  }
+}
+function logout(){
+  isAdmin=false;
+  document.getElementById("admin-btn").textContent='⚡ Admin';
+  document.getElementById("admin-btn").classList.remove("on");
+  vsRender(true);
+  toast("🔒 Logged out");
+}
+
+async function doBiometric(){
+  const msg = document.getElementById('adm-msg');
+  msg.textContent = ''; msg.className = '';
+  try{
+    const savedCred = localStorage.getItem(BIO_KEY);
+    if(!savedCred){
+      msg.textContent = 'Setting up biometric…'; msg.className = '';
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId    = crypto.getRandomValues(new Uint8Array(16));
+      const credential = await navigator.credentials.create({
+        publicKey:{
+          challenge,
+          rp:{ name: SHOP_NAME, id: location.hostname || 'localhost' },
+          user:{ id: userId, name:'admin', displayName:'Admin' },
+          pubKeyCredParams:[
+            { type:'public-key', alg:-7  },
+            { type:'public-key', alg:-257}
+          ],
+          authenticatorSelection:{
+            authenticatorAttachment:'platform',
+            userVerification:'required'
+          },
+          timeout:60000
+        }
+      });
+      const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+      localStorage.setItem(BIO_KEY, credId);
+      grantAdmin('👆 Biometric registered & unlocked');
+      return;
+    }
+    msg.textContent = 'Waiting for fingerprint…'; msg.className = '';
+    const challenge  = crypto.getRandomValues(new Uint8Array(32));
+    const rawId      = Uint8Array.from(atob(savedCred), c=>c.charCodeAt(0));
+    await navigator.credentials.get({
+      publicKey:{
+        challenge,
+        allowCredentials:[{ type:'public-key', id: rawId }],
+        userVerification:'required',
+        timeout:60000
+      }
+    });
+    grantAdmin('👆 Fingerprint verified');
+  }catch(err){
+    if(err.name === 'NotAllowedError'){
+      msg.textContent = 'Biometric cancelled'; msg.className = 'e';
+    } else if(err.name === 'InvalidStateError'){
+      localStorage.removeItem(BIO_KEY);
+      msg.textContent = 'Credential reset — tap again to re-register'; msg.className = 'e';
+    } else {
+      msg.textContent = 'Biometric error — use PIN'; msg.className = 'e';
+    }
+  }
+}
+
+function grantAdmin(toastMsg){
+  isAdmin = true;
+  const m = document.getElementById('adm-msg');
+  m.textContent = '✓ Granted'; m.className = 'g';
+  [0,1,2,3].forEach(i=>dot(i,'g'));
+  setTimeout(()=>{
+    closeAdm();
+    document.getElementById("admin-btn").textContent = '🔓 Logout';
+    document.getElementById("admin-btn").classList.add("on");
+    vsRender(true);
+    toast(toastMsg || "🔓 Admin on");
+  }, 500);
+}
+
+/* ═══ TOAST ═══ */
+let toastTm;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTm); toastTm=setTimeout(()=>t.classList.remove("show"),2500); }
+
+/* ═══ KEYBOARD ═══ */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ closeAdm(); closeScanner(); closeGrpModal(); closeBrandModal(); closeExp(); closeImgViewer(); closePim(); closePimFs(); }
+  if((e.ctrlKey||e.metaKey)&&e.key==="f"){ e.preventDefault(); document.getElementById("search").focus(); }
+});
+document.getElementById("adm-ov").addEventListener("click",e=>{ if(e.target.id==="adm-ov")closeAdm(); });
+document.getElementById("exp-ov").addEventListener("click",e=>{ if(e.target.id==="exp-ov")closeExp(); });
+
+/* ═══════════════════════════════════════════════════════
+   NEW: PRODUCT IMAGE MANAGER  (GitHub-backed)
+   Stores images at:  products/<ALIAS>/<N>.jpg  in GH_REPO
+═══════════════════════════════════════════════════════ */
+
+/* ─── Token management (sessionStorage only) ─── */
+let pimToken = '';
+let pimCurrentItem = null;
+let pimImages = [];    /* [{name, url, sha}] loaded from GitHub */
+let pimFsIdx  = 0;
+
+function pimInitToken(){
+  const t = sessionStorage.getItem('sr_gh_token') || '';
+  if(t){ pimToken = t; pimShowTokenStatus(true); }
+}
+function pimSaveToken(){
+  const t = document.getElementById('pim-token-input').value.trim();
+  if(!t){ toast('⚠️ Token is empty'); return; }
+  pimToken = t;
+  sessionStorage.setItem('sr_gh_token', t);
+  document.getElementById('pim-token-input').value = '';
+  document.getElementById('pim-token-clear').style.display = '';
+  pimShowTokenStatus(true);
+  toast('🔑 Token saved for this session');
+  if(pimCurrentItem) pimLoad();
+}
+function pimClearToken(){
+  pimToken = '';
+  sessionStorage.removeItem('sr_gh_token');
+  document.getElementById('pim-token-clear').style.display = 'none';
+  pimShowTokenStatus(false);
+  toast('🗑️ Token cleared');
+  if(pimCurrentItem) pimRenderGrid();
+}
+function pimShowTokenStatus(ok){
+  const s = document.getElementById('pim-token-status');
+  s.textContent = ok ? '✓ Token set' : 'No token';
+  s.className = ok ? 'ok' : 'no';
+  document.getElementById('pim-token-clear').style.display = ok ? '' : 'none';
+}
+
+/* ─── Open modal ─── */
+function openPim(ri, e){
+  if(e) e.stopPropagation();
+  const it = raw[ri];
+  if(!it){ toast('Product not found'); return; }
+  pimCurrentItem = it;
+  pimImages = [];
+
+  document.getElementById('pim-title').textContent = it.name || 'Product Images';
+  document.getElementById('pim-alias').textContent  = it.alias ? '📦 ' + it.alias : '';
+  document.getElementById('pim-count-badge').textContent = '0 / ' + MAX_IMAGES;
+  pimShowArea('loading');
+  document.getElementById('pim-progress').classList.remove('show');
+  document.getElementById('pim-footer-hint').textContent = '';
+
+  /* Token bar: show if no token, hide otherwise */
+  const bar = document.getElementById('pim-token-bar');
+  bar.classList.toggle('hidden', !!pimToken);
+
+  document.getElementById('pim-ov').classList.add('show');
+  pimLoad();
+}
+
+function closePim(){
+  document.getElementById('pim-ov').classList.remove('show');
+  pimCurrentItem = null;
+  pimImages = [];
+}
+
+document.getElementById('pim-ov').addEventListener('click', function(e){
+  if(e.target === this) closePim();
+});
+
+/* ─── Load images from GitHub ─── */
+async function pimLoad(){
+  if(!pimCurrentItem) return;
+  const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
+  if(!alias){ pimShowArea('empty'); return; }
+
+  pimShowArea('loading');
+  const path = `products/${encodeURIComponent(alias)}`;
+  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}&t=${Date.now()}`;
+
+  try{
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if(pimToken) headers['Authorization'] = 'Bearer ' + pimToken;
+    const r = await fetch(apiUrl, { headers });
+    if(r.status === 404){
+      pimImages = [];
+      pimShowArea('empty');
+      pimRenderGrid();
+      return;
+    }
+    if(!r.ok) throw new Error('GitHub API error: ' + r.status);
+    const files = await r.json();
+    pimImages = files
+      .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
+      .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}))
+      .map(f => ({
+        name: f.name,
+        url:  f.download_url,
+        sha:  f.sha
+      }));
+    pimRenderGrid();
+  }catch(err){
+    pimImages = [];
+    pimRenderGrid();
+    toast('⚠️ ' + err.message);
+  }
+}
+
+/* ─── Render grid ─── */
+function pimShowArea(which){
+  document.getElementById('pim-loading').style.display = which==='loading'?'flex':'none';
+  document.getElementById('pim-grid').style.display    = which==='grid'   ?'grid':'none';
+  document.getElementById('pim-empty').style.display   = which==='empty'  ?'flex':'none';
+}
+
+function pimRenderGrid(){
+  const count = pimImages.length;
+  document.getElementById('pim-count-badge').textContent = count + ' / ' + MAX_IMAGES;
+
+  const hasToken  = !!pimToken;
+  const canUpload = hasToken && count < MAX_IMAGES;
+  const canDelete = hasToken && isAdmin;
+
+  /* footer hint */
+  const hint = document.getElementById('pim-footer-hint');
+  if(!hasToken){
+    hint.textContent = '🔑 Paste a GitHub token above to upload or delete images.';
+    hint.style.color = 'var(--muted)';
+  } else if(!isAdmin && count > 0){
+    hint.textContent = '👀 View only. Only admins can delete images.';
+    hint.style.color = 'var(--muted)';
+  } else {
+    hint.textContent = '';
+  }
+
+  /* token bar visibility */
+  document.getElementById('pim-token-bar').classList.toggle('hidden', !!pimToken);
+
+  if(count === 0 && !hasToken){
+    pimShowArea('empty');
+    return;
+  }
+
+  pimShowArea('grid');
+  const grid = document.getElementById('pim-grid');
+  let html = '';
+
+  pimImages.forEach((img, idx) => {
+    const delBtn = canDelete
+      ? `<button class="pim-del show" onclick="pimConfirmDelete(${idx},event)" title="Delete image">✕</button>`
+      : '';
+    html += `<div class="pim-cell" onclick="pimOpenFs(${idx})">
+      <img src="${img.url}" alt="${img.name}" loading="lazy">
+      <div class="pim-num">${idx+1}</div>
+      ${delBtn}
+    </div>`;
+  });
+
+  /* Upload from gallery */
+  if(canUpload){
+    html += `<div class="pim-add-cell" onclick="document.getElementById('pim-file-input').click()" title="Upload from gallery">
+      <div class="pim-add-icon">📁</div>
+      <div class="pim-add-txt">Gallery</div>
+    </div>`;
+    /* Camera capture */
+    html += `<div class="pim-cam-cell" onclick="document.getElementById('pim-cam-input').click()" title="Take a photo">
+      <div class="pim-add-icon">📷</div>
+      <div class="pim-add-txt">Camera</div>
+    </div>`;
+  } else if(count >= MAX_IMAGES){
+    html += `<div class="pim-add-cell locked" title="Max 10 images reached">
+      <div class="pim-add-icon">🚫</div>
+      <div class="pim-add-txt">Max reached</div>
+    </div>`;
+  } else if(!hasToken){
+    html += `<div class="pim-add-cell locked" title="Add a token to upload">
+      <div class="pim-add-icon">🔒</div>
+      <div class="pim-add-txt">Token needed</div>
+    </div>`;
+    html += `<div class="pim-cam-cell locked" title="Add a token to upload">
+      <div class="pim-add-icon">🔒</div>
+      <div class="pim-add-txt">Token needed</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  if(count === 0){
+    /* show grid area but with empty message inside */
+    const emptyDiv = document.createElement('div');
+    emptyDiv.style.cssText = 'grid-column:1/-1;text-align:center;padding:20px;font-size:13px;color:var(--muted)';
+    emptyDiv.textContent = 'No images yet. Upload the first one!';
+    grid.prepend(emptyDiv);
+  }
+}
+
+/* ─── Compress image ─── */
+function pimCompress(file){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        const ratio = Math.min(MAX/w, MAX/h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Compression failed')), 'image/jpeg', 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+    img.src = url;
+  });
+}
+
+/* ─── Handle file input ─── */
+async function pimHandleFiles(files){
+  if(!files || !files.length) return;
+  if(!pimCurrentItem){ toast('No product selected'); return; }
+  if(!pimToken){ toast('🔑 Paste a GitHub token first'); return; }
+
+  const available = MAX_IMAGES - pimImages.length;
+  if(available <= 0){ toast('🚫 Max 10 images per product'); return; }
+
+  const toUpload = Array.from(files).slice(0, available);
+  const prog = document.getElementById('pim-progress');
+  const bar  = document.getElementById('pim-prog-bar');
+  const txt  = document.getElementById('pim-prog-txt');
+  prog.classList.add('show');
+
+  let uploaded = 0;
+  for(let i = 0; i < toUpload.length; i++){
+    const file = toUpload[i];
+    txt.textContent = `Uploading ${i+1} / ${toUpload.length}…`;
+    bar.style.width = Math.round((i / toUpload.length) * 100) + '%';
+    try{
+      await pimUploadOne(file);
+      uploaded++;
+    }catch(err){
+      toast('❌ Upload failed: ' + err.message);
+    }
+  }
+
+  bar.style.width = '100%';
+  txt.textContent = `Done! ${uploaded} image${uploaded!==1?'s':''} uploaded.`;
+  setTimeout(()=>{ prog.classList.remove('show'); bar.style.width='0%'; }, 1800);
+
+  /* reset file inputs */
+  document.getElementById('pim-file-input').value = '';
+  document.getElementById('pim-cam-input').value  = '';
+
+  if(uploaded > 0) await pimLoad();
+}
+
+/* ─── Upload one file to GitHub ─── */
+async function pimUploadOne(file){
+  const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
+  const compressed = await pimCompress(file);
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Read error'));
+    r.readAsDataURL(compressed);
+  });
+
+  /* Pick next available number */
+  const usedNums = new Set(pimImages.map(img => parseInt(img.name)));
+  let num = 1;
+  while(usedNums.has(num)) num++;
+  const filename = num + '.jpg';
+  const ghPath   = `products/${alias}/${filename}`;
+  const apiUrl   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${ghPath}`;
+
+  const body = {
+    message: `Add image ${filename} for ${alias}`,
+    content: base64,
+    branch:  GH_BRANCH
+  };
+
+  const r = await fetch(apiUrl, {
+    method:  'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + pimToken,
+      'Content-Type':  'application/json',
+      'Accept':        'application/vnd.github+json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if(!r.ok){
+    const err = await r.json().catch(()=>({}));
+    throw new Error(err.message || 'GitHub upload error ' + r.status);
+  }
+  toast('✅ Uploaded ' + filename);
+}
+
+/* ─── Delete image ─── */
+function pimConfirmDelete(idx, e){
+  if(e) e.stopPropagation();
+  if(!isAdmin){ toast('🔒 Admin only'); return; }
+  if(!pimToken){ toast('🔑 Token required'); return; }
+  const img = pimImages[idx];
+  if(!img) return;
+  if(!confirm(`Delete image "${img.name}"?\nThis cannot be undone.`)) return;
+  pimDeleteOne(img, idx);
+}
+
+async function pimDeleteOne(img, idx){
+  const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
+  const ghPath = `products/${alias}/${img.name}`;
+  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${ghPath}`;
+
+  try{
+    const r = await fetch(apiUrl, {
+      method:  'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + pimToken,
+        'Content-Type':  'application/json',
+        'Accept':        'application/vnd.github+json'
+      },
+      body: JSON.stringify({
+        message: `Delete image ${img.name} for ${alias}`,
+        sha:     img.sha,
+        branch:  GH_BRANCH
+      })
+    });
+    if(!r.ok){
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.message || 'Delete error ' + r.status);
+    }
+    toast('🗑️ Deleted ' + img.name);
+    await pimLoad();
+  }catch(err){
+    toast('❌ ' + err.message);
+  }
+}
+
+/* ─── Fullscreen viewer ─── */
+function pimOpenFs(idx){
+  if(!pimImages.length) return;
+  pimFsIdx = idx;
+  pimFsShow();
+  document.getElementById('pim-fs-ov').classList.add('show');
+}
+function closePimFs(){
+  document.getElementById('pim-fs-ov').classList.remove('show');
+}
+function pimFsShow(){
+  const img = pimImages[pimFsIdx];
+  if(!img) return;
+  document.getElementById('pim-fs-img').src = img.url;
+  document.getElementById('pim-fs-counter').textContent = (pimFsIdx+1) + ' / ' + pimImages.length;
+  const single = pimImages.length <= 1;
+  document.getElementById('pim-fs-prev').style.display = single ? 'none' : '';
+  document.getElementById('pim-fs-next').style.display = single ? 'none' : '';
+  if(window._pimFsZoomReset) window._pimFsZoomReset();
+  /* show hint briefly */
+  const hint = document.getElementById('pim-fs-zoom-hint');
+  if(hint){ hint.style.opacity='1'; clearTimeout(hint._tm); hint._tm=setTimeout(()=>hint.style.opacity='0',2000); }
+}
+
+function pimFsNav(dir){
+  pimFsIdx = (pimFsIdx + dir + pimImages.length) % pimImages.length;
+  pimFsShow();
+}
+async function pimFsShareWA(){
+  const img = pimImages[pimFsIdx];
+  if(!img){ toast('No image to share'); return; }
+  const item = pimCurrentItem || {};
+  const text = `*${SHOP_NAME}*\n${SHOP_ADDRESS}\n📞 ${SHOP_PHONE}\n\n*${item.name||'Product'}*${item.alias?'\nCode: '+item.alias:''}${item.group?'\nGroup: '+item.group:''}`;
+  try{
+    const resp = await fetch(img.url);
+    const blob = await resp.blob();
+    const file = new File([blob], img.name, {type: blob.type || 'image/jpeg'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ files:[file], title: item.name||'Product', text });
+      return;
+    }
+  }catch(err){
+    if(err.name === 'AbortError') return;
+  }
+  const waUrl = 'https://wa.me/?text=' + encodeURIComponent(text + '\n\n' + img.url);
+  window.open(waUrl, '_blank');
+  toast('📲 Opened WhatsApp');
+}
+
+/* ── Pinch-to-zoom + swipe on fullscreen ── */
+(function(){
+  const fsOv  = document.getElementById('pim-fs-ov');
+  const fsImg = document.getElementById('pim-fs-img');
+
+  let scale = 1, maxScale = 5;
+  let originX = 0, originY = 0;
+  let startDist = 0, startScale = 1;
+  let startMidX = 0, startMidY = 0;
+  let startOriginX = 0, startOriginY = 0;
+  let swipeStartX = 0, swipeStartY = 0;
+  let isPinching = false;
+  let lastTapTime = 0;
+
+  function applyTransform(){
+    fsImg.style.transform = `translate(${originX}px,${originY}px) scale(${scale})`;
+  }
+  function resetZoom(){
+    scale = 1; originX = 0; originY = 0;
+    fsImg.style.transition = 'transform .2s ease';
+    applyTransform();
+    setTimeout(()=>{ fsImg.style.transition = 'transform 0.05s linear'; }, 220);
+  }
+  window._pimFsZoomReset = resetZoom;
+
+  function dist(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
+  function mid(t){ return { x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2 }; }
+
+  fsOv.addEventListener('touchstart', e => {
+    if(e.touches.length === 2){
+      isPinching = true;
+      startDist  = dist(e.touches);
+      startScale = scale;
+      const m = mid(e.touches);
+      startMidX = m.x; startMidY = m.y;
+      startOriginX = originX; startOriginY = originY;
+    } else if(e.touches.length === 1){
+      isPinching = false;
+      swipeStartX = e.touches[0].clientX;
+      swipeStartY = e.touches[0].clientY;
+      startOriginX = originX; startOriginY = originY;
+      const now = Date.now();
+      if(now - lastTapTime < 300){ resetZoom(); }
+      lastTapTime = now;
+    }
+  }, {passive:true});
+
+  fsOv.addEventListener('touchmove', e => {
+    if(e.touches.length === 2 && isPinching){
+      e.preventDefault();
+      const newDist  = dist(e.touches);
+      const newScale = Math.min(maxScale, Math.max(1, startScale * (newDist / startDist)));
+      const m = mid(e.touches);
+      originX = startOriginX + (m.x - startMidX);
+      originY = startOriginY + (m.y - startMidY);
+      scale = newScale;
+      applyTransform();
+    } else if(e.touches.length === 1 && scale > 1){
+      e.preventDefault();
+      originX = startOriginX + (e.touches[0].clientX - swipeStartX);
+      originY = startOriginY + (e.touches[0].clientY - swipeStartY);
+      applyTransform();
+    }
+  }, {passive:false});
+
+  fsOv.addEventListener('touchend', e => {
+    if(isPinching && e.touches.length < 2){
+      isPinching = false;
+      if(scale <= 1.05) resetZoom();
+      startOriginX = originX; startOriginY = originY;
+      return;
+    }
+    if(scale > 1) return;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    if(Math.abs(dx) >= 40){ pimFsNav(dx < 0 ? 1 : -1); }
+  }, {passive:true});
+})();
+
+/* ═══ BOOT ═══ */
+scrollEl = document.getElementById("scroll");
+spacer   = document.getElementById("spacer");
+stage    = document.getElementById("stage");
+scrollEl.addEventListener("scroll", onScroll, {passive:true});
+window.addEventListener("resize",()=>{ measureCardHeight(); rebuildOffsets(); vsRender(true); });
+loadData();
+</script>
+</body>
+</html>

@@ -502,18 +502,37 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 .srq-mobile-back{display:none}
 
 </style>
-<style>#hdr{display:none!important}body{padding-top:0!important}</style></head>
+<style>#hdr{display:none!important}body{padding-top:0!important}</style>
+<style id="srq-advanced-css">
+#sr-brand{cursor:pointer}
+#sr-top-admin{height:38px;padding:0 11px;border-radius:10px;border:1px solid #72520d;background:#171106;color:#ffd35c;font-size:11px;font-weight:900;white-space:nowrap}
+.srq-party{padding:9px 12px;border-bottom:1px solid #29210d;background:#0a0907;display:grid;grid-template-columns:1.2fr 1fr .8fr 1.5fr;gap:7px}
+.srq-party input,.srq-party textarea{width:100%;min-width:0;background:#111;border:1px solid #49370d;border-radius:9px;color:#fff;padding:9px;font:inherit;font-size:12px;outline:none}
+.srq-party textarea{resize:none;height:37px}
+.srq-pricepick{cursor:pointer!important;transition:.12s}.srq-pricepick:active{transform:scale(.96);border-color:#ffd35c}
+.srq-qpop-bg{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:18px}
+.srq-qpop{width:min(360px,100%);background:#11100d;border:1px solid #74530d;border-radius:18px;padding:18px;box-shadow:0 25px 80px #000}
+.srq-qpop h3{color:#ffd35c;margin-bottom:4px}.srq-qpop small{color:#8e826c}.srq-qpop input{width:100%;margin:15px 0 10px;height:48px;border-radius:11px;border:1px solid #72520d;background:#080808;color:#fff;font-size:20px;padding:0 12px}
+.srq-qpop-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.srq-qpop-actions button{height:40px;border-radius:10px;border:1px solid #5c430d;background:#171208;color:#eee;font-weight:900}.srq-qpop-actions .gold{background:#ffd35c;color:#111;border:0}
+.srq-extra-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.srq-saved-panel{position:fixed;top:58px;right:-460px;bottom:0;width:min(450px,96vw);z-index:9600;background:#0b0a08;border-left:1px solid #6b4c0b;transition:right .25s;display:flex;flex-direction:column;box-shadow:-25px 0 60px #000}.srq-saved-panel.open{right:0}
+.srq-saved-head{padding:14px;border-bottom:1px solid #3c2d0b;display:flex;align-items:center;gap:8px}.srq-saved-head b{flex:1;color:#ffd35c}
+.srq-saved-list{padding:10px;overflow:auto}.srq-saved{border:1px solid #3c2d0b;background:#100e09;border-radius:12px;padding:11px;margin-bottom:8px}.srq-saved-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}.srq-saved-actions button{height:34px;border-radius:8px;border:1px solid #49370d;background:#151108;color:#ddd;font-size:10px;font-weight:800}
+@media(max-width:760px){.srq-party{grid-template-columns:1fr 1fr}.srq-party textarea{grid-column:1/-1}.srq-tools{position:sticky;top:0;z-index:2}.srq-extra-actions{grid-template-columns:1fr 1fr}#sr-top-admin{padding:0 8px;font-size:10px}}
+@media print{
+ body>*{display:none!important}#sr-print-area{display:block!important;position:absolute;inset:0;width:76mm;color:#000;background:#fff;font-family:Arial,sans-serif;font-size:12px;line-height:1.25}
+ @page{size:76mm auto;margin:2mm}
+}
+</style>
+
+</head>
 <body>
-<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand">SR PSD</div><div id="sr-spacer"></div><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
+<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
 <div id="sr-pull">↓ Pull to refresh</div><div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
-<button class="sr-navbtn" data-view="search"><span class="sr-ico">⌕</span><span>Search<small>Jump directly to product search</small></span></button>
-<button class="sr-navbtn" data-view="scan"><span class="sr-ico">▣</span><span>Scan<small>Camera barcode scanner</small></span></button>
-<button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quote<small>Cart, rates, quantity & print</small></span></button>
-<button class="sr-navbtn" data-view="stock"><span class="sr-ico">▤</span><span>Stock<small>Low/out stock & intelligence</small></span></button>
-<button class="sr-navbtn" data-view="more"><span class="sr-ico">•••</span><span>More<small>Favorites, history & settings</small></span></button>
-</nav><div id="sr-drawer-section"><div class="sr-mini">🔊 Loud sounds enabled<br><small>Long beep on successful barcode scan.</small></div><div class="sr-mini">↕ Pull down from the top of Home to refresh.</div></div></aside>
+<button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
+</nav><div id="sr-drawer-section"><div class="sr-mini">↕ Pull down from the top of Home for a true refresh.</div></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
 
 
@@ -1237,6 +1256,10 @@ function cardHTML(it, ri, topPx, q){
     <div class="det">
       ${it.barcode?`<div class="drow"><span>Barcode</span><span>${it.barcode}</span></div>`:''}
       ${it.brand?`<div class="drow"><span>Brand</span><span>${it.brand}</span></div>`:''}
+      ${it.Category?`<div class="drow"><span>Category</span><span>${it.Category}</span></div>`:''}
+      ${it.SubCategory?`<div class="drow"><span>Sub Category</span><span>${it.SubCategory}</span></div>`:''}
+      ${it.PartGroup?`<div class="drow"><span>Part Group</span><span>${it.PartGroup}</span></div>`:''}
+      ${it.entryDate?`<div class="drow"><span>Entry Date</span><span>${it.entryDate}</span></div>`:''}
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
         <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
@@ -2441,151 +2464,303 @@ loadData();
 <script>
 (function(){
 const $=id=>document.getElementById(id);
-let ac=null, quoteOpen=false, cart=[], quoteSearch="", scannerForQuote=false;
-const CART_KEY="sr_quote_draft_v4", HELD_KEY="sr_quote_held_v4", STATE_KEY2="sr_psd_saved_state_v1";
+let ac=null,quoteOpen=false,cart=[],quoteSearch="",scannerForQuote=false,qtyPick=null;
+const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1";
 
 function sound(kind="tap"){
-  try{
-    ac=ac||new(window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended")ac.resume();
-    const sets={tap:[[520,.035,.045]],open:[[420,.04,.05],[620,.06,.055]],add:[[620,.05,.06],[860,.08,.07]],scan:[[880,.07,.09],[1180,.13,.1]],hold:[[520,.05,.06],[680,.09,.07]],resume:[[620,.05,.06],[920,.1,.08]],success:[[523,.05,.06],[659,.05,.065],[784,.12,.075]],remove:[[310,.05,.045],[230,.08,.04]],error:[[210,.09,.055],[160,.12,.045]],refresh:[[500,.04,.05],[720,.05,.06],[980,.1,.075]]};
-    let t=ac.currentTime;
-    (sets[kind]||sets.tap).forEach(([f,d,v])=>{let o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.01);t+=d*.72});
-  }catch(e){}
+ try{
+  ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();
+  const sets={tap:[[620,.025,.018]],open:[[540,.035,.025],[760,.05,.025]],add:[[720,.035,.03],[980,.055,.035]],scan:[[900,.045,.035],[1250,.075,.04]],hold:[[480,.04,.025],[650,.06,.03]],resume:[[650,.04,.025],[900,.06,.03]],success:[[660,.035,.025],[880,.04,.025],[1100,.07,.03]],remove:[[300,.035,.02],[220,.05,.018]],error:[[220,.06,.025],[170,.08,.02]],refresh:[[600,.035,.025],[850,.045,.025],[1100,.07,.03]]};
+  let t=ac.currentTime;(sets[kind]||sets.tap).forEach(([f,d,v])=>{let o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.01);t+=d*.7});
+ }catch(e){}
 }
-function haptic(p=18){try{navigator.vibrate?.(p)}catch(e){}}
-window.srLongBeep=()=>{sound("scan");haptic([100,40,130])};
+function haptic(p=12){try{navigator.vibrate?.(p)}catch(e){}}
+window.srLongBeep=()=>{sound("scan");haptic([55,25,70])};
 document.addEventListener("pointerdown",e=>{if(e.target.closest("button,.chip,.stock-chip"))sound("tap")},{passive:true});
 
-function drawer(on){$("sr-drawer").classList.toggle("open",on);$("sr-overlay").classList.toggle("open",on)}
-$("sr-hamb").onclick=()=>drawer(true); $("sr-x").onclick=$("sr-overlay").onclick=()=>drawer(false);
+function drawer(on){$("sr-drawer")?.classList.toggle("open",on);$("sr-overlay")?.classList.toggle("open",on)}
+$("sr-hamb").onclick=()=>drawer(true);$("sr-x").onclick=$("sr-overlay").onclick=()=>drawer(false);
+function setActive(v){document.querySelectorAll(".sr-navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===v))}
+window.home=function(){quoteOpen=false;$("sr-screen").className="";$("sr-screen").classList.remove("open","quote-pro");drawer(false);setActive("home");document.body.style.overflow="";window.scrollTo({top:0,behavior:"smooth"})}
+$("sr-brand").onclick=()=>home();
 
-function setActive(view){document.querySelectorAll(".sr-navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===view))}
-function home(){
-  quoteOpen=false; $("sr-screen").className=""; $("sr-screen").classList.remove("open","quote-pro"); drawer(false); setActive("home");
-  document.body.style.overflow=""; window.scrollTo({top:0,behavior:"smooth"});
-}
-function screen(title,sub,body){
-  quoteOpen=false; $("sr-screen").className="open"; $("sr-screen").innerHTML=`<div class="sr-screen-title">${title}</div><div class="sr-screen-sub">${sub}</div>${body}`; drawer(false);
-}
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function totals(){let qty=0,total=0;cart.forEach(x=>{qty+=+x.qty||0;total+=(+x.qty||0)*(+x.rate||0)});return{qty,total}}
-
-function saveCart(){
-  try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch(e){}
-  renderQuoteCounters();
-}
+function totals(){let qty=0,total=0,mrp=0,sale=0;cart.forEach(x=>{let q=+x.qty||0;qty+=q;total+=q*(+x.rate||0);mrp+=q*(+x.mrp||0);sale+=q*(+x.sale||0)});return{qty,total,mrp,sale}}
+function party(){try{return JSON.parse(localStorage.getItem(PARTY_KEY)||"{}")}catch(e){return{}}}
+function savePartyField(k,v){let p=party();p[k]=v;localStorage.setItem(PARTY_KEY,JSON.stringify(p))}
+window.srParty=savePartyField;
+function saveCart(){localStorage.setItem(CART_KEY,JSON.stringify(cart));renderQuoteCounters()}
 function loadCart(){try{cart=JSON.parse(localStorage.getItem(CART_KEY)||"[]");if(!Array.isArray(cart))cart=[]}catch(e){cart=[]}}
-function held(){try{let x=JSON.parse(localStorage.getItem(HELD_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
-function saveHeld(x){try{localStorage.setItem(HELD_KEY,JSON.stringify(x))}catch(e){}}
-function renderQuoteCounters(){
-  let t=totals(), c=cart.length+" item"+(cart.length===1?"":"s");
-  ["srq-count","srqm-count"].forEach(id=>{if($(id))$(id).textContent=c});
-  ["srq-total","srq-head-total","srqm-total"].forEach(id=>{if($(id))$(id).textContent=money(t.total)});
-  if($("srq-units"))$("srq-units").textContent=t.qty+" units";
-}
+function held(){try{return JSON.parse(localStorage.getItem(HELD_KEY)||"[]")||[]}catch(e){return[]}}
+function saveHeld(x){localStorage.setItem(HELD_KEY,JSON.stringify(x))}
+function saved(){try{return JSON.parse(localStorage.getItem(SAVED_KEY)||"[]")||[]}catch(e){return[]}}
+function saveSaved(x){localStorage.setItem(SAVED_KEY,JSON.stringify(x))}
+function renderQuoteCounters(){let t=totals(),c=cart.length+" item"+(cart.length===1?"":"s");["srq-count","srqm-count"].forEach(id=>{$(id)&&($(id).textContent=c)});["srq-total","srq-head-total","srqm-total"].forEach(id=>{$(id)&&($(id).textContent=money(t.total))});$("srq-units")&&($("srq-units").textContent=t.qty+" units · MRP "+money(t.mrp)+" · Sale "+money(t.sale))}
 
 function quoteResultsHTML(q){
-  q=(q||"").trim().toLowerCase();
-  if(!q)return `<div class="srq-empty"><div class="ico">⌕</div><b>Search or scan a product</b><br><small>Name, alias or barcode. Your quotation draft stays saved while you switch screens.</small></div>`;
-  const exact=raw.findIndex(it=>String(it.barcode||"").trim().toLowerCase()===q);
-  let ids=exact>=0?[exact]:raw.map((_,i)=>i).filter(i=>{let it=raw[i];return [it.name,it.alias,it.barcode,it.group,it.PartGroup].some(v=>String(v||"").toLowerCase().includes(q))}).slice(0,70);
-  if(!ids.length)return `<div class="srq-empty"><div class="ico">∅</div><b>No product found</b></div>`;
-  return `<div class="srq-results-title">${ids.length}${exact>=0?" exact":""} result${ids.length===1?"":"s"}</div>`+ids.map(i=>{let it=raw[i];return `<div class="srq-product"><div class="srq-product-info"><div class="srq-product-name">${escq(it.name)}</div><div class="srq-product-meta">${escq(it.alias||"")}${it.barcode?" · "+escq(it.barcode):""} · Stock ${escq(it.stock??0)}</div><div class="srq-product-prices"><span class="srq-p">MRP <b>${money(it.mrp)}</b></span><span class="srq-p">Sale <b>${money(it.sale)}</b></span><span class="srq-p">Wholesale <b>${money(it.wholesale)}</b></span></div></div><button class="srq-add" onclick="srQuoteAdd(${i})">＋</button></div>`}).join("");
+ q=(q||"").trim().toLowerCase();if(!q)return `<div class="srq-empty"><div class="ico">⌕</div><b>Search or scan a product</b><br><small>Name, alias or barcode. Draft is auto-saved.</small></div>`;
+ const exact=raw.findIndex(it=>String(it.barcode||"").trim().toLowerCase()===q);
+ let ids=exact>=0?[exact]:raw.map((_,i)=>i).filter(i=>[raw[i].name,raw[i].alias,raw[i].barcode,raw[i].group,raw[i].PartGroup].some(v=>String(v||"").toLowerCase().includes(q))).slice(0,70);
+ if(!ids.length)return `<div class="srq-empty"><b>No product found</b></div>`;
+ return `<div class="srq-results-title">${ids.length}${exact>=0?" exact":""} result${ids.length===1?"":"s"} · tap a price to add quantity</div>`+ids.map(i=>{let it=raw[i];return `<div class="srq-product"><div class="srq-product-info"><div class="srq-product-name">${escq(it.name)}</div><div class="srq-product-meta">${escq(it.alias||"")}${it.barcode?" · "+escq(it.barcode):""} · Stock ${escq(it.stock??0)}</div><div class="srq-product-prices"><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'mrp')">MRP <b>${money(it.mrp)}</b></span><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'sale')">Sale <b>${money(it.sale)}</b></span><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'wholesale')">Wholesale <b>${money(it.wholesale)}</b></span></div></div><button class="srq-add" onclick="srPickQty(${i},'sale')">＋</button></div>`}).join("");
 }
 function cartHTML(){
-  if(!cart.length)return `<div class="srq-empty"><div class="ico">🧾</div><b>Quotation is empty</b><br><small>Add products from the search panel.</small></div>`;
-  return cart.map((x,i)=>`<div class="srq-line"><div class="srq-line-top"><div class="srq-line-name">${escq(x.name)}<div class="srq-line-meta">${escq(x.alias||"")}${x.barcode?" · "+escq(x.barcode):""}</div></div><button class="srq-x" onclick="srQDel(${i})">×</button></div><div class="srq-grid"><div class="srq-field"><label>Price type</label><select class="srq-select" onchange="srQType(${i},this.value)"><option value="mrp" ${x.type==="mrp"?"selected":""}>MRP · ${money(x.mrp)}</option><option value="sale" ${x.type==="sale"?"selected":""}>Sale · ${money(x.sale)}</option><option value="wholesale" ${x.type==="wholesale"?"selected":""}>Wholesale · ${money(x.wholesale)}</option><option value="manual" ${x.type==="manual"?"selected":""}>Manual Price</option></select></div><div class="srq-field"><label>Quantity</label><input class="srq-input" type="number" min=".001" step="1" value="${x.qty}" onchange="srQEdit(${i},'qty',this.value)"></div></div><div class="srq-subgrid"><div class="srq-field"><label>Unit price</label><input class="srq-input" type="number" min="0" value="${x.rate}" onchange="srQEdit(${i},'rate',this.value)"></div><div class="srq-field"><label>Available stock</label><div class="srq-input" style="display:flex;align-items:center;color:${(+x.stock||0)<=5?"#ff9b9b":"#7ee59b"}">${escq(x.stock??0)}</div></div></div><div class="srq-line-total"><span>${x.qty} × ${money(x.rate)}</span><b>${money((+x.qty||0)*(+x.rate||0))}</b></div></div>`).join("");
+ if(!cart.length)return `<div class="srq-empty"><div class="ico">🧾</div><b>Quotation is empty</b><br><small>Search a product and tap its price.</small></div>`;
+ return cart.map((x,i)=>`<div class="srq-line"><div class="srq-line-top"><div class="srq-line-name">${i+1}. ${escq(x.name)}<div class="srq-line-meta">Code: ${escq(x.alias||x.barcode||"—")} · MRP ${money(x.mrp)} · Sale ${money(x.sale)}</div></div><button class="srq-x" onclick="srQDel(${i})">×</button></div><div class="srq-grid"><div class="srq-field"><label>Price</label><select class="srq-select" onchange="srQType(${i},this.value)"><option value="mrp" ${x.type==="mrp"?"selected":""}>MRP · ${money(x.mrp)}</option><option value="sale" ${x.type==="sale"?"selected":""}>Sale · ${money(x.sale)}</option><option value="wholesale" ${x.type==="wholesale"?"selected":""}>Wholesale · ${money(x.wholesale)}</option><option value="manual" ${x.type==="manual"?"selected":""}>Manual · ${money(x.rate)}</option></select></div><div class="srq-field"><label>Qty</label><input class="srq-input" type="number" min=".001" value="${x.qty}" onchange="srQEdit(${i},'qty',this.value)"></div></div><div class="srq-subgrid"><div class="srq-field"><label>Unit price</label><input class="srq-input" type="number" min="0" value="${x.rate}" onchange="srQEdit(${i},'rate',this.value)"></div><div class="srq-field"><label>Stock</label><div class="srq-input" style="display:flex;align-items:center">${escq(x.stock??0)}</div></div></div><div class="srq-line-total"><span>${x.qty} × ${money(x.rate)}</span><b>${money((+x.qty||0)*(+x.rate||0))}</b></div></div>`).join("");
 }
 window.renderQuoteScreen=function(){
-  quoteOpen=true; drawer(false); setActive("quote"); document.body.style.overflow="hidden";
-  let t=totals();
-  $("sr-screen").className="open quote-pro";
-  $("sr-screen").innerHTML=`<div class="srq-shell"><div class="srq-head"><div class="srq-head-main"><h2>Quotation Studio</h2><small>Draft auto-saved · switch screens without losing it</small></div><button class="srq-toolbtn" onclick="srOpenHeld()" title="Held quotations">⏸</button><div class="srq-head-total"><small>Total</small><strong id="srq-head-total">${money(t.total)}</strong></div></div><div class="srq-tools"><input id="srq-search" class="srq-search" placeholder="Search name, alias or barcode…" value="${escq(quoteSearch)}" oninput="srQuoteSearch(this.value)"><button class="srq-toolbtn" onclick="srQuoteScan()" title="Scan barcode">▣</button></div><div class="srq-body"><div class="srq-picker" id="srq-results">${quoteResultsHTML(quoteSearch)}</div><aside class="srq-cart" id="srq-cart"><div class="srq-cart-head"><button class="srq-toolbtn srq-mobile-back" onclick="srCloseMobileCart()">←</button><b>Current Quotation</b><span class="srq-badge" id="srq-count">${cart.length} items</span></div><div class="srq-lines" id="srq-lines">${cartHTML()}</div><div class="srq-foot"><div class="srq-summary"><span>Grand Total<br><small id="srq-units">${t.qty} units</small></span><strong id="srq-total">${money(t.total)}</strong></div><div class="srq-actions"><button class="srq-btn hold" onclick="srHoldQuote()">⏸ Hold</button><button class="srq-btn" onclick="srNewQuote()">＋ New</button><button class="srq-btn danger" onclick="srClearCart()">Clear</button><button class="srq-btn gold" onclick="srShareQuote()">Share / Copy</button></div></div></aside></div><button class="srq-mobile-cart" onclick="srOpenMobileCart()"><span>🛒 <b id="srqm-count">${cart.length} items</b></span><strong id="srqm-total">${money(t.total)}</strong></button></div>`;
-  renderQuoteCounters(); setTimeout(()=>$("srq-search")?.focus(),80); sound("open");
+ quoteOpen=true;drawer(false);setActive("quote");document.body.style.overflow="hidden";let t=totals(),p=party();
+ $("sr-screen").className="open quote-pro";
+ $("sr-screen").innerHTML=`<div class="srq-shell"><div class="srq-head"><div class="srq-head-main"><h2>Quotation Studio</h2><small>Auto-saved · switch to Home anytime without losing data</small></div><button class="srq-toolbtn" onclick="srOpenHeld()" title="Hold / Unhold">⏸</button><button class="srq-toolbtn" onclick="srOpenSaved()" title="Saved quotations">☷</button><div class="srq-head-total"><small>Total</small><strong id="srq-head-total">${money(t.total)}</strong></div></div>
+ <div class="srq-party"><input placeholder="Party name (optional)" value="${escq(p.name||"")}" oninput="srParty('name',this.value)"><input inputmode="tel" placeholder="Mobile (optional)" value="${escq(p.mobile||"")}" oninput="srParty('mobile',this.value)"><input type="date" value="${escq(p.date||new Date().toISOString().slice(0,10))}" oninput="srParty('date',this.value)"><textarea placeholder="Narration (optional)" oninput="srParty('narration',this.value)">${escq(p.narration||"")}</textarea></div>
+ <div class="srq-tools"><input id="srq-search" class="srq-search" placeholder="Search name, alias or barcode…" value="${escq(quoteSearch)}" oninput="srQuoteSearch(this.value)"><button class="srq-toolbtn" onclick="srQuoteScan()" title="Scan barcode">▣</button></div>
+ <div class="srq-body"><div class="srq-picker" id="srq-results">${quoteResultsHTML(quoteSearch)}</div><aside class="srq-cart" id="srq-cart"><div class="srq-cart-head"><button class="srq-toolbtn srq-mobile-back" onclick="srCloseMobileCart()">←</button><b>Current Quotation</b><span class="srq-badge" id="srq-count">${cart.length} items</span></div><div class="srq-lines" id="srq-lines">${cartHTML()}</div><div class="srq-foot"><div class="srq-summary"><span>Totals<br><small id="srq-units">${t.qty} units · MRP ${money(t.mrp)} · Sale ${money(t.sale)}</small></span><strong id="srq-total">${money(t.total)}</strong></div><div class="srq-actions"><button class="srq-btn hold" onclick="srHoldQuote()">⏸ Hold</button><button class="srq-btn" onclick="srNewQuoteAutoHold()">＋ New</button><button class="srq-btn" onclick="srSaveQuote()">💾 Save</button><button class="srq-btn danger" onclick="srClearCart()">Clear All</button><button class="srq-btn gold" onclick="srPrintQuote()">🖨 Print 76mm</button></div><div class="srq-extra-actions"><button class="srq-btn" onclick="srShareQuotePDF()">PDF / Print</button></div></div></aside></div><button class="srq-mobile-cart" onclick="srOpenMobileCart()"><span>🛒 <b id="srqm-count">${cart.length} items</b></span><strong id="srqm-total">${money(t.total)}</strong></button></div>`;
+ renderQuoteCounters();sound("open");
 }
-window.srQuoteSearch=v=>{quoteSearch=v;if($("srq-results"))$("srq-results").innerHTML=quoteResultsHTML(v)}
-window.srQuoteAdd=i=>{
-  let it=raw[i];if(!it)return;let key=String(it.barcode||it.alias||i),x=cart.find(r=>r.key===key);
-  if(x)x.qty=(+x.qty||0)+1; else cart.push({key,ri:i,name:it.name||"",alias:it.alias||"",barcode:it.barcode||"",stock:it.stock??0,mrp:+it.mrp||0,sale:+it.sale||0,wholesale:+it.wholesale||0,type:(+it.sale||0)?"sale":(+it.wholesale||0)?"wholesale":"mrp",rate:+it.sale||+it.wholesale||+it.mrp||0,qty:1});
-  saveCart(); if($("srq-lines"))$("srq-lines").innerHTML=cartHTML(); renderQuoteCounters(); sound("add");haptic(22);toast("Added · "+(it.name||"Product"));
-}
-window.srQType=(i,type)=>{let x=cart[i];if(!x)return;x.type=type;if(type!=="manual")x.rate=+x[type]||0;saveCart();renderQuoteScreen()}
-window.srQEdit=(i,k,v)=>{if(!cart[i])return;cart[i][k]=k==="qty"?Math.max(.001,+v||1):Math.max(0,+v||0);if(k==="rate")cart[i].type="manual";saveCart();if($("srq-lines"))$("srq-lines").innerHTML=cartHTML();renderQuoteCounters()}
-window.srQDel=i=>{cart.splice(i,1);saveCart();if($("srq-lines"))$("srq-lines").innerHTML=cartHTML();renderQuoteCounters();sound("remove")}
-window.srClearCart=()=>{if(!cart.length)return;if(confirm("Clear the current quotation?")){cart=[];saveCart();renderQuoteScreen();sound("remove")}}
-window.srNewQuote=()=>{if(cart.length&&!confirm("Start a new quotation? Current draft will be cleared."))return;cart=[];quoteSearch="";saveCart();renderQuoteScreen();sound("open")}
-window.srHoldQuote=()=>{
-  if(!cart.length){toast("Quotation is empty");sound("error");return}
-  let hs=held(),t=totals();hs.unshift({id:Date.now(),created:new Date().toISOString(),items:JSON.parse(JSON.stringify(cart)),qty:t.qty,total:t.total});saveHeld(hs);cart=[];quoteSearch="";saveCart();renderQuoteScreen();toast("Quotation held safely");sound("hold");
-}
-window.srOpenHeld=()=>{
-  document.getElementById("srq-held-panel")?.remove();let hs=held(),p=document.createElement("aside");p.id="srq-held-panel";p.className="srq-held-panel";
-  p.innerHTML=`<div class="srq-held-head"><b>Held Quotations</b><button class="srq-toolbtn" onclick="srCloseHeld()">×</button></div><div class="srq-held-list">${hs.length?hs.map((h,i)=>`<div class="srq-held"><div class="srq-held-top"><div><b>Hold #${String(h.id).slice(-6)}</b><br><small>${new Date(h.created).toLocaleString("en-IN")} · ${h.items.length} items · ${h.qty} units</small></div><strong>${money(h.total)}</strong></div><div class="srq-held-actions"><button class="resume" onclick="srResumeHeld(${i})">Resume / Unhold</button><button onclick="srDeleteHeld(${i})">Delete</button></div></div>`).join(""):`<div class="srq-empty"><div class="ico">⏸</div><b>No held quotations</b></div>`}</div>`;document.body.appendChild(p);requestAnimationFrame(()=>p.classList.add("open"));sound("open");
-}
-window.srCloseHeld=()=>{let p=$("srq-held-panel");if(p){p.classList.remove("open");setTimeout(()=>p.remove(),250)}}
-window.srResumeHeld=i=>{let hs=held(),h=hs[i];if(!h)return;if(cart.length&&!confirm("Replace current draft with this held quotation?"))return;cart=h.items||[];hs.splice(i,1);saveHeld(hs);saveCart();srCloseHeld();renderQuoteScreen();toast("Quotation resumed");sound("resume")}
-window.srDeleteHeld=i=>{let hs=held();hs.splice(i,1);saveHeld(hs);srOpenHeld();sound("remove")}
-window.srShareQuote=()=>{
- if(!cart.length){toast("Quotation is empty");return}let t=totals(),txt="SR FASHION · PUSAD\nQUOTATION\n\n";cart.forEach((x,i)=>txt+=`${i+1}. ${x.name}\n   ${x.qty} × ${money(x.rate)} = ${money((+x.qty||0)*(+x.rate||0))}\n`);txt+=`\nTOTAL: ${money(t.total)}\nTOTAL UNITS: ${t.qty}`;
- if(navigator.share)navigator.share({title:"SR Fashion Quotation",text:txt}).catch(()=>{});else navigator.clipboard?.writeText(txt).then(()=>toast("Quotation copied"));sound("success");
-}
-window.srOpenMobileCart=()=>{$("srq-cart")?.classList.add("mobile")};window.srCloseMobileCart=()=>{$("srq-cart")?.classList.remove("mobile")}
-window.srQuoteScan=()=>{scannerForQuote=true;if(!navigator.mediaDevices?.getUserMedia){alert("Camera requires HTTPS on phones/tablets. Use the secure HTTPS version.");return}openScanner()}
+window.srQuoteSearch=v=>{quoteSearch=v;$("srq-results")&&($("srq-results").innerHTML=quoteResultsHTML(v))};
+window.srPickQty=(i,type)=>{let it=raw[i];if(!it)return;qtyPick={i,type};document.getElementById("srq-qpop")?.remove();let d=document.createElement("div");d.id="srq-qpop";d.className="srq-qpop-bg";d.innerHTML=`<div class="srq-qpop"><h3>${escq(it.name)}</h3><small>${type.toUpperCase()} · ${money(it[type])}</small><input id="srq-qval" type="number" min=".001" step="1" value="1" inputmode="decimal"><div class="srq-qpop-actions"><button onclick="srCloseQty()">Cancel</button><button class="gold" onclick="srConfirmQty()">Add Quantity</button></div></div>`;document.body.appendChild(d);setTimeout(()=>{$("srq-qval")?.select()},30)};
+window.srCloseQty=()=>{document.getElementById("srq-qpop")?.remove();qtyPick=null};
+window.srConfirmQty=()=>{if(!qtyPick)return;let q=Math.max(.001,+$("srq-qval").value||1),{i,type}=qtyPick;srAddWithQty(i,type,q);srCloseQty()};
+function srAddWithQty(i,type,qty){let it=raw[i],key=String(it.barcode||it.alias||i),x=cart.find(r=>r.key===key&&r.type===type);let rate=+(type==="mrp"?it.mrp:type==="sale"?it.sale:it.wholesale)||0;if(x)x.qty=(+x.qty||0)+qty;else cart.push({key,ri:i,name:it.name||"",alias:it.alias||"",barcode:it.barcode||"",stock:it.stock??0,mrp:+it.mrp||0,sale:+it.sale||0,wholesale:+it.wholesale||0,type,rate,qty});saveCart();$("srq-lines")&&($("srq-lines").innerHTML=cartHTML());renderQuoteCounters();sound("add");haptic();toast("Added · "+it.name)}
+window.srQuoteAdd=i=>srPickQty(i,"sale");
+window.srQType=(i,type)=>{let x=cart[i];if(!x)return;x.type=type;if(type!=="manual")x.rate=+x[type]||0;saveCart();$("srq-lines").innerHTML=cartHTML();renderQuoteCounters()};
+window.srQEdit=(i,k,v)=>{if(!cart[i])return;cart[i][k]=k==="qty"?Math.max(.001,+v||1):Math.max(0,+v||0);if(k==="rate")cart[i].type="manual";saveCart();$("srq-lines").innerHTML=cartHTML();renderQuoteCounters()};
+window.srQDel=i=>{cart.splice(i,1);saveCart();$("srq-lines").innerHTML=cartHTML();renderQuoteCounters();sound("remove")};
+window.srClearCart=()=>{if(cart.length&&confirm("Clear all items from current quotation?")){cart=[];quoteSearch="";saveCart();renderQuoteScreen();sound("remove")}};
 
-window.srAddPrice=function(ri,type,e){
- e&&e.stopPropagation();
- // Home remains price-check/share only. Products enter cart only inside Quotation Studio.
- if(!quoteOpen){if(type==="mrp"){copyItem(ri,e);return}return openExp(ri,type,e)}
- let it=raw[ri];if(!it)return;srQuoteAdd(ri);let x=cart.find(r=>r.key===String(it.barcode||it.alias||ri));if(x){x.type=type;x.rate=+(type==="mrp"?it.mrp:type==="sale"?it.sale:it.wholesale)||0;saveCart();if($("srq-lines"))$("srq-lines").innerHTML=cartHTML();renderQuoteCounters()}
-}
-const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(c=>{if(c.dataset.srprice)return;c.dataset.srprice="1";[[".pb.m","mrp"],[".pb.s","sale"],[".pb.w","wholesale"]].forEach(([sel,type])=>{let p=c.querySelector(sel);if(!p)return;let m=(p.getAttribute("onclick")||"").match(/\((\d+)/);if(m)p.setAttribute("onclick",`srAddPrice(${m[1]},'${type}',event)`)})}));
-observer.observe(document.body,{childList:true,subtree:true});
+window.srNewQuoteAutoHold=()=>{
+ if(cart.length){
+   let hs=held(),t=totals();
+   hs.unshift({id:Date.now(),created:new Date().toISOString(),party:party(),items:structuredClone(cart),...t});
+   saveHeld(hs);
+ }
+ cart=[];quoteSearch="";
+ localStorage.removeItem(PARTY_KEY);
+ saveCart();renderQuoteScreen();
+ toast("New quotation started"+(cart.length?"":" · previous auto-held"));
+ sound("hold");
+};
+window.srHoldQuote=()=>{if(!cart.length)return toast("Quotation is empty");let hs=held(),t=totals();hs.unshift({id:Date.now(),created:new Date().toISOString(),party:party(),items:structuredClone(cart),...t});saveHeld(hs);cart=[];quoteSearch="";saveCart();renderQuoteScreen();toast("Quotation held");sound("hold")};
+window.srOpenHeld=()=>{document.getElementById("srq-held-panel")?.remove();let hs=held(),p=document.createElement("aside");p.id="srq-held-panel";p.className="srq-held-panel";p.innerHTML=`<div class="srq-held-head"><b>Hold / Unhold Quotations</b><button class="srq-toolbtn" onclick="srCloseHeld()">×</button></div><div class="srq-held-list">${hs.length?hs.map((h,i)=>`<div class="srq-held"><div class="srq-held-top"><div><b>Hold #${String(h.id).slice(-6)}</b><br><small>${escq(h.party?.name||"No party")} · ${new Date(h.created).toLocaleString("en-IN")} · ${h.qty} qty</small></div><strong>${money(h.total)}</strong></div><div class="srq-held-actions"><button class="resume" onclick="srResumeHeld(${i})">Unhold / Resume</button><button onclick="srDeleteHeld(${i})">Delete</button></div></div>`).join(""):`<div class="srq-empty"><b>No held quotations</b></div>`}</div>`;document.body.appendChild(p);requestAnimationFrame(()=>p.classList.add("open"))};
+window.srCloseHeld=()=>{let p=$("srq-held-panel");if(p){p.classList.remove("open");setTimeout(()=>p.remove(),250)}};
+window.srResumeHeld=i=>{let hs=held(),h=hs[i];if(!h)return;if(cart.length&&!confirm("Replace current draft with this held quotation?"))return;cart=h.items||[];localStorage.setItem(PARTY_KEY,JSON.stringify(h.party||{}));hs.splice(i,1);saveHeld(hs);saveCart();srCloseHeld();renderQuoteScreen();sound("resume")};
+window.srDeleteHeld=i=>{let hs=held();hs.splice(i,1);saveHeld(hs);srOpenHeld()};
 
-async function srTrueRefresh(){
-  const pull=$("sr-pull"),btn=$("sr-refresh"); if(pull){pull.classList.add("show");pull.textContent="↻ Refreshing fresh stock…"} if(btn)btn.disabled=true;
+window.srSaveQuote=()=>{if(!cart.length)return toast("Quotation is empty");let a=saved(),t=totals(),p=party(),id=Date.now();a.unshift({id,created:new Date().toISOString(),party:p,items:structuredClone(cart),...t});saveSaved(a);toast("Quotation saved #"+String(id).slice(-6));sound("success")};
+window.srOpenSaved=()=>{document.getElementById("srq-saved-panel")?.remove();let a=saved(),p=document.createElement("aside");p.id="srq-saved-panel";p.className="srq-saved-panel";p.innerHTML=`<div class="srq-saved-head"><b>Saved Quotations</b><button class="srq-toolbtn" onclick="srCloseSaved()">×</button></div><div class="srq-saved-list">${a.length?a.map((h,i)=>`<div class="srq-saved"><b>#${String(h.id).slice(-6)} · ${escq(h.party?.name||"No party")}</b><br><small>${new Date(h.created).toLocaleString("en-IN")} · ${h.qty} qty · ${money(h.total)}</small><div class="srq-saved-actions"><button onclick="srLoadSaved(${i})">View/Edit</button><button onclick="srShareSaved(${i})">Share</button><button onclick="srDeleteSaved(${i})">Delete</button></div></div>`).join(""):`<div class="srq-empty"><b>No saved quotations</b></div>`}</div>`;document.body.appendChild(p);requestAnimationFrame(()=>p.classList.add("open"))};
+window.srCloseSaved=()=>{let p=$("srq-saved-panel");if(p){p.classList.remove("open");setTimeout(()=>p.remove(),250)}};
+window.srLoadSaved=i=>{let h=saved()[i];if(!h)return;if(cart.length&&!confirm("Load saved quotation into current draft?"))return;cart=structuredClone(h.items||[]);localStorage.setItem(PARTY_KEY,JSON.stringify(h.party||{}));saveCart();srCloseSaved();renderQuoteScreen()};
+window.srDeleteSaved=i=>{if(!confirm("Delete this saved quotation?"))return;let a=saved();a.splice(i,1);saveSaved(a);srOpenSaved()};
+window.srShareSaved=i=>{let h=saved()[i];if(!h)return;shareText(h.items,h.party,h)};
+
+function quoteText(items=cart,p=party(),t=totals()){let txt=`SR FASHION · PUSAD\nQUOTATION\n${p.date||new Date().toISOString().slice(0,10)}${p.name?"\nParty: "+p.name:""}${p.mobile?" · "+p.mobile:""}\n`;items.forEach((x,i)=>txt+=`${i+1}. ${x.name} | ${x.barcode||""} | Qty ${x.qty} | MRP ${money(x.mrp)} | Sale ${money(x.sale)} | Rate ${money(x.rate)} | ${money((+x.qty||0)*(+x.rate||0))}\n`);txt+=`TOTAL QTY: ${t.qty} | MRP: ${money(t.mrp)} | SALE: ${money(t.sale)} | TOTAL: ${money(t.total)}\nNO RETURN · NO EXCHANGE`;return txt}
+function shareText(items,p,t){let txt=quoteText(items,p,t);if(navigator.share)navigator.share({title:"SR Fashion Quotation",text:txt}).catch(()=>{});else navigator.clipboard?.writeText(txt).then(()=>toast("Quotation copied"))}
+window.srShareQuote=()=>shareText(cart,party(),totals());
+
+function receiptHTML(items=cart,p=party(),t=totals()){
+ return `<div id="sr-print-area"><div style="text-align:center;font-weight:900;font-size:18px">SR FASHION · PUSAD</div><div style="text-align:center;font-weight:800;font-size:14px">QUOTATION</div><div>${escq(p.date||new Date().toISOString().slice(0,10))}${p.name?" · "+escq(p.name):""}${p.mobile?" · "+escq(p.mobile):""}</div>${p.narration?`<div>${escq(p.narration)}</div>`:""}<hr style="margin:2px 0;border:0;border-top:1px dashed #000"><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th>#</th><th style="text-align:left">Name / Barcode</th><th>Qty</th><th>MRP</th><th>Sale</th><th>Amt</th></tr></thead><tbody>${items.map((x,i)=>`<tr><td>${i+1}</td><td>${escq(x.name)}<br>${escq(x.barcode||"")}</td><td style="text-align:center">${x.qty}</td><td style="text-align:right">${Math.round(x.mrp)}</td><td style="text-align:right">${Math.round(x.sale)}</td><td style="text-align:right">${Math.round((+x.qty||0)*(+x.rate||0))}</td></tr>`).join("")}</tbody></table><hr style="margin:2px 0;border:0;border-top:1px dashed #000"><div><b>Qty ${t.qty}</b> · MRP ${money(t.mrp)} · Sale ${money(t.sale)}</div><div style="font-size:12px;font-weight:900;text-align:right">TOTAL ${money(t.total)}</div><div style="text-align:center;margin-top:3px;font-weight:700">NO RETURN · NO EXCHANGE</div></div>`;
+}
+window.srPrintQuote=()=>{if(!cart.length)return toast("Quotation is empty");let w=document.createElement("div");w.innerHTML=receiptHTML();document.body.appendChild(w.firstChild);window.print();setTimeout(()=>$("sr-print-area")?.remove(),700)};
+window.srShareQuotePDF=()=>{if(!cart.length)return toast("Quotation is empty");srPrintQuote();toast("Choose Save as PDF in print dialog")};
+window.srShareQuoteImage=async()=>{if(!cart.length)return toast("Quotation is empty");let p=party(),t=totals(),lines=cart.length,W=760,H=230+lines*70,c=document.createElement("canvas");c.width=W;c.height=H;let x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,W,H);x.fillStyle="#111";x.font="bold 28px Arial";x.fillText("SR FASHION · PUSAD",24,38);x.font="bold 18px Arial";x.fillText("QUOTATION",24,68);x.font="14px Arial";x.fillText(`${p.date||""} ${p.name||""} ${p.mobile||""}`,24,94);let y=130;cart.forEach((r,i)=>{x.font="bold 14px Arial";x.fillText(`${i+1}. ${r.name} · ${r.alias||r.barcode||""}`,24,y);x.font="13px Arial";x.fillText(`Qty ${r.qty}   MRP ${money(r.mrp)}   Sale ${money(r.sale)}   Rate ${money(r.rate)}   Amount ${money((+r.qty||0)*(+r.rate||0))}`,24,y+24);y+=70});x.font="bold 18px Arial";x.fillText(`TOTAL QTY ${t.qty}   MRP ${money(t.mrp)}   SALE ${money(t.sale)}   TOTAL ${money(t.total)}`,24,H-55);x.font="bold 14px Arial";x.fillText("NO RETURN · NO EXCHANGE",24,H-25);c.toBlob(async b=>{let f=new File([b],"SR-Fashion-Quotation.png",{type:"image/png"});if(navigator.share&&navigator.canShare?.({files:[f]}))navigator.share({files:[f],title:"SR Fashion Quotation"}).catch(()=>{});else{let a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f.name;a.click();URL.revokeObjectURL(a.href)}}, "image/png")};
+
+let srBtDev=null, srBtChar=null, srBtConn=false;
+
+function srBuildEscPos(text){
+  const enc=new TextEncoder();
+  return new Uint8Array([
+    0x1B,0x40,                 // ESC @ initialize
+    0x1B,0x61,0x00,            // left align
+    ...enc.encode(text+"\n"),
+    0x1B,0x64,0x04,            // feed 4 lines
+    0x1D,0x56,0x41,0x10        // cut where supported
+  ]);
+}
+
+async function srBtConnectPrinter(){
+  if(!navigator.bluetooth){
+    alert("Bluetooth printing requires Chrome/Edge with Web Bluetooth support.");
+    return false;
+  }
+  if(location.protocol!=="https:" && location.hostname!=="localhost" && location.hostname!=="127.0.0.1"){
+    alert("Bluetooth requires HTTPS or localhost.");
+    return false;
+  }
   try{
-    localStorage.removeItem(STATE_KEY2);
-    if(typeof goHome==="function")goHome(); // clears search, filters, expansion and restores clean welcome
-    const r=await fetch("items.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);raw=await r.json();
-    $("badge").textContent=raw.length.toLocaleString()+" items";$("sr-count").textContent=raw.length.toLocaleString("en-IN")+" items";buildGroupChips();buildBrandChips();showWelcome();
-    sound("refresh");haptic([25,30,25]);toast("Fresh stock loaded · Home reset");
-  }catch(e){sound("error");toast("Refresh failed · "+e.message)}
-  finally{if(btn)btn.disabled=false;if(pull){pull.textContent="✓ Refreshed";setTimeout(()=>pull.classList.remove("show"),650)}}
+    srBtDev=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[
+        "000018f0-0000-1000-8000-00805f9b34fb",
+        "49535343-fe7d-4ae5-8fa9-9fafd205e455",
+        "6e400001-b5a3-f393-e0a9-e50e24dcca9e",
+        "0000ff00-0000-1000-8000-00805f9b34fb"
+      ]
+    });
+    toast("Connecting · "+(srBtDev.name||"Bluetooth printer"));
+    const server=await srBtDev.gatt.connect();
+    const services=await server.getPrimaryServices();
+    srBtChar=null;
+    for(const svc of services){
+      try{
+        const chars=await svc.getCharacteristics();
+        for(const ch of chars){
+          if(ch.properties.write || ch.properties.writeWithoutResponse){
+            srBtChar=ch; break;
+          }
+        }
+      }catch(e){}
+      if(srBtChar) break;
+    }
+    if(!srBtChar) throw new Error("Printer connected, but no writable print service was found.");
+    srBtConn=true;
+    srBtDev.addEventListener("gattserverdisconnected",()=>{
+      srBtConn=false; srBtChar=null;
+      toast("Bluetooth printer disconnected");
+    });
+    toast("Printer ready · "+(srBtDev.name||"Bluetooth"));
+    sound("success");
+    return true;
+  }catch(e){
+    if(e.name!=="NotFoundError") alert("Bluetooth: "+e.message);
+    return false;
+  }
 }
-$("sr-refresh").onclick=srTrueRefresh;
 
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
- let v=b.dataset.view;setActive(v);
- if(v==="home")return home();
- if(v==="search"){home();setTimeout(()=>{$("search")?.focus();$("search")?.scrollIntoView({behavior:"smooth",block:"center"})},120);return}
- if(v==="scan"){drawer(false);scannerForQuote=false;if(!navigator.mediaDevices?.getUserMedia){alert("Camera requires HTTPS on phones/tablets. Use the secure HTTPS version.");return}openScanner();return}
- if(v==="quote")return renderQuoteScreen();
- if(v==="stock"){screen("Stock","Inventory intelligence without cluttering Home",`<div class="sr-feature"><b>⚠ Low Stock</b><br>Use the Low Stock filter on Home for items ≤5.</div><div class="sr-feature"><b>✕ Out of Stock</b><br>Instantly isolate zero-stock products from Home.</div><div class="sr-feature"><b>⏳ Stock Age</b><br>Use entry-date filters to isolate recently created products.</div>`);return}
- if(v==="more"){screen("More","Utilities stay inside the menu so Home remains clean",`<div class="sr-feature"><b>⭐ Favorites</b><br>Frequently used products stay here.</div><div class="sr-feature"><b>⏸ Held Quotations</b><br><button onclick="renderQuoteScreen();setTimeout(srOpenHeld,100)">Open Held Quotations</button></div><div class="sr-feature"><b>🔊 Sound & Haptics</b><br>Modern contextual feedback is enabled.<br><button onclick="sound('success')">Test sound</button></div><div class="sr-feature"><b>⚡ Admin</b><br><button onclick="document.getElementById('admin-btn')?.click()">Open Admin</button></div>`);return}
-});
+async function srBtSend(bytes){
+  if(!srBtChar) throw new Error("Printer is not connected.");
+  // Conservative chunks work with common low-cost ESC/POS BLE printers.
+  for(let i=0;i<bytes.length;i+=120){
+    const chunk=bytes.slice(i,i+120);
+    if(srBtChar.properties.writeWithoutResponse && srBtChar.writeValueWithoutResponse){
+      await srBtChar.writeValueWithoutResponse(chunk);
+    }else{
+      await srBtChar.writeValue(chunk);
+    }
+    await new Promise(r=>setTimeout(r,40));
+  }
+}
 
-let sy=0,pulling=false;
-document.addEventListener("touchstart",e=>{let sc=$("scroll");let atTop=(!quoteOpen && (!sc || sc.scrollTop<=2) && window.scrollY<=2);if(atTop&&e.touches.length===1){sy=e.touches[0].clientY;pulling=true}},{passive:true});
-document.addEventListener("touchmove",e=>{if(!pulling)return;let d=e.touches[0].clientY-sy;if(d>32){$("sr-pull").classList.add("show");$("sr-pull").textContent=d>90?"↻ Release to refresh":"↓ Pull to refresh"}},{passive:true});
-document.addEventListener("touchend",()=>{if(!pulling)return;pulling=false;let release=$("sr-pull").classList.contains("show")&&$("sr-pull").textContent.includes("Release");if(release)srTrueRefresh();else $("sr-pull").classList.remove("show")},{passive:true});
+function srBluetoothReceiptText(){
+  // Reuse the existing compact quotation print HTML as text so no other quotation logic/UI changes.
+  const q=cart||[], p=party(), t=totals();
+  const lines=[];
+  lines.push("SR FASHION");
+  lines.push("QUOTATION");
+  lines.push("--------------------------------");
+  if(p.name) lines.push("Party: "+p.name);
+  if(p.mobile) lines.push("Mobile: "+p.mobile);
+  if(p.date) lines.push("Date: "+p.date);
+  if(p.narration) lines.push("Note: "+p.narration);
+  if(p.name||p.mobile||p.date||p.narration) lines.push("--------------------------------");
+  lines.push("No Item        Qty   Rate   Amt");
+  lines.push("--------------------------------");
+  q.forEach((x,i)=>{
+    const nm=String(x.name||x.ProductName||"").slice(0,18);
+    const code=String(x.alias||x.ProductCode||"");
+    const qty=Number(x.qty||1);
+    const rate=Number(x.rate||x.sale||0);
+    const amt=qty*rate;
+    lines.push((i+1)+". "+nm);
+    if(code) lines.push("   "+code);
+    lines.push("   "+qty+" x "+rate+" = "+amt);
+  });
+  lines.push("--------------------------------");
+  lines.push("Qty: "+Number(t.qty||0));
+  lines.push("MRP Total: "+Number(t.mrp||0));
+  lines.push("Sale Total: "+Number(t.sale||0));
+  lines.push("TOTAL: "+Number(t.amount||t.total||0));
+  lines.push("--------------------------------");
+  lines.push("NO RETURN · NO EXCHANGE");
+  lines.push("");
+  return lines.join("\n");
+}
 
-const previousScan=window.onScanResult;
-window.onScanResult=function(code){
- srLongBeep();try{$("scan-code").textContent="✓ "+code}catch(e){}
- setTimeout(()=>{
-   closeScanner();
-   if(scannerForQuote){
-     scannerForQuote=false;renderQuoteScreen();quoteSearch=String(code);if($("srq-search"))$("srq-search").value=code;if($("srq-results"))$("srq-results").innerHTML=quoteResultsHTML(code);
-     let idx=raw.findIndex(it=>String(it.barcode||"").trim()===String(code).trim());if(idx>=0){srQuoteAdd(idx);toast("Scanned & added · "+(raw[idx].name||code))}else{sound("error");toast("Barcode not found · "+code)}
-   }else{
-     home();let q=$("search");if(q){q.value=code;try{query=code}catch(e){}applyAll();setTimeout(()=>{let c=document.querySelector(".c");if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.animate([{outline:"4px solid #ffc542"},{outline:"0 solid transparent"}],{duration:1400})}},160)}toast("Barcode found · "+code)
-   }
- },180);
+window.srBluetoothPrint=async()=>{
+  try{
+    if(!srBtConn || !srBtDev || !srBtDev.gatt.connected || !srBtChar){
+      const ok=await srBtConnectPrinter();
+      if(!ok) return;
+    }
+    if(!cart || !cart.length){
+      alert("Add items to the quotation before printing.");
+      return;
+    }
+    const text=srBluetoothReceiptText();
+    const bytes=srBuildEscPos(text);
+    await srBtSend(bytes);
+    toast("Printed via Bluetooth ✓");
+    sound("success");
+  }catch(e){
+    srBtConn=false;
+    alert("Bluetooth print failed: "+e.message);
+  }
 };
 
-loadCart();renderQuoteCounters();
-setTimeout(()=>{try{$("sr-count").textContent=(raw?.length||0).toLocaleString("en-IN")+" items"}catch(e){}},1200);
+window.srOpenMobileCart=()=>{$("srq-cart")?.classList.add("mobile")};window.srCloseMobileCart=()=>{$("srq-cart")?.classList.remove("mobile")};
+window.srQuoteScan=async()=>{
+ scannerForQuote=true;
+ try{
+   // Fully close any stale scanner/stream before reopening.
+   try{ if(typeof stopScanner==="function") stopScanner(); }catch(e){}
+   try{ if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; } }catch(e){}
+   try{ closeScanner(); }catch(e){}
+   await new Promise(r=>setTimeout(r,120));
+   if(!navigator.mediaDevices?.getUserMedia){
+     alert("Camera scanner needs HTTPS on phones/tablets.");
+     return;
+   }
+   openScanner();
+ }catch(e){
+   scannerForQuote=false;
+   alert("Could not open camera. Please allow Camera permission and try again.");
+ }
+};
+window.srAddPrice=function(ri,type,e){e&&e.stopPropagation();if(!quoteOpen){if(type==="mrp"){copyItem(ri,e);return}return openExp(ri,type,e)}srPickQty(ri,type)};
+const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(c=>{if(c.dataset.srprice)return;c.dataset.srprice="1";[[".pb.m","mrp"],[".pb.s","sale"],[".pb.w","wholesale"]].forEach(([sel,type])=>{let p=c.querySelector(sel);if(!p)return;let m=(p.getAttribute("onclick")||"").match(/\((\d+)/);if(m)p.setAttribute("onclick",`srAddPrice(${m[1]},'${type}',event)`)})}));observer.observe(document.body,{childList:true,subtree:true});
+
+async function srTrueRefresh(){const pull=$("sr-pull"),btn=$("sr-refresh");if(pull){pull.classList.add("show");pull.textContent="↻ Refreshing…"}if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const r=await fetch("items.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);raw=await r.json();$("badge").textContent=raw.length.toLocaleString()+" items";$("sr-count").textContent=raw.length.toLocaleString("en-IN")+" items";buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Fresh stock loaded · Home fully reset")}catch(e){sound("error");toast("Refresh failed · "+e.message)}finally{btn&&(btn.disabled=false);if(pull){pull.textContent="✓ Refreshed";setTimeout(()=>pull.classList.remove("show"),650)}}}
+$("sr-refresh").onclick=srTrueRefresh;
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen()});
+
+let sy=0,pulling=false;
+document.addEventListener("touchstart",e=>{let sc=$("scroll"),atTop=!quoteOpen&&(!sc||sc.scrollTop<=2)&&window.scrollY<=2;if(atTop&&e.touches.length===1){sy=e.touches[0].clientY;pulling=true}},{passive:true});
+document.addEventListener("touchmove",e=>{if(!pulling)return;let d=e.touches[0].clientY-sy;if(d>32){$("sr-pull").classList.add("show");$("sr-pull").textContent=d>90?"↻ Release to refresh":"↓ Pull to refresh"}},{passive:true});
+document.addEventListener("touchend",()=>{if(!pulling)return;pulling=false;let ok=$("sr-pull").classList.contains("show")&&$("sr-pull").textContent.includes("Release");ok?srTrueRefresh():$("sr-pull").classList.remove("show")},{passive:true});
+
+let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
+window.onScanResult=function(code){
+ code=String(code??"").trim();
+ if(!code)return;
+ const now=Date.now();
+ if(srScanBusy || (code===srLastScanCode && now-srLastScanAt<1500))return;
+ srScanBusy=true; srLastScanCode=code; srLastScanAt=now;
+ srLongBeep();
+ try{$("scan-code").textContent="✓ "+code}catch(e){}
+ const wasQuote=!!scannerForQuote; scannerForQuote=false;
+ try{closeScanner()}catch(e){}
+ try{if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}}catch(e){}
+ setTimeout(()=>{
+  try{
+   if(wasQuote){
+    quoteSearch=code;
+    if(!quoteOpen)renderQuoteScreen();
+    const qs=$("srq-search"), qr=$("srq-results");
+    if(qs)qs.value=code; if(qr)qr.innerHTML=quoteResultsHTML(code);
+    const norm=v=>String(v??"").trim().replace(/\s+/g,"");
+    const target=norm(code);
+    let idx=raw.findIndex(it=>norm(it.barcode)===target);
+    if(idx<0)idx=raw.findIndex(it=>norm(it.alias)===target);
+    if(idx>=0){srAddWithQty(idx,"sale",1);toast("Scanned & added · "+(raw[idx].name||code));}
+    else toast("Barcode not found · "+code);
+   }else{
+    home();let q=$("search");if(q){q.value=code;query=code;applyAll()}toast("Barcode · "+code);
+   }
+  }finally{setTimeout(()=>{srScanBusy=false},350)}
+ },80);
+};
+
+loadCart();renderQuoteCounters();setTimeout(()=>{try{$("sr-count").textContent=(raw?.length||0).toLocaleString("en-IN")+" items"}catch(e){}},1000);
 })();
 </script>
 </body>

@@ -12,7 +12,7 @@
     "sale": 590,
     "wholesale": 515,
     "purchase": 480,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-25"
   },
   {
@@ -236,7 +236,7 @@
     "sale": 600,
     "wholesale": 535,
     "purchase": 490,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-21"
   },
   {
@@ -252,7 +252,7 @@
     "sale": 450,
     "wholesale": 385,
     "purchase": 345,
-    "stock": -4,
+    "stock": 4,
     "entryDate": "2026-07-21"
   },
   {
@@ -266,9 +266,9 @@
     "PartGroup": "COTTON SUIT",
     "mrp": 757.5,
     "sale": 600,
-    "wholesale": 520,
-    "purchase": 480,
-    "stock": 0,
+    "wholesale": 540,
+    "purchase": 505,
+    "stock": 4,
     "entryDate": "2026-07-21"
   },
   {
@@ -1228,7 +1228,7 @@
     "sale": 400,
     "wholesale": 365,
     "purchase": 340,
-    "stock": 6,
+    "stock": 15,
     "entryDate": "2026-07-12"
   },
   {
@@ -2651,8 +2651,8 @@
     "mrp": 361.5,
     "sale": 300,
     "wholesale": 285,
-    "purchase": 236,
-    "stock": 0,
+    "purchase": 241,
+    "stock": 8,
     "entryDate": "2026-07-12"
   },
   {
@@ -12986,9 +12986,9 @@
     "PartGroup": "COTTON SUIT",
     "mrp": 622.5,
     "sale": 550,
-    "wholesale": 520,
-    "purchase": 465,
-    "stock": 5,
+    "wholesale": 440,
+    "purchase": 415,
+    "stock": 4,
     "entryDate": "2026-07-12"
   },
   {
@@ -16875,8 +16875,8 @@
     "mrp": 361.5,
     "sale": 300,
     "wholesale": 260,
-    "purchase": 230,
-    "stock": 9,
+    "purchase": 241,
+    "stock": 8,
     "entryDate": "2026-07-12"
   },
   {

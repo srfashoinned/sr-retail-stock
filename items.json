@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33594,
+    "name": "OM ROYAL FRESH",
+    "alias": "P-33594",
+    "barcode": "4696",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 720,
+    "sale": 590,
+    "wholesale": 515,
+    "purchase": 480,
+    "stock": 0,
+    "entryDate": "2026-07-25"
+  },
+  {
     "ProductID": 33593,
     "name": "OM CHASVI",
     "alias": "P-33593",

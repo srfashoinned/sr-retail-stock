@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33593,
+    "name": "OM CHASVI",
+    "alias": "P-33593",
+    "barcode": "4695",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 735,
+    "sale": 600,
+    "wholesale": 525,
+    "purchase": 490,
+    "stock": 0,
+    "entryDate": "2026-07-25"
+  },
+  {
     "ProductID": 33592,
     "name": "KC PINK DOLL",
     "alias": "P-33592",

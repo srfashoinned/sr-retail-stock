@@ -25132,7 +25132,7 @@
     "sale": 600,
     "wholesale": 489.38,
     "purchase": 435,
-    "stock": 0,
+    "stock": -1,
     "entryDate": "2026-07-12"
   },
   {

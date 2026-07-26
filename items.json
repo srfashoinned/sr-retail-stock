@@ -59118,21 +59118,5 @@
     "purchase": 410,
     "stock": 2,
     "entryDate": "2026-07-10"
-  },
-  {
-    "ProductID": 0,
-    "name": "Innaya Sonpari",
-    "alias": "ST4119MDS",
-    "barcode": "ST4119MDS",
-    "group": "COTTON DUPATTA",
-    "Category": "GENERAL",
-    "SubCategory": "GENERAL",
-    "PartGroup": "COTTON DUPATTA",
-    "mrp": 787.5,
-    "sale": 630,
-    "wholesale": 570,
-    "purchase": 525,
-    "stock": 3,
-    "entryDate": "2026-07-12"
   }
 ]

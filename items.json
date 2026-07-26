@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33595,
+    "name": "OM LOCHA",
+    "alias": "P-33595",
+    "barcode": "4697",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "SUIT",
+    "mrp": 600,
+    "sale": 500,
+    "wholesale": 0,
+    "purchase": 0,
+    "stock": 0,
+    "entryDate": "2026-07-26"
+  },
+  {
     "ProductID": 33594,
     "name": "OM ROYAL FRESH",
     "alias": "P-33594",

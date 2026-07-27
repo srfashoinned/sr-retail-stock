@@ -12,7 +12,7 @@
     "sale": 470,
     "wholesale": 485,
     "purchase": 355,
-    "stock": 0,
+    "stock": 64,
     "entryDate": "2026-07-27"
   },
   {
@@ -28,7 +28,7 @@
     "sale": 600,
     "wholesale": 530,
     "purchase": 492,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -44,7 +44,7 @@
     "sale": 590,
     "wholesale": 500,
     "purchase": 471,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -60,7 +60,7 @@
     "sale": 550,
     "wholesale": 470,
     "purchase": 438,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -76,7 +76,7 @@
     "sale": 570,
     "wholesale": 485,
     "purchase": 460,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -92,7 +92,7 @@
     "sale": 600,
     "wholesale": 530,
     "purchase": 492,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -108,7 +108,7 @@
     "sale": 570,
     "wholesale": 600,
     "purchase": 450,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -124,7 +124,7 @@
     "sale": 590,
     "wholesale": 515,
     "purchase": 481,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -140,7 +140,7 @@
     "sale": 580,
     "wholesale": 500,
     "purchase": 471,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-07-27"
   },
   {
@@ -156,7 +156,7 @@
     "sale": 1350,
     "wholesale": 1200,
     "purchase": 1100,
-    "stock": 0,
+    "stock": 28,
     "entryDate": "2026-07-27"
   },
   {
@@ -172,7 +172,7 @@
     "sale": 500,
     "wholesale": 440,
     "purchase": 405,
-    "stock": 0,
+    "stock": 12,
     "entryDate": "2026-07-27"
   },
   {
@@ -252,7 +252,7 @@
     "sale": 370,
     "wholesale": 350,
     "purchase": 325,
-    "stock": 0,
+    "stock": 60,
     "entryDate": "2026-07-27"
   },
   {
@@ -266,9 +266,9 @@
     "PartGroup": "SUIT",
     "mrp": 657,
     "sale": 530,
-    "wholesale": 0,
-    "purchase": 0,
-    "stock": -1,
+    "wholesale": 480,
+    "purchase": 438,
+    "stock": 7,
     "entryDate": "2026-07-26"
   },
   {
@@ -1052,7 +1052,7 @@
     "sale": 370,
     "wholesale": 340,
     "purchase": 325,
-    "stock": 27,
+    "stock": 47,
     "entryDate": "2026-07-15"
   },
   {
@@ -31740,7 +31740,7 @@
     "sale": 350,
     "wholesale": 290,
     "purchase": 265,
-    "stock": 101,
+    "stock": 4,
     "entryDate": "2026-07-12"
   },
   {
@@ -47403,8 +47403,8 @@
     "mrp": 382.5,
     "sale": 300,
     "wholesale": 275,
-    "purchase": 245,
-    "stock": 0,
+    "purchase": 255,
+    "stock": 16,
     "entryDate": "2026-07-12"
   },
   {

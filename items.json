@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33601,
+    "name": "AFREEN NOOR",
+    "alias": "P-33601",
+    "barcode": "4703",
+    "group": "CATALOGUE SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "CATALOGUE SUIT",
+    "mrp": 607.5,
+    "sale": 500,
+    "wholesale": 440,
+    "purchase": 405,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33600,
     "name": "PATCH PRINT DUPATTA",
     "alias": "P-33600",

@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33609,
+    "name": "MF N 7",
+    "alias": "P-33609",
+    "barcode": "4711",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 706.5,
+    "sale": 590,
+    "wholesale": 500,
+    "purchase": 471,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33608,
     "name": "MF N 6",
     "alias": "P-33608",

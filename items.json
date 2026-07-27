@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33603,
+    "name": "MF N 1",
+    "alias": "P-33603",
+    "barcode": "4705",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 706.5,
+    "sale": 580,
+    "wholesale": 500,
+    "purchase": 471,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33602,
     "name": "KC PANT MIX",
     "alias": "P-33602",

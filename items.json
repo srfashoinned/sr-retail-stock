@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33599,
+    "name": "AHD DIL PRINT DUPATTA",
+    "alias": "P-33599",
+    "barcode": "4701",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 690,
+    "sale": 560,
+    "wholesale": 490,
+    "purchase": 460,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33598,
     "name": "LIBAS SET WISE",
     "alias": "P-33598",

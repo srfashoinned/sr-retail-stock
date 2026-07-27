@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33614,
+    "name": "LIBAS SET WISE",
+    "alias": "P-33614",
+    "barcode": "4716",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "SUIT",
+    "mrp": 950,
+    "sale": 750,
+    "wholesale": 515,
+    "purchase": 485,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33613,
     "name": "LIBAS SET WISE",
     "alias": "P-33613",

@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33612,
+    "name": "LIBAS SET WISE",
+    "alias": "P-33612",
+    "barcode": "4714",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 1100,
+    "sale": 600,
+    "wholesale": 505,
+    "purchase": 485,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33611,
     "name": "SUNNY JAM",
     "alias": "P-33611",

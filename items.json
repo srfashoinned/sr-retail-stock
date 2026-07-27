@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33600,
+    "name": "PATCH PRINT DUPATTA",
+    "alias": "P-33600",
+    "barcode": "4702",
+    "group": "COTTON SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "COTTON SUIT",
+    "mrp": 690,
+    "sale": 560,
+    "wholesale": 490,
+    "purchase": 460,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33599,
     "name": "AHD DIL PRINT DUPATTA",
     "alias": "P-33599",

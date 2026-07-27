@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33602,
+    "name": "KC PANT MIX",
+    "alias": "P-33602",
+    "barcode": "4704",
+    "group": "TROUSER",
+    "Category": "GENERAL",
+    "SubCategory": "TROUSER",
+    "PartGroup": "TROUSER",
+    "mrp": 1650,
+    "sale": 1350,
+    "wholesale": 1200,
+    "purchase": 1100,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33601,
     "name": "AFREEN NOOR",
     "alias": "P-33601",

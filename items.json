@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33597,
+    "name": "KF ZOYA",
+    "alias": "P-33597",
+    "barcode": "4699",
+    "group": "COTTON SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "COTTON SUIT",
+    "mrp": 765,
+    "sale": 650,
+    "wholesale": 545,
+    "purchase": 510,
+    "stock": 0,
+    "entryDate": "2026-07-27"
+  },
+  {
     "ProductID": 33596,
     "name": "JT AKIRA",
     "alias": "P-33596",

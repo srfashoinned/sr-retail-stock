@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33618,
+    "name": "KC PANT MIX",
+    "alias": "P-33618",
+    "barcode": "4720",
+    "group": "TROUSER",
+    "Category": "GENERAL",
+    "SubCategory": "TROUSER",
+    "PartGroup": "TROUSER",
+    "mrp": 1650,
+    "sale": 1350,
+    "wholesale": 1200,
+    "purchase": 1100,
+    "stock": 14,
+    "entryDate": "2026-07-29"
+  },
+  {
     "ProductID": 33617,
     "name": "LIBAS SET WISE",
     "alias": "P-33617",

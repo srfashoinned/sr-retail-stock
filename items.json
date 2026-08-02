@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33620,
+    "name": "OM DIL DIWANA",
+    "alias": "P-33620",
+    "barcode": "4722",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 660,
+    "sale": 530,
+    "wholesale": 480,
+    "purchase": 440,
+    "stock": 0,
+    "entryDate": "2026-08-02"
+  },
+  {
     "ProductID": 33619,
     "name": "OM DIL SE",
     "alias": "P-33619",

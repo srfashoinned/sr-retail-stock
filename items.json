@@ -12,7 +12,7 @@
     "sale": 550,
     "wholesale": 460,
     "purchase": 425,
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-08-02"
   },
   {
@@ -26,9 +26,9 @@
     "PartGroup": "SUIT",
     "mrp": 532,
     "sale": 450,
-    "wholesale": 455,
-    "purchase": 425,
-    "stock": 0,
+    "wholesale": 390,
+    "purchase": 355,
+    "stock": 8,
     "entryDate": "2026-08-02"
   },
   {
@@ -44,7 +44,7 @@
     "sale": 450,
     "wholesale": 380,
     "purchase": 350,
-    "stock": 0,
+    "stock": 16,
     "entryDate": "2026-08-02"
   },
   {
@@ -60,7 +60,7 @@
     "sale": 530,
     "wholesale": 480,
     "purchase": 440,
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-08-02"
   },
   {
@@ -72,11 +72,11 @@
     "Category": "GENERAL",
     "SubCategory": "SUIT",
     "PartGroup": "SUIT",
-    "mrp": 637.5,
+    "mrp": 660,
     "sale": 530,
-    "wholesale": 450,
-    "purchase": 425,
-    "stock": 0,
+    "wholesale": 480,
+    "purchase": 440,
+    "stock": 8,
     "entryDate": "2026-08-02"
   },
   {
@@ -459,8 +459,8 @@
     "mrp": 657,
     "sale": 530,
     "wholesale": 480,
-    "purchase": 438,
-    "stock": 0,
+    "purchase": 435,
+    "stock": 8,
     "entryDate": "2026-07-26"
   },
   {
@@ -907,8 +907,8 @@
     "mrp": 742.5,
     "sale": 580,
     "wholesale": 535,
-    "purchase": 481,
-    "stock": 22,
+    "purchase": 482,
+    "stock": 38,
     "entryDate": "2026-07-19"
   },
   {
@@ -17340,7 +17340,7 @@
     "sale": 300,
     "wholesale": 260,
     "purchase": 241,
-    "stock": -4,
+    "stock": 12,
     "entryDate": "2026-07-12"
   },
   {

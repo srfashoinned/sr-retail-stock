@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33623,
+    "name": "OM SUI DIL",
+    "alias": "P-33623",
+    "barcode": "4725",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 637.5,
+    "sale": 550,
+    "wholesale": 460,
+    "purchase": 425,
+    "stock": 0,
+    "entryDate": "2026-08-02"
+  },
+  {
     "ProductID": 33622,
     "name": "PC LAADLI",
     "alias": "P-33622",

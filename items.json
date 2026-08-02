@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33619,
+    "name": "OM DIL SE",
+    "alias": "P-33619",
+    "barcode": "4721",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 637.5,
+    "sale": 530,
+    "wholesale": 450,
+    "purchase": 425,
+    "stock": 0,
+    "entryDate": "2026-08-02"
+  },
+  {
     "ProductID": 33618,
     "name": "KC PANT MIX",
     "alias": "P-33618",

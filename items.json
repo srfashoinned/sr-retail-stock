@@ -1692,7 +1692,7 @@
     "sale": 400,
     "wholesale": 365,
     "purchase": 340,
-    "stock": 14,
+    "stock": 34,
     "entryDate": "2026-07-12"
   },
   {
@@ -24488,11 +24488,11 @@
     "Category": "GENERAL",
     "SubCategory": "GENERAL",
     "PartGroup": "CATALOGUE SUIT",
-    "mrp": 487.5,
-    "sale": 370,
-    "wholesale": 340,
-    "purchase": 325,
-    "stock": 25,
+    "mrp": 525,
+    "sale": 400,
+    "wholesale": 375,
+    "purchase": 350,
+    "stock": 12,
     "entryDate": "2026-07-12"
   },
   {
@@ -46538,9 +46538,9 @@
     "PartGroup": "CATALOGUE SUIT",
     "mrp": 510,
     "sale": 400,
-    "wholesale": 390,
-    "purchase": 370,
-    "stock": 28,
+    "wholesale": 365,
+    "purchase": 340,
+    "stock": 9,
     "entryDate": "2026-07-12"
   },
   {
@@ -46572,7 +46572,7 @@
     "sale": 400,
     "wholesale": 365,
     "purchase": 340,
-    "stock": 4,
+    "stock": 28,
     "entryDate": "2026-07-12"
   },
   {
@@ -46620,7 +46620,7 @@
     "sale": 400,
     "wholesale": 375,
     "purchase": 345,
-    "stock": -1,
+    "stock": 19,
     "entryDate": "2026-07-12"
   },
   {

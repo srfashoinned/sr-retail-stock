@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33622,
+    "name": "PC LAADLI",
+    "alias": "P-33622",
+    "barcode": "4724",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 637.5,
+    "sale": 530,
+    "wholesale": 455,
+    "purchase": 425,
+    "stock": 0,
+    "entryDate": "2026-08-02"
+  },
+  {
     "ProductID": 33621,
     "name": "OM HEART BEAT",
     "alias": "P-33621",

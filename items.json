@@ -54892,7 +54892,7 @@
     "sale": 0,
     "wholesale": 0,
     "purchase": 0,
-    "stock": 0,
+    "stock": -1,
     "entryDate": "2026-07-12"
   },
   {

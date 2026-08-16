@@ -1404,7 +1404,7 @@
     "sale": 450,
     "wholesale": 400,
     "purchase": 345,
-    "stock": -15,
+    "stock": -20,
     "entryDate": "2026-07-15"
   },
   {
@@ -1420,7 +1420,7 @@
     "sale": 500,
     "wholesale": 400,
     "purchase": 345,
-    "stock": -52,
+    "stock": -53,
     "entryDate": "2026-07-15"
   },
   {

@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33633,
+    "name": "Suit Pashmina dupatta",
+    "alias": "P-33633",
+    "barcode": "4735",
+    "group": "suit",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "suit",
+    "mrp": 292,
+    "sale": 250,
+    "wholesale": 225,
+    "purchase": 196,
+    "stock": 0,
+    "entryDate": "2026-08-17"
+  },
+  {
     "ProductID": 33632,
     "name": "GNA JAM ZARKAN",
     "alias": "P-33632",
@@ -2136,7 +2152,7 @@
     "Category": "GENERAL",
     "SubCategory": "GENERAL",
     "PartGroup": "COTTON SUIT",
-    "mrp": 367.5,
+    "mrp": 360,
     "sale": 300,
     "wholesale": 270,
     "purchase": 245,

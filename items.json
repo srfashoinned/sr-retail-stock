@@ -508,7 +508,7 @@
     "sale": 1350,
     "wholesale": 1200,
     "purchase": 1100,
-    "stock": 26,
+    "stock": 25,
     "entryDate": "2026-07-27"
   },
   {
@@ -1420,7 +1420,7 @@
     "sale": 450,
     "wholesale": 400,
     "purchase": 345,
-    "stock": -28,
+    "stock": -30,
     "entryDate": "2026-07-15"
   },
   {
@@ -11996,7 +11996,7 @@
     "sale": 550,
     "wholesale": 455,
     "purchase": 435,
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -23612,7 +23612,7 @@
     "sale": 700,
     "wholesale": 0,
     "purchase": 380,
-    "stock": 7,
+    "stock": 6,
     "entryDate": "2026-07-12"
   },
   {

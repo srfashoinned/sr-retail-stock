@@ -1,5 +1,37 @@
 [
   {
+    "ProductID": 33646,
+    "name": "KC DANCE CLUB",
+    "alias": "P-33646",
+    "barcode": "4748",
+    "group": "TROUSER",
+    "Category": "GENERAL",
+    "SubCategory": "TROUSER",
+    "PartGroup": "TROUSER",
+    "mrp": 1462.5,
+    "sale": 1250,
+    "wholesale": 1060,
+    "purchase": 975,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
+    "ProductID": 33645,
+    "name": "KC SOLID WALK",
+    "alias": "P-33645",
+    "barcode": "4747",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 1545,
+    "sale": 1250,
+    "wholesale": 1130,
+    "purchase": 1030,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33644,
     "name": "KC TASTY DHAMAKA",
     "alias": "P-33644",

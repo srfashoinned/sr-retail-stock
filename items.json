@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33634,
+    "name": "KC MIX DESIGN GHARARA",
+    "alias": "P-33634",
+    "barcode": "4736",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 1747.5,
+    "sale": 1500,
+    "wholesale": 0,
+    "purchase": 1165,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33633,
     "name": "Suit Pashmina dupatta",
     "alias": "P-33633",

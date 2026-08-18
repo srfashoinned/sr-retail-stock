@@ -40,8 +40,8 @@
     "Category": "GENERAL",
     "SubCategory": "PLAZO",
     "PartGroup": "PLAZO",
-    "mrp": 1800,
-    "sale": 1550,
+    "mrp": 2500,
+    "sale": 1750,
     "wholesale": 1300,
     "purchase": 1200,
     "stock": 4,
@@ -48092,7 +48092,7 @@
     "sale": 300,
     "wholesale": 275,
     "purchase": 255,
-    "stock": 16,
+    "stock": 14,
     "entryDate": "2026-07-12"
   },
   {

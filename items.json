@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33641,
+    "name": "KC MASTI CLUB",
+    "alias": "P-33641",
+    "barcode": "4743",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 1035,
+    "sale": 850,
+    "wholesale": 780,
+    "purchase": 690,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33640,
     "name": "KC PATOLA SWEET",
     "alias": "P-33640",

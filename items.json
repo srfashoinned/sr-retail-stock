@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33635,
+    "name": "KC STYLISH TREND",
+    "alias": "P-33635",
+    "barcode": "4737",
+    "group": "TROUSER",
+    "Category": "GENERAL",
+    "SubCategory": "TROUSER",
+    "PartGroup": "TROUSER",
+    "mrp": 1800,
+    "sale": 1550,
+    "wholesale": 1350,
+    "purchase": 1200,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33634,
     "name": "KC MIX DESIGN GHARARA",
     "alias": "P-33634",

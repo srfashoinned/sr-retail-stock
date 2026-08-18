@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33636,
+    "name": "OM NAYNTARA",
+    "alias": "P-33636",
+    "barcode": "4738",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 495,
+    "sale": 500,
+    "wholesale": 355,
+    "purchase": 330,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33635,
     "name": "KC STYLISH TREND",
     "alias": "P-33635",

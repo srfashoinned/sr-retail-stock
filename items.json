@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33637,
+    "name": "OM SUPERFAST",
+    "alias": "P-33637",
+    "barcode": "4739",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 330,
+    "sale": 330,
+    "wholesale": 270,
+    "purchase": 220,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33636,
     "name": "OM NAYNTARA",
     "alias": "P-33636",

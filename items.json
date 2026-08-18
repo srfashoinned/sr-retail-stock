@@ -12,7 +12,7 @@
     "sale": 620,
     "wholesale": 540,
     "purchase": 505,
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-08-18"
   },
   {
@@ -28,7 +28,7 @@
     "sale": 650,
     "wholesale": 555,
     "purchase": 535,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -44,7 +44,7 @@
     "sale": 1550,
     "wholesale": 1300,
     "purchase": 1200,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -60,7 +60,7 @@
     "sale": 1650,
     "wholesale": 1300,
     "purchase": 1200,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -76,7 +76,7 @@
     "sale": 1600,
     "wholesale": 1350,
     "purchase": 1200,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -92,7 +92,7 @@
     "sale": 1350,
     "wholesale": 1080,
     "purchase": 975,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -108,7 +108,7 @@
     "sale": 1300,
     "wholesale": 1090,
     "purchase": 975,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -124,7 +124,7 @@
     "sale": 1250,
     "wholesale": 1060,
     "purchase": 975,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -140,7 +140,7 @@
     "sale": 1250,
     "wholesale": 1060,
     "purchase": 975,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -156,7 +156,7 @@
     "sale": 1250,
     "wholesale": 1130,
     "purchase": 1030,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -172,7 +172,7 @@
     "sale": 1250,
     "wholesale": 1130,
     "purchase": 1030,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -188,7 +188,7 @@
     "sale": 850,
     "wholesale": 780,
     "purchase": 690,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -204,7 +204,7 @@
     "sale": 850,
     "wholesale": 780,
     "purchase": 690,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -220,7 +220,7 @@
     "sale": 850,
     "wholesale": 780,
     "purchase": 690,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -236,7 +236,7 @@
     "sale": 900,
     "wholesale": 780,
     "purchase": 690,
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-18"
   },
   {
@@ -380,7 +380,7 @@
     "sale": 650,
     "wholesale": 555,
     "purchase": 525,
-    "stock": 6,
+    "stock": 14,
     "entryDate": "2026-08-09"
   },
   {
@@ -396,7 +396,7 @@
     "sale": 650,
     "wholesale": 605,
     "purchase": 575,
-    "stock": 4,
+    "stock": 8,
     "entryDate": "2026-08-09"
   },
   {
@@ -412,7 +412,7 @@
     "sale": 650,
     "wholesale": 555,
     "purchase": 525,
-    "stock": 4,
+    "stock": 8,
     "entryDate": "2026-08-09"
   },
   {
@@ -444,7 +444,7 @@
     "sale": 600,
     "wholesale": 500,
     "purchase": 465,
-    "stock": 0,
+    "stock": 10,
     "entryDate": "2026-08-09"
   },
   {
@@ -22266,9 +22266,9 @@
     "PartGroup": "COTTON SUIT",
     "mrp": 697.5,
     "sale": 600,
-    "wholesale": 550,
-    "purchase": 510,
-    "stock": 0,
+    "wholesale": 505,
+    "purchase": 465,
+    "stock": 12,
     "entryDate": "2026-07-12"
   },
   {
@@ -25338,9 +25338,9 @@
     "PartGroup": "TROSUER",
     "mrp": 877.5,
     "sale": 750,
-    "wholesale": 1170,
-    "purchase": 985,
-    "stock": 0,
+    "wholesale": 625,
+    "purchase": 585,
+    "stock": 12,
     "entryDate": "2026-07-12"
   },
   {

@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33643,
+    "name": "KC MASTI MOOD",
+    "alias": "P-33643",
+    "barcode": "4745",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 1035,
+    "sale": 850,
+    "wholesale": 780,
+    "purchase": 690,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33642,
     "name": "KC STYLE STATION",
     "alias": "P-33642",
@@ -6620,7 +6636,7 @@
     "sale": 550,
     "wholesale": 480,
     "purchase": 425,
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {

@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33638,
+    "name": "OM ALIF LAILA",
+    "alias": "P-33638",
+    "barcode": "4740",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 487.5,
+    "sale": 400,
+    "wholesale": 355,
+    "purchase": 325,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33637,
     "name": "OM SUPERFAST",
     "alias": "P-33637",

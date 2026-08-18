@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33654,
+    "name": "OM KIARA",
+    "alias": "P-33654",
+    "barcode": "4756",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 757.5,
+    "sale": 620,
+    "wholesale": 540,
+    "purchase": 505,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33653,
     "name": "MONU FANCY",
     "alias": "P-33653",

@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33644,
+    "name": "KC TASTY DHAMAKA",
+    "alias": "P-33644",
+    "barcode": "4746",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 1545,
+    "sale": 1250,
+    "wholesale": 1130,
+    "purchase": 1030,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33643,
     "name": "KC MASTI MOOD",
     "alias": "P-33643",
@@ -22088,8 +22104,8 @@
     "Category": "GENERAL",
     "SubCategory": "GENERAL",
     "PartGroup": "COTTON SUIT",
-    "mrp": 765,
-    "sale": 650,
+    "mrp": 697.5,
+    "sale": 600,
     "wholesale": 550,
     "purchase": 510,
     "stock": 0,

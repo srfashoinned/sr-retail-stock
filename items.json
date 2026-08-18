@@ -1,5 +1,21 @@
 [
   {
+    "ProductID": 33653,
+    "name": "MONU FANCY",
+    "alias": "P-33653",
+    "barcode": "4755",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 802.5,
+    "sale": 650,
+    "wholesale": 555,
+    "purchase": 535,
+    "stock": 0,
+    "entryDate": "2026-08-18"
+  },
+  {
     "ProductID": 33652,
     "name": "KC DREAMY DUNIYA",
     "alias": "P-33652",
@@ -25304,8 +25320,8 @@
     "Category": "GENERAL",
     "SubCategory": "GENERAL",
     "PartGroup": "TROSUER",
-    "mrp": 1477.5,
-    "sale": 1300,
+    "mrp": 877.5,
+    "sale": 750,
     "wholesale": 1170,
     "purchase": 985,
     "stock": 0,

@@ -28969,10 +28969,10 @@
     "SubCategory": "GENERAL",
     "PartGroup": "SUIT",
     "mrp": 817.5,
-    "sale": 600,
+    "sale": 400,
     "wholesale": 613.12,
     "purchase": 545,
-    "stock": -1,
+    "stock": -2,
     "entryDate": "2026-07-12"
   },
   {
@@ -40281,7 +40281,7 @@
     "SubCategory": "GENERAL",
     "PartGroup": "SUIT",
     "mrp": 818,
-    "sale": 600,
+    "sale": 550,
     "wholesale": 613.5,
     "purchase": 545.33,
     "stock": 6,

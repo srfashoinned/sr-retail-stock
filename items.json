@@ -1,5 +1,37 @@
 [
   {
+    "ProductID": 33656,
+    "name": "RRT COTTON",
+    "alias": "P-33656",
+    "barcode": "4758",
+    "group": "COTTON DUPATTA",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "COTTON DUPATTA",
+    "mrp": 550,
+    "sale": 400,
+    "wholesale": 280,
+    "purchase": 250,
+    "stock": 50,
+    "entryDate": "2026-08-22"
+  },
+  {
+    "ProductID": 33655,
+    "name": "RRT COTTON",
+    "alias": "P-33655",
+    "barcode": "4757",
+    "group": "COTTON DUPATTA",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "COTTON DUPATTA",
+    "mrp": 550,
+    "sale": 400,
+    "wholesale": 280,
+    "purchase": 250,
+    "stock": 50,
+    "entryDate": "2026-08-22"
+  },
+  {
     "ProductID": 33654,
     "name": "OM KIARA",
     "alias": "P-33654",

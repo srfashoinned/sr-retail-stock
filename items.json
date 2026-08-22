@@ -29577,10 +29577,10 @@
     "SubCategory": "GENERAL",
     "PartGroup": "SUIT",
     "mrp": 682.5,
-    "sale": 600,
+    "sale": 500,
     "wholesale": 511.88,
     "purchase": 455,
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {

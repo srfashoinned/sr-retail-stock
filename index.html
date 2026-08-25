@@ -811,6 +811,9 @@ const SHOP_PHONE   = "7588756668";
 /* Image storage config */
 const MAX_IMAGES = 10;
 const IMAGE_API_BASE = '/image-api';
+const LEGACY_IMAGE_OWNER = 'srfashoinned';
+const LEGACY_IMAGE_REPO = 'image-storage-psd';
+const LEGACY_IMAGE_BRANCH = 'main';
 
 const IMAGE_SOURCE   = 'local';
 const IMAGE_BASE_URL = 'images/';
@@ -836,7 +839,30 @@ function getImageUrls(it){
     IMAGE_BASE_URL + alias + '.jpeg',
     IMAGE_BASE_URL + alias + '.webp'
   );
+  for(let i = 1; i <= MAX_IMAGES; i++){
+    urls.push(
+      `https://raw.githubusercontent.com/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/${LEGACY_IMAGE_BRANCH}/products/${encodeURIComponent(alias)}/${i}.jpg`,
+      `https://raw.githubusercontent.com/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/${LEGACY_IMAGE_BRANCH}/products/${encodeURIComponent(alias)}/${i}.jpeg`,
+      `https://raw.githubusercontent.com/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/${LEGACY_IMAGE_BRANCH}/products/${encodeURIComponent(alias)}/${i}.png`,
+      `https://raw.githubusercontent.com/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/${LEGACY_IMAGE_BRANCH}/products/${encodeURIComponent(alias)}/${i}.webp`
+    );
+  }
   return urls;
+}
+
+async function loadLegacyImages(alias){
+  const apiUrl = `https://api.github.com/repos/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/contents/products/${encodeURIComponent(alias)}?ref=${LEGACY_IMAGE_BRANCH}&t=${Date.now()}`;
+  try{
+    const r = await fetch(apiUrl, { cache:'no-store', headers:{ 'Accept':'application/vnd.github+json' } });
+    if(!r.ok) return [];
+    const files = await r.json();
+    return files
+      .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
+      .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}))
+      .map(f => ({ name:f.name, url:f.download_url, legacy:true }));
+  }catch(_){
+    return [];
+  }
 }
 
 const GAP   = 16;
@@ -1573,12 +1599,18 @@ async function expLoadImages(it){
   const apiUrl = `${IMAGE_API_BASE}/list?alias=${encodeURIComponent(alias)}&t=${Date.now()}`;
   try{
     const r = await fetch(apiUrl, { cache:'no-store' });
-    if(!r.ok) return;
+    if(!r.ok){
+      expLoadedImages = await loadLegacyImages(alias);
+      return;
+    }
     const data = await r.json();
-    expLoadedImages = (data.images || [])
+    const siteImages = (data.images || [])
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
       .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-  }catch(_){}
+    expLoadedImages = siteImages.length ? siteImages : await loadLegacyImages(alias);
+  }catch(_){
+    expLoadedImages = await loadLegacyImages(alias);
+  }
 }
 
 async function doExpWA(){
@@ -2031,6 +2063,7 @@ document.getElementById("exp-ov").addEventListener("click",e=>{ if(e.target.id==
 let pimToken = '';
 let pimCurrentItem = null;
 let pimImages = [];    /* [{name, url}] loaded from website image storage */
+let pimStorageCount = 0;
 let pimFsIdx  = 0;
 
 function pimInitToken(){
@@ -2108,14 +2141,17 @@ async function pimLoad(){
     const r = await fetch(apiUrl, { cache:'no-store' });
     if(!r.ok) throw new Error('Image storage error: ' + r.status);
     const data = await r.json();
-    pimImages = (data.images || [])
+    const siteImages = (data.images || [])
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
       .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
+    pimStorageCount = siteImages.length;
+    pimImages = siteImages.length ? siteImages : await loadLegacyImages(alias);
     pimRenderGrid();
   }catch(err){
-    pimImages = [];
+    pimStorageCount = 0;
+    pimImages = await loadLegacyImages(alias);
     pimRenderGrid();
-    toast('⚠️ ' + err.message);
+    if(!pimImages.length) toast('⚠️ ' + err.message);
   }
 }
 
@@ -2131,7 +2167,7 @@ function pimRenderGrid(){
   document.getElementById('pim-count-badge').textContent = count + ' / ' + MAX_IMAGES;
 
   const hasUploadKey = !!pimToken;
-  const canUpload = isAdmin && hasUploadKey && count < MAX_IMAGES;
+  const canUpload = isAdmin && hasUploadKey && pimStorageCount < MAX_IMAGES;
   const canDelete = isAdmin && hasUploadKey;
 
   /* footer hint */
@@ -2146,7 +2182,7 @@ function pimRenderGrid(){
     hint.textContent = '👀 View only. Only admins can delete images.';
     hint.style.color = 'var(--muted)';
   } else {
-    hint.textContent = 'Images are saving on website storage.';
+    hint.textContent = pimStorageCount ? 'Images are saving on Hostinger storage.' : 'Old GitHub images are visible. New uploads will save on Hostinger.';
     hint.style.color = 'var(--green)';
   }
 
@@ -2163,12 +2199,12 @@ function pimRenderGrid(){
   let html = '';
 
   pimImages.forEach((img, idx) => {
-    const delBtn = canDelete
+    const delBtn = canDelete && !img.legacy
       ? `<button class="pim-del show" onclick="pimConfirmDelete(${idx},event)" title="Delete image">✕</button>`
       : '';
     html += `<div class="pim-cell" onclick="pimOpenFs(${idx})">
       <img src="${img.url}" alt="${img.name}" loading="lazy">
-      <div class="pim-num">${idx+1}</div>
+      <div class="pim-num">${img.legacy ? 'Old' : idx+1}</div>
       ${delBtn}
     </div>`;
   });
@@ -2184,7 +2220,7 @@ function pimRenderGrid(){
       <div class="pim-add-icon">📷</div>
       <div class="pim-add-txt">Camera</div>
     </div>`;
-  } else if(count >= MAX_IMAGES){
+  } else if(pimStorageCount >= MAX_IMAGES){
     html += `<div class="pim-add-cell locked" title="Max 10 images reached">
       <div class="pim-add-icon">🚫</div>
       <div class="pim-add-txt">Max reached</div>
@@ -2242,7 +2278,7 @@ async function pimHandleFiles(files){
   if(!isAdmin){ toast('🔒 Open admin mode first'); return; }
   if(!pimToken){ toast('🔐 Enter upload password first'); return; }
 
-  const available = MAX_IMAGES - pimImages.length;
+  const available = MAX_IMAGES - pimStorageCount;
   if(available <= 0){ toast('🚫 Max 10 images per product'); return; }
 
   const toUpload = Array.from(files).slice(0, available);
@@ -2306,6 +2342,7 @@ function pimConfirmDelete(idx, e){
   if(!pimToken){ toast('🔐 Upload password required'); return; }
   const img = pimImages[idx];
   if(!img) return;
+  if(img.legacy){ toast('Old GitHub image is read-only. New images save on Hostinger.'); return; }
   if(!confirm(`Delete image "${img.name}"?\nThis cannot be undone.`)) return;
   pimDeleteOne(img, idx);
 }

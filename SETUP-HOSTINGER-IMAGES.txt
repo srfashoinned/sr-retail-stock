@@ -7,3 +7,6 @@ SR Fashion product image upload setup
 5. Put your private image upload password inside that file.
 6. Do not share that password publicly.
 7. Product images will save under images/products/PRODUCT-CODE/.
+
+Old GitHub images are kept as read-only fallback.
+New uploads and deletes are permanent on Hostinger/local website storage.

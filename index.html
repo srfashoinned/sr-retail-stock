@@ -874,15 +874,72 @@ let imgTryIdx   = 0;
 /* ═══════════════════════════════════════════
    LOAD DATA
 ═══════════════════════════════════════════ */
+const LIVE_STOCK_API = "https://live-stock.srfashionned.in/api/items";
+const LOCAL_STOCK_API = "http://localhost:3030/api/items";
+const STOCK_CACHE_KEY = "sr_live_stock_cache_v1";
+const STOCK_CACHE_TIME_KEY = "sr_live_stock_cache_time_v1";
+
+function setStockStatus(source, count, extra = "") {
+  const text = source === "live"
+    ? `Live Retail Daddy stock · ${count.toLocaleString("en-IN")} items`
+    : `Cached stock · ${count.toLocaleString("en-IN")} items${extra ? " · " + extra : ""}`;
+  const badge = document.getElementById("badge");
+  if (badge) badge.textContent = count.toLocaleString("en-IN") + " items";
+  const srCount = document.getElementById("sr-count");
+  if (srCount) srCount.textContent = count.toLocaleString("en-IN") + " items";
+  const status = document.getElementById("status");
+  if (status) status.textContent = text;
+}
+
+async function fetchStockJson(url) {
+  const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const payload = await r.json();
+  return Array.isArray(payload) ? { source: "file", items: payload } : payload;
+}
+
+async function getStockData(forceLive = false) {
+  const apiUrl = location.hostname === "localhost" || location.hostname === "127.0.0.1"
+    ? LOCAL_STOCK_API
+    : LIVE_STOCK_API;
+
+  try {
+    const payload = await fetchStockJson(apiUrl);
+    const items = payload.items || [];
+    if (!Array.isArray(items)) throw new Error("Bad stock response");
+    localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(items));
+    localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
+    return { source: payload.source || "live", items, updatedAt: payload.updatedAt || new Date().toISOString() };
+  } catch (liveError) {
+    if (forceLive) throw liveError;
+    try {
+      const cached = JSON.parse(localStorage.getItem(STOCK_CACHE_KEY) || "[]");
+      if (Array.isArray(cached) && cached.length) {
+        return { source: "browser-cache", items: cached, error: liveError.message, updatedAt: localStorage.getItem(STOCK_CACHE_TIME_KEY) || "" };
+      }
+    } catch (e) {}
+
+    const filePayload = await fetchStockJson("items.json");
+    const fileItems = filePayload.items || [];
+    if (Array.isArray(fileItems) && fileItems.length) {
+      localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(fileItems));
+      localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
+      return { source: "file-cache", items: fileItems, error: liveError.message };
+    }
+    throw liveError;
+  }
+}
+
 async function loadData(){
   try{
-    const r = await fetch("items.json?t="+Date.now());
-    if(!r.ok) throw new Error("HTTP "+r.status);
-    raw = await r.json();
-    document.getElementById("badge").textContent = raw.length.toLocaleString()+" items";
+    const payload = await getStockData();
+    raw = payload.items;
+    setStockStatus(payload.source === "live" ? "live" : "cache", raw.length, payload.error ? "live offline" : "");
     buildGroupChips();
     buildBrandChips();
-  }catch(e){}
+  }catch(e){
+    toast("Stock load failed: "+e.message);
+  }
   showWelcome();
   initBiometric();
   pimInitToken();
@@ -892,14 +949,13 @@ async function refreshData(){
   const btn = document.getElementById("refresh-btn");
   btn.classList.add("spinning");
   try{
-    const r = await fetch("items.json?t="+Date.now());
-    if(!r.ok) throw new Error("HTTP "+r.status);
-    raw = await r.json();
-    document.getElementById("badge").textContent = raw.length.toLocaleString()+" items";
+    const payload = await getStockData(true);
+    raw = payload.items;
+    setStockStatus("live", raw.length);
     buildGroupChips();
     buildBrandChips();
     applyAll();
-    toast("🔄 Refreshed — "+raw.length.toLocaleString()+" items");
+    toast("🔄 Live stock refreshed — "+raw.length.toLocaleString()+" items");
   }catch(e){
     toast("❌ Refresh failed: "+e.message);
   }finally{
@@ -2743,7 +2799,7 @@ window.srQuoteScan=async()=>{
 window.srAddPrice=function(ri,type,e){e&&e.stopPropagation();if(!quoteOpen){if(type==="mrp"){copyItem(ri,e);return}return openExp(ri,type,e)}srPickQty(ri,type)};
 const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(c=>{if(c.dataset.srprice)return;c.dataset.srprice="1";[[".pb.m","mrp"],[".pb.s","sale"],[".pb.w","wholesale"]].forEach(([sel,type])=>{let p=c.querySelector(sel);if(!p)return;let m=(p.getAttribute("onclick")||"").match(/\((\d+)/);if(m)p.setAttribute("onclick",`srAddPrice(${m[1]},'${type}',event)`)})}));observer.observe(document.body,{childList:true,subtree:true});
 
-async function srTrueRefresh(){const pull=$("sr-pull"),btn=$("sr-refresh");if(pull){pull.classList.add("show");pull.textContent="↻ Refreshing…"}if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const r=await fetch("items.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);raw=await r.json();$("badge").textContent=raw.length.toLocaleString()+" items";$("sr-count").textContent=raw.length.toLocaleString("en-IN")+" items";buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Fresh stock loaded · Home fully reset")}catch(e){sound("error");toast("Refresh failed · "+e.message)}finally{btn&&(btn.disabled=false);if(pull){pull.textContent="✓ Refreshed";setTimeout(()=>pull.classList.remove("show"),650)}}}
+async function srTrueRefresh(){const pull=$("sr-pull"),btn=$("sr-refresh");if(pull){pull.classList.add("show");pull.textContent="↻ Refreshing live stock…"}if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live Retail Daddy stock loaded · Home reset")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false);if(pull){pull.textContent="✓ Refreshed";setTimeout(()=>pull.classList.remove("show"),650)}}}
 $("sr-refresh").onclick=srTrueRefresh;
 document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen()});
 

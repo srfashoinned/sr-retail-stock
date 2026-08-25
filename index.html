@@ -450,6 +450,9 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #sr-hamb{width:42px;height:42px;border:1px solid #705000;border-radius:12px;background:#130e03;color:var(--sr-gold);font-size:25px;line-height:1;cursor:pointer}
 #sr-brand{font-size:21px;font-weight:1000;letter-spacing:2px;color:var(--sr-gold);white-space:nowrap}
 #sr-spacer{flex:1}.sr-pill{border:1px solid #393014;background:#101010;color:#a99b7c;border-radius:999px;padding:7px 10px;font-size:11px}
+#sr-retail-dashboard{display:none;height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(34,197,94,.55);background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(245,197,66,.12));color:#d7ffe7;font-size:11px;font-weight:1000;white-space:nowrap;cursor:pointer}
+body.admin-on #sr-retail-dashboard{display:block}
+.sr-admin-only{display:none!important}body.admin-on .sr-admin-only{display:flex!important}
 #sr-refresh{width:40px;height:40px;border:1px solid #45340c;border-radius:11px;background:#111;color:#ffd35c;font-size:19px}
 #sr-pull{position:fixed;top:64px;left:50%;transform:translate(-50%,-90px);z-index:7999;background:#171006;border:1px solid #765300;color:#ffd45c;padding:9px 15px;border-radius:999px;font-weight:900;transition:.18s;pointer-events:none}
 #sr-pull.show{transform:translate(-50%,0)}
@@ -527,11 +530,12 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 
 </head>
 <body>
-<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
+<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-retail-dashboard" onclick="openRetailDaddyDashboard()" title="Retail Daddy Dashboard">Retail Daddy</button><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
 <div id="sr-pull">↓ Pull to refresh</div><div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
+<button class="sr-navbtn sr-admin-only" type="button" onclick="openRetailDaddyDashboard()"><span class="sr-ico">▣</span><span>Retail Daddy<small>Receivables dashboard</small></span></button>
 </nav><div id="sr-drawer-section"><div class="sr-mini">↕ Pull down from the top of Home for a true refresh.</div></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
 
@@ -1753,6 +1757,28 @@ function shareItem(ri,e){
    ADMIN — BIOMETRIC + PIN
 ═══════════════════════════════════════════ */
 const BIO_KEY = 'sr_adm_bio_cred';
+const RETAIL_DADDY_DASHBOARD_URL = 'https://dashboard.srfashionned.in';
+
+function setAdminUi(on){
+  document.body.classList.toggle('admin-on', !!on);
+  const label = on ? '🔓 Logout' : '⚡ Admin';
+  ['admin-btn','sr-top-admin'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    btn.textContent = label;
+    btn.classList.toggle('on', !!on);
+  });
+}
+
+function openRetailDaddyDashboard(){
+  if(!isAdmin){
+    toast('🔒 Admin unlock required');
+    openAdm();
+    return;
+  }
+  const win = window.open(RETAIL_DADDY_DASHBOARD_URL, '_blank', 'noopener');
+  if(!win) toast('Allow popup, then tap Retail Daddy again');
+}
 
 async function initBiometric(){
   if(!window.PublicKeyCredential) return;
@@ -1797,7 +1823,7 @@ function doLogin(){
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
     const m=document.getElementById("adm-msg"); m.textContent='✓ Granted'; m.className='g';
     isAdmin=true;
-    setTimeout(()=>{ closeAdm(); document.getElementById("admin-btn").textContent='🔓 Logout'; document.getElementById("admin-btn").classList.add("on"); vsRender(true); toast("🔓 Admin on"); },550);
+    setTimeout(()=>{ closeAdm(); setAdminUi(true); vsRender(true); toast("🔓 Admin on"); openRetailDaddyDashboard(); },550);
   }else{
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
     const m=document.getElementById("adm-msg"); m.textContent='✗ Wrong PIN'; m.className='e';
@@ -1806,8 +1832,7 @@ function doLogin(){
 }
 function logout(){
   isAdmin=false;
-  document.getElementById("admin-btn").textContent='⚡ Admin';
-  document.getElementById("admin-btn").classList.remove("on");
+  setAdminUi(false);
   vsRender(true);
   toast("🔒 Logged out");
 }
@@ -1873,10 +1898,10 @@ function grantAdmin(toastMsg){
   [0,1,2,3].forEach(i=>dot(i,'g'));
   setTimeout(()=>{
     closeAdm();
-    document.getElementById("admin-btn").textContent = '🔓 Logout';
-    document.getElementById("admin-btn").classList.add("on");
+    setAdminUi(true);
     vsRender(true);
     toast(toastMsg || "🔓 Admin on");
+    openRetailDaddyDashboard();
   }, 500);
 }
 

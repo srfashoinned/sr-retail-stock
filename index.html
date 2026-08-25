@@ -1823,7 +1823,7 @@ function doLogin(){
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
     const m=document.getElementById("adm-msg"); m.textContent='✓ Granted'; m.className='g';
     isAdmin=true;
-    setTimeout(()=>{ closeAdm(); setAdminUi(true); vsRender(true); toast("🔓 Admin on"); openRetailDaddyDashboard(); },550);
+    setTimeout(()=>{ closeAdm(); setAdminUi(true); vsRender(true); toast("🔓 Admin on"); },550);
   }else{
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
     const m=document.getElementById("adm-msg"); m.textContent='✗ Wrong PIN'; m.className='e';
@@ -1901,7 +1901,6 @@ function grantAdmin(toastMsg){
     setAdminUi(true);
     vsRender(true);
     toast(toastMsg || "🔓 Admin on");
-    openRetailDaddyDashboard();
   }, 500);
 }
 

@@ -1,0 +1,9 @@
+SR Fashion product image upload setup
+
+1. Upload the website files to Hostinger public_html.
+2. Keep the image-api folder.
+3. Keep the private folder and its .htaccess file.
+4. Inside private, create image-upload-key.txt.
+5. Put your private image upload password inside that file.
+6. Do not share that password publicly.
+7. Product images will save under images/products/PRODUCT-CODE/.

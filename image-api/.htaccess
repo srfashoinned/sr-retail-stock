@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteRule ^list$ list.php [L]
+RewriteRule ^upload$ upload.php [L]
+RewriteRule ^delete$ delete.php [L]

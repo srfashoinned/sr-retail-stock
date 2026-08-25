@@ -446,12 +446,12 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 
 /* ===== SR PSD PURE HOME GOLD v1 ===== */
 :root{--sr-gold:#ffc542;--sr-gold2:#d79a00;--sr-bg:#070707;--sr-panel:#101010;--sr-line:#3b2b08}
-#sr-appbar{height:58px;display:flex;align-items:center;gap:10px;padding:8px 12px;position:sticky;top:0;z-index:8000;background:rgba(5,5,5,.97);border-bottom:1px solid #2e2208;backdrop-filter:blur(14px)}
+#sr-appbar{min-height:58px;display:flex;align-items:center;gap:10px;padding:8px 12px;position:sticky;top:0;z-index:8000;background:rgba(5,5,5,.97);border-bottom:1px solid #2e2208;backdrop-filter:blur(14px)}
 #sr-hamb{width:42px;height:42px;border:1px solid #705000;border-radius:12px;background:#130e03;color:var(--sr-gold);font-size:25px;line-height:1;cursor:pointer}
 #sr-brand{font-size:21px;font-weight:1000;letter-spacing:2px;color:var(--sr-gold);white-space:nowrap}
 #sr-spacer{flex:1}.sr-pill{border:1px solid #393014;background:#101010;color:#a99b7c;border-radius:999px;padding:7px 10px;font-size:11px}
-#sr-retail-dashboard{display:none;height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(34,197,94,.55);background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(245,197,66,.12));color:#d7ffe7;font-size:11px;font-weight:1000;white-space:nowrap;cursor:pointer}
-body.admin-on #sr-retail-dashboard{display:block}
+#sr-retail-dashboard{display:none;align-items:center;justify-content:center;height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(34,197,94,.55);background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(245,197,66,.12));color:#d7ffe7;font-size:11px;font-weight:1000;white-space:nowrap;cursor:pointer}
+body.admin-on #sr-retail-dashboard{display:flex}
 .sr-admin-only{display:none!important}body.admin-on .sr-admin-only{display:flex!important}
 #sr-refresh{width:40px;height:40px;border:1px solid #45340c;border-radius:11px;background:#111;color:#ffd35c;font-size:19px}
 #sr-pull{position:fixed;top:64px;left:50%;transform:translate(-50%,-90px);z-index:7999;background:#171006;border:1px solid #765300;color:#ffd45c;padding:9px 15px;border-radius:999px;font-weight:900;transition:.18s;pointer-events:none}
@@ -469,6 +469,20 @@ body.admin-on #sr-retail-dashboard{display:block}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
 @media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}}
+@media(max-width:760px){
+ #sr-appbar{height:auto;align-items:center;gap:7px;padding:8px;flex-wrap:wrap}
+ #sr-hamb{width:40px;height:40px;flex:0 0 auto}
+ #sr-brand{font-size:18px;letter-spacing:1px;min-width:0;max-width:calc(100vw - 62px);overflow:hidden;text-overflow:ellipsis}
+ #sr-spacer{display:none}
+ #sr-retail-dashboard,#sr-top-admin{height:36px;flex:1 1 calc(50% - 8px);padding:0 8px;font-size:10px}
+ #sr-refresh{width:38px;height:36px;flex:0 0 38px}
+ .sr-pill{display:flex;align-items:center;justify-content:center;height:36px;flex:1 1 auto;min-width:74px;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ body.admin-on #sr-retail-dashboard{order:3}
+ #sr-top-admin{order:4}
+ .sr-pill{order:5}
+ #sr-refresh{order:6}
+ #sr-screen{inset:calc(58px + env(safe-area-inset-top)) 0 0}
+}
 
 /* ===== SR PSD QUOTATION PRO v4 ===== */
 #sr-screen.quote-pro{padding:0;overflow:hidden}
@@ -727,13 +741,13 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
       <button id="pim-close" onclick="closePim()">✕</button>
     </div>
 
-    <!-- GitHub Token bar -->
+    <!-- Website image upload password -->
     <div id="pim-token-bar">
-      <span id="pim-token-label">🔑 GitHub Token:</span>
-      <input id="pim-token-input" type="password" placeholder="ghp_… paste token here" autocomplete="off" spellcheck="false">
+      <span id="pim-token-label">🔐 Upload Password:</span>
+      <input id="pim-token-input" type="password" placeholder="Enter upload password" autocomplete="off" spellcheck="false">
       <button id="pim-token-save" onclick="pimSaveToken()">Save</button>
       <button id="pim-token-clear" onclick="pimClearToken()" style="display:none">Clear</button>
-      <span id="pim-token-status" class="no">No token</span>
+      <span id="pim-token-status" class="no">Locked</span>
     </div>
 
     <!-- Scrollable content -->
@@ -750,7 +764,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
       <!-- Empty state (shown when no images + no token) -->
       <div id="pim-empty" style="display:none">
         <div class="pim-empty-icon">🖼️</div>
-        <div class="pim-empty-txt">No images yet for this product.<br>Add a GitHub token above and upload photos.</div>
+        <div class="pim-empty-txt">No images yet for this product.<br>Open admin mode and enter upload password to add photos.</div>
       </div>
     </div>
 
@@ -794,11 +808,9 @@ const SHOP_NAME    = "SR FASHION";
 const SHOP_ADDRESS = "GN Azad College Road, Vasant Nagar, Pusad – 445 204";
 const SHOP_PHONE   = "7588756668";
 
-/* GitHub image storage config */
-const GH_OWNER  = 'srfashoinned';
-const GH_REPO   = 'image-storage-psd';
-const GH_BRANCH = 'main';
+/* Image storage config */
 const MAX_IMAGES = 10;
+const IMAGE_API_BASE = '/image-api';
 
 const IMAGE_SOURCE   = 'local';
 const IMAGE_BASE_URL = 'images/';
@@ -809,12 +821,22 @@ function getImageUrls(it){
   }
   const alias = (it.alias || '').replace(/[^a-zA-Z0-9_\-]/g,'');
   if(!alias) return [];
-  return [
+  const urls = [];
+  for(let i = 1; i <= MAX_IMAGES; i++){
+    urls.push(
+      IMAGE_BASE_URL + 'products/' + alias + '/' + i + '.jpg',
+      IMAGE_BASE_URL + 'products/' + alias + '/' + i + '.jpeg',
+      IMAGE_BASE_URL + 'products/' + alias + '/' + i + '.png',
+      IMAGE_BASE_URL + 'products/' + alias + '/' + i + '.webp'
+    );
+  }
+  urls.push(
     IMAGE_BASE_URL + alias + '.jpg',
     IMAGE_BASE_URL + alias + '.png',
     IMAGE_BASE_URL + alias + '.jpeg',
     IMAGE_BASE_URL + alias + '.webp'
-  ];
+  );
+  return urls;
 }
 
 const GAP   = 16;
@@ -1448,17 +1470,8 @@ function clearPF(){
   document.getElementById(id).addEventListener("keydown",e=>{ if(e.key==='Enter') applyPF(); });
 });
 
-/* ═══════════════════════════════════════════
-   OLD IMAGE VIEWER (kept intact, unused now)
-═══════════════════════════════════════════ */
 function openImgViewer(ri, e){
-  if (e) e.stopPropagation();
-  const it = raw[ri];
-  if (!it) { alert('Product not found.'); return; }
-  const alias = encodeURIComponent((it.alias || it.barcode || it.name || '').trim());
-  if (!alias) { alert('No product alias found.'); return; }
-  const url = 'https://srfashoinned.github.io/image-storage-psd/?alias=' + alias;
-  window.open(url, '_blank');
+  openPim(ri, e);
 }
 
 function closeImgViewer(){
@@ -1546,7 +1559,7 @@ function closeExp(){
   expLoadedImages = [];
 }
 
-let expLoadedImages = []; /* [{name, url, sha}] pre-fetched for current expItem */
+let expLoadedImages = []; /* [{name, url}] pre-fetched for current expItem */
 async function expLoadImages(it){
   expLoadedImages = [];
   const alias = (it.alias || it.barcode || it.name || '').trim();
@@ -1556,18 +1569,15 @@ async function expLoadImages(it){
     expLoadedImages = pimImages;
     return;
   }
-  /* Otherwise fetch from GitHub */
-  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/products/${encodeURIComponent(alias)}?ref=${GH_BRANCH}&t=${Date.now()}`;
+  /* Otherwise fetch from website image storage */
+  const apiUrl = `${IMAGE_API_BASE}/list?alias=${encodeURIComponent(alias)}&t=${Date.now()}`;
   try{
-    const headers = { 'Accept': 'application/vnd.github+json' };
-    if(pimToken) headers['Authorization'] = 'Bearer ' + pimToken;
-    const r = await fetch(apiUrl, { headers });
+    const r = await fetch(apiUrl, { cache:'no-store' });
     if(!r.ok) return;
-    const files = await r.json();
-    expLoadedImages = files
+    const data = await r.json();
+    expLoadedImages = (data.images || [])
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
-      .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}))
-      .map(f=>({name:f.name, url:f.download_url, sha:f.sha}));
+      .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
   }catch(_){}
 }
 
@@ -2013,42 +2023,42 @@ document.getElementById("adm-ov").addEventListener("click",e=>{ if(e.target.id==
 document.getElementById("exp-ov").addEventListener("click",e=>{ if(e.target.id==="exp-ov")closeExp(); });
 
 /* ═══════════════════════════════════════════════════════
-   NEW: PRODUCT IMAGE MANAGER  (GitHub-backed)
-   Stores images at:  products/<ALIAS>/<N>.jpg  in GH_REPO
+   PRODUCT IMAGE MANAGER
+   Stores images at: images/products/<ALIAS>/<N>.jpg
 ═══════════════════════════════════════════════════════ */
 
-/* ─── Token management (sessionStorage only) ─── */
+/* ─── Upload password management (sessionStorage only) ─── */
 let pimToken = '';
 let pimCurrentItem = null;
-let pimImages = [];    /* [{name, url, sha}] loaded from GitHub */
+let pimImages = [];    /* [{name, url}] loaded from website image storage */
 let pimFsIdx  = 0;
 
 function pimInitToken(){
-  const t = sessionStorage.getItem('sr_gh_token') || '';
+  const t = sessionStorage.getItem('sr_image_upload_key') || '';
   if(t){ pimToken = t; pimShowTokenStatus(true); }
 }
 function pimSaveToken(){
   const t = document.getElementById('pim-token-input').value.trim();
-  if(!t){ toast('⚠️ Token is empty'); return; }
+  if(!t){ toast('⚠️ Upload password is empty'); return; }
   pimToken = t;
-  sessionStorage.setItem('sr_gh_token', t);
+  sessionStorage.setItem('sr_image_upload_key', t);
   document.getElementById('pim-token-input').value = '';
   document.getElementById('pim-token-clear').style.display = '';
   pimShowTokenStatus(true);
-  toast('🔑 Token saved for this session');
+  toast('🔐 Upload password saved for this session');
   if(pimCurrentItem) pimLoad();
 }
 function pimClearToken(){
   pimToken = '';
-  sessionStorage.removeItem('sr_gh_token');
+  sessionStorage.removeItem('sr_image_upload_key');
   document.getElementById('pim-token-clear').style.display = 'none';
   pimShowTokenStatus(false);
-  toast('🗑️ Token cleared');
+  toast('🗑️ Upload password cleared');
   if(pimCurrentItem) pimRenderGrid();
 }
 function pimShowTokenStatus(ok){
   const s = document.getElementById('pim-token-status');
-  s.textContent = ok ? '✓ Token set' : 'No token';
+  s.textContent = ok ? '✓ Ready' : 'Locked';
   s.className = ok ? 'ok' : 'no';
   document.getElementById('pim-token-clear').style.display = ok ? '' : 'none';
 }
@@ -2068,7 +2078,6 @@ function openPim(ri, e){
   document.getElementById('pim-progress').classList.remove('show');
   document.getElementById('pim-footer-hint').textContent = '';
 
-  /* Token bar: show if no token, hide otherwise */
   const bar = document.getElementById('pim-token-bar');
   bar.classList.toggle('hidden', !!pimToken);
 
@@ -2086,36 +2095,22 @@ document.getElementById('pim-ov').addEventListener('click', function(e){
   if(e.target === this) closePim();
 });
 
-/* ─── Load images from GitHub ─── */
+/* ─── Load images from website image storage ─── */
 async function pimLoad(){
   if(!pimCurrentItem) return;
   const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
   if(!alias){ pimShowArea('empty'); return; }
 
   pimShowArea('loading');
-  const path = `products/${encodeURIComponent(alias)}`;
-  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}&t=${Date.now()}`;
+  const apiUrl = `${IMAGE_API_BASE}/list?alias=${encodeURIComponent(alias)}&t=${Date.now()}`;
 
   try{
-    const headers = { 'Accept': 'application/vnd.github+json' };
-    if(pimToken) headers['Authorization'] = 'Bearer ' + pimToken;
-    const r = await fetch(apiUrl, { headers });
-    if(r.status === 404){
-      pimImages = [];
-      pimShowArea('empty');
-      pimRenderGrid();
-      return;
-    }
-    if(!r.ok) throw new Error('GitHub API error: ' + r.status);
-    const files = await r.json();
-    pimImages = files
+    const r = await fetch(apiUrl, { cache:'no-store' });
+    if(!r.ok) throw new Error('Image storage error: ' + r.status);
+    const data = await r.json();
+    pimImages = (data.images || [])
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
-      .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}))
-      .map(f => ({
-        name: f.name,
-        url:  f.download_url,
-        sha:  f.sha
-      }));
+      .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
     pimRenderGrid();
   }catch(err){
     pimImages = [];
@@ -2135,26 +2130,30 @@ function pimRenderGrid(){
   const count = pimImages.length;
   document.getElementById('pim-count-badge').textContent = count + ' / ' + MAX_IMAGES;
 
-  const hasToken  = !!pimToken;
-  const canUpload = hasToken && count < MAX_IMAGES;
-  const canDelete = hasToken && isAdmin;
+  const hasUploadKey = !!pimToken;
+  const canUpload = isAdmin && hasUploadKey && count < MAX_IMAGES;
+  const canDelete = isAdmin && hasUploadKey;
 
   /* footer hint */
   const hint = document.getElementById('pim-footer-hint');
-  if(!hasToken){
-    hint.textContent = '🔑 Paste a GitHub token above to upload or delete images.';
+  if(!isAdmin){
+    hint.textContent = '🔒 Open admin mode to upload or delete images.';
+    hint.style.color = 'var(--muted)';
+  } else if(!hasUploadKey){
+    hint.textContent = '🔐 Enter upload password to save images on website storage.';
     hint.style.color = 'var(--muted)';
   } else if(!isAdmin && count > 0){
     hint.textContent = '👀 View only. Only admins can delete images.';
     hint.style.color = 'var(--muted)';
   } else {
-    hint.textContent = '';
+    hint.textContent = 'Images are saving on website storage.';
+    hint.style.color = 'var(--green)';
   }
 
-  /* token bar visibility */
+  /* upload password visibility */
   document.getElementById('pim-token-bar').classList.toggle('hidden', !!pimToken);
 
-  if(count === 0 && !hasToken){
+  if(count === 0 && !hasUploadKey){
     pimShowArea('empty');
     return;
   }
@@ -2190,14 +2189,14 @@ function pimRenderGrid(){
       <div class="pim-add-icon">🚫</div>
       <div class="pim-add-txt">Max reached</div>
     </div>`;
-  } else if(!hasToken){
-    html += `<div class="pim-add-cell locked" title="Add a token to upload">
+  } else if(!hasUploadKey){
+    html += `<div class="pim-add-cell locked" title="Enter upload password">
       <div class="pim-add-icon">🔒</div>
-      <div class="pim-add-txt">Token needed</div>
+      <div class="pim-add-txt">Password needed</div>
     </div>`;
-    html += `<div class="pim-cam-cell locked" title="Add a token to upload">
+    html += `<div class="pim-cam-cell locked" title="Enter upload password">
       <div class="pim-add-icon">🔒</div>
-      <div class="pim-add-txt">Token needed</div>
+      <div class="pim-add-txt">Password needed</div>
     </div>`;
   }
 
@@ -2240,7 +2239,8 @@ function pimCompress(file){
 async function pimHandleFiles(files){
   if(!files || !files.length) return;
   if(!pimCurrentItem){ toast('No product selected'); return; }
-  if(!pimToken){ toast('🔑 Paste a GitHub token first'); return; }
+  if(!isAdmin){ toast('🔒 Open admin mode first'); return; }
+  if(!pimToken){ toast('🔐 Enter upload password first'); return; }
 
   const available = MAX_IMAGES - pimImages.length;
   if(available <= 0){ toast('🚫 Max 10 images per product'); return; }
@@ -2275,53 +2275,35 @@ async function pimHandleFiles(files){
   if(uploaded > 0) await pimLoad();
 }
 
-/* ─── Upload one file to GitHub ─── */
+/* ─── Upload one file to website storage ─── */
 async function pimUploadOne(file){
   const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
   const compressed = await pimCompress(file);
-  const base64 = await new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = () => rej(new Error('Read error'));
-    r.readAsDataURL(compressed);
-  });
+  const form = new FormData();
+  form.append('alias', alias);
+  form.append('file', compressed, 'image.jpg');
 
-  /* Pick next available number */
-  const usedNums = new Set(pimImages.map(img => parseInt(img.name)));
-  let num = 1;
-  while(usedNums.has(num)) num++;
-  const filename = num + '.jpg';
-  const ghPath   = `products/${alias}/${filename}`;
-  const apiUrl   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${ghPath}`;
-
-  const body = {
-    message: `Add image ${filename} for ${alias}`,
-    content: base64,
-    branch:  GH_BRANCH
-  };
-
-  const r = await fetch(apiUrl, {
-    method:  'PUT',
+  const r = await fetch(`${IMAGE_API_BASE}/upload`, {
+    method:  'POST',
     headers: {
-      'Authorization': 'Bearer ' + pimToken,
-      'Content-Type':  'application/json',
-      'Accept':        'application/vnd.github+json'
+      'x-sr-image-key': pimToken
     },
-    body: JSON.stringify(body)
+    body: form
   });
 
   if(!r.ok){
     const err = await r.json().catch(()=>({}));
-    throw new Error(err.message || 'GitHub upload error ' + r.status);
+    throw new Error(err.error || err.message || 'Upload error ' + r.status);
   }
-  toast('✅ Uploaded ' + filename);
+  const data = await r.json().catch(()=>({}));
+  toast('✅ Uploaded ' + (data.image?.name || 'image'));
 }
 
 /* ─── Delete image ─── */
 function pimConfirmDelete(idx, e){
   if(e) e.stopPropagation();
   if(!isAdmin){ toast('🔒 Admin only'); return; }
-  if(!pimToken){ toast('🔑 Token required'); return; }
+  if(!pimToken){ toast('🔐 Upload password required'); return; }
   const img = pimImages[idx];
   if(!img) return;
   if(!confirm(`Delete image "${img.name}"?\nThis cannot be undone.`)) return;
@@ -2330,26 +2312,22 @@ function pimConfirmDelete(idx, e){
 
 async function pimDeleteOne(img, idx){
   const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
-  const ghPath = `products/${alias}/${img.name}`;
-  const apiUrl = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${ghPath}`;
 
   try{
-    const r = await fetch(apiUrl, {
-      method:  'DELETE',
+    const r = await fetch(`${IMAGE_API_BASE}/delete`, {
+      method:  'POST',
       headers: {
-        'Authorization': 'Bearer ' + pimToken,
+        'x-sr-image-key': pimToken,
         'Content-Type':  'application/json',
-        'Accept':        'application/vnd.github+json'
       },
       body: JSON.stringify({
-        message: `Delete image ${img.name} for ${alias}`,
-        sha:     img.sha,
-        branch:  GH_BRANCH
+        alias,
+        name: img.name
       })
     });
     if(!r.ok){
       const err = await r.json().catch(()=>({}));
-      throw new Error(err.message || 'Delete error ' + r.status);
+      throw new Error(err.error || err.message || 'Delete error ' + r.status);
     }
     toast('🗑️ Deleted ' + img.name);
     await pimLoad();

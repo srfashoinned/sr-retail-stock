@@ -930,19 +930,59 @@ async function getStockData(forceLive = false) {
   }
 }
 
+function getBrowserStockCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(STOCK_CACHE_KEY) || "[]");
+    if (Array.isArray(cached) && cached.length) {
+      return {
+        source: "browser-cache",
+        items: cached,
+        updatedAt: localStorage.getItem(STOCK_CACHE_TIME_KEY) || ""
+      };
+    }
+  } catch (e) {}
+  return null;
+}
+
+function applyStockPayload(payload, statusSource) {
+  raw = payload.items || [];
+  setStockStatus(statusSource || (payload.source === "live" ? "live" : "cache"), raw.length, payload.error ? "live offline" : "");
+  buildGroupChips();
+  buildBrandChips();
+}
+
+async function refreshLiveStockInBackground() {
+  try {
+    const payload = await getStockData(true);
+    applyStockPayload(payload, "live");
+    if (typeof applyAll === "function" && (search.value || currentGroup || currentBrand || stockMode !== "all")) {
+      applyAll();
+    }
+  } catch (e) {
+    setStockStatus("cache", raw.length || 0, "live offline");
+  }
+}
+
 async function loadData(){
+  let painted = false;
   try{
-    const payload = await getStockData();
-    raw = payload.items;
-    setStockStatus(payload.source === "live" ? "live" : "cache", raw.length, payload.error ? "live offline" : "");
-    buildGroupChips();
-    buildBrandChips();
+    const cached = getBrowserStockCache();
+    if (cached) {
+      applyStockPayload(cached, "cache");
+      painted = true;
+    } else {
+      const filePayload = await fetchStockJson("items.json");
+      applyStockPayload({ source: "file-cache", items: filePayload.items || filePayload || [] }, "cache");
+      painted = true;
+    }
   }catch(e){
     toast("Stock load failed: "+e.message);
   }
+  if (!painted) setStockStatus("cache", 0, "loading");
   showWelcome();
   initBiometric();
   pimInitToken();
+  refreshLiveStockInBackground();
 }
 
 async function refreshData(){
@@ -1813,7 +1853,7 @@ function shareItem(ri,e){
    ADMIN — BIOMETRIC + PIN
 ═══════════════════════════════════════════ */
 const BIO_KEY = 'sr_adm_bio_cred';
-const RETAIL_DADDY_DASHBOARD_URL = 'https://dashboard.srfashionned.in';
+const RETAIL_DADDY_DASHBOARD_URL = 'https://receivables.srfashionned.in';
 
 function setAdminUi(on){
   document.body.classList.toggle('admin-on', !!on);

@@ -2851,6 +2851,16 @@ function srLedgerExportBillPng(){
     srDownloadCanvas(canvas,`${no}-page-${pi+1}.png`);
   });
 }
+Object.assign(window,{
+  openItemLedger,
+  openItemLedgerSearch,
+  srLedgerClose,
+  srLedgerSearchGo,
+  srLedgerOpenBill,
+  srLedgerOpenPurchase,
+  srLedgerExportBillPdf,
+  srLedgerExportBillPng
+});
 function totals(){let qty=0,total=0,mrp=0,sale=0;cart.forEach(x=>{let q=+x.qty||0;qty+=q;total+=q*(+x.rate||0);mrp+=q*(+x.mrp||0);sale+=q*(+x.sale||0)});return{qty,total,mrp,sale}}
 function party(){try{return JSON.parse(localStorage.getItem(PARTY_KEY)||"{}")}catch(e){return{}}}
 function savePartyField(k,v){let p=party();p[k]=v;localStorage.setItem(PARTY_KEY,JSON.stringify(p))}

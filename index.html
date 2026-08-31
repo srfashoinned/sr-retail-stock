@@ -501,25 +501,25 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #sr-screen.ledger-pro{display:block;inset:0;z-index:12500;padding:0;background:#080808;overflow:auto}
 #sr-screen.ledger-pro #sr-ledger-box{width:100%;max-width:none;max-height:none;min-height:100dvh;border:0;border-radius:0;box-shadow:none}
 #sr-screen.ledger-pro #sr-ledger-head{padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
-.quick-ledger{display:block;width:100%;margin-top:9px;height:42px;border:1px solid #6f500c;border-radius:10px;background:linear-gradient(135deg,#211703,#120d04);color:#ffd35c;font-size:14px;font-weight:1000}
+.sr-mobile-admin-only{display:none!important}
 .sr-feature{border:1px solid #44320b;background:linear-gradient(145deg,#12100b,#0b0b0b);border-radius:15px;padding:15px;margin:10px 0}.sr-feature b{color:#ffd15a}.sr-feature button{margin-top:10px;border:1px solid #765300;background:#1a1203;color:#ffd15a;border-radius:10px;padding:10px 13px;font-weight:800}
 #sr-quote-cart{display:grid;gap:9px}.sr-qrow{border:1px solid #44320b;background:#100d07;border-radius:13px;padding:12px}.sr-qgrid{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.sr-qgrid input{min-width:0;background:#080808;border:1px solid #5b430d;color:#fff;border-radius:9px;padding:10px;font-size:16px}.sr-del{background:#281010!important;border-color:#6b2424!important;color:#ff9b9b!important;margin:0!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
-@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}.quick-ledger{height:42px;font-size:14px}}
+@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
 @media(max-width:760px){
  #sr-appbar{height:auto;align-items:center;gap:7px;padding:8px;flex-wrap:wrap}
  #sr-hamb{width:40px;height:40px;flex:0 0 auto}
  #sr-brand{font-size:18px;letter-spacing:1px;min-width:0;max-width:calc(100vw - 62px);overflow:hidden;text-overflow:ellipsis}
  #sr-spacer{display:none}
- #sr-top-admin,#sr-top-ledger{height:36px;flex:1 1 calc(50% - 8px);padding:0 8px;font-size:10px}
+ #sr-top-admin{height:36px;flex:1 1 auto;padding:0 8px;font-size:10px}
  #sr-refresh{width:38px;height:36px;flex:0 0 38px}
  .sr-pill{display:flex;align-items:center;justify-content:center;height:36px;flex:1 1 auto;min-width:74px;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ body.admin-on .sr-mobile-admin-only{display:flex!important}
  #sr-top-admin{order:4}
- #sr-top-ledger{order:5}
- .sr-pill{order:6}
- #sr-refresh{order:7}
+ .sr-pill{order:5}
+ #sr-refresh{order:6}
  #sr-screen{inset:calc(58px + env(safe-area-inset-top)) 0 0}
 }
 
@@ -562,7 +562,6 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <style id="srq-advanced-css">
 #sr-brand{cursor:pointer}
 #sr-top-admin{height:38px;padding:0 11px;border-radius:10px;border:1px solid #72520d;background:#171106;color:#ffd35c;font-size:11px;font-weight:900;white-space:nowrap}
-#sr-top-ledger{height:38px;padding:0 11px;border-radius:10px;border:1px solid #72520d;background:#201602;color:#ffd35c;font-size:11px;font-weight:900;white-space:nowrap}
 .srq-party{padding:9px 12px;border-bottom:1px solid #29210d;background:#0a0907;display:grid;grid-template-columns:1.2fr 1fr .8fr 1.5fr;gap:7px}
 .srq-party input,.srq-party textarea{width:100%;min-width:0;background:#111;border:1px solid #49370d;border-radius:9px;color:#fff;padding:9px;font:inherit;font-size:12px;outline:none}
 .srq-party textarea{resize:none;height:37px}
@@ -584,12 +583,11 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 
 </head>
 <body>
-<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><button id="sr-top-ledger" onclick="openItemLedgerSearch()" title="Item Ledger">Item Ledger</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
+<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
 <div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
-<button class="sr-navbtn" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale history, purchase & bill links</small></span></button>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
 
@@ -1451,11 +1449,9 @@ function cardHTML(it, ri, topPx, q){
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
         <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
-        <button class="ab ig" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
+        <button class="ab ig sr-mobile-admin-only" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
       </div>
     </div>`:'';
-
-  const quickLedger = `<button class="quick-ledger" onclick="openItemLedger(${ri},event)">Item Ledger</button>`;
 
   return `<div class="c${exp?' exp':''}" style="top:${topPx}px" data-ri="${ri}" onclick="toggleCard(${ri})">
     <div class="c-name">${hl(it.name||'',q)}</div>
@@ -1476,7 +1472,6 @@ function cardHTML(it, ri, topPx, q){
       <div class="pb k"><div class="pl">Stock</div><div class="pv">${it.stock??'–'}</div></div>
       ${purchBlock}
     </div>
-    ${quickLedger}
     ${detHTML}
   </div>`;
 }

@@ -2,8 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="sr-build" content="ledger-mobile-v4">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SR Psd</title>
+<meta name="theme-color" content="#09090b">
+<meta name="application-name" content="SR Fashion">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SR Fashion">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="msapplication-TileColor" content="#09090b">
+<meta name="msapplication-TileImage" content="/mstile-150x150.png">
+<title>SR Fashion Stock</title>
+<link rel="manifest" href="/site.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="shortcut icon" type="image/png" href="/favicon-32x32.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -450,37 +463,63 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #sr-hamb{width:42px;height:42px;border:1px solid #705000;border-radius:12px;background:#130e03;color:var(--sr-gold);font-size:25px;line-height:1;cursor:pointer}
 #sr-brand{font-size:21px;font-weight:1000;letter-spacing:2px;color:var(--sr-gold);white-space:nowrap}
 #sr-spacer{flex:1}.sr-pill{border:1px solid #393014;background:#101010;color:#a99b7c;border-radius:999px;padding:7px 10px;font-size:11px}
-#sr-retail-dashboard{display:none;align-items:center;justify-content:center;height:38px;padding:0 12px;border-radius:10px;border:1px solid rgba(34,197,94,.55);background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(245,197,66,.12));color:#d7ffe7;font-size:11px;font-weight:1000;white-space:nowrap;cursor:pointer}
-body.admin-on #sr-retail-dashboard{display:flex}
 .sr-admin-only{display:none!important}body.admin-on .sr-admin-only{display:flex!important}
 #sr-refresh{width:40px;height:40px;border:1px solid #45340c;border-radius:11px;background:#111;color:#ffd35c;font-size:19px}
-#sr-pull{position:fixed;top:64px;left:50%;transform:translate(-50%,-90px);z-index:7999;background:#171006;border:1px solid #765300;color:#ffd45c;padding:9px 15px;border-radius:999px;font-weight:900;transition:.18s;pointer-events:none}
-#sr-pull.show{transform:translate(-50%,0)}
 #sr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;opacity:0;pointer-events:none;transition:.25s}
 #sr-drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,370px);z-index:9001;background:linear-gradient(180deg,#090909,#130d02);border-right:1px solid #795500;transform:translateX(-105%);transition:.28s cubic-bezier(.2,.8,.2,1);box-shadow:25px 0 60px #000;overflow:auto}
 #sr-overlay.open{opacity:1;pointer-events:auto}#sr-drawer.open{transform:none}
 #sr-dhead{padding:20px 16px 15px;border-bottom:1px solid #3c2d0b;display:flex;align-items:center;justify-content:space-between}.sr-dlogo{font-size:23px;font-weight:1000;color:var(--sr-gold);letter-spacing:2px}.sr-x{width:39px;height:39px;border:1px solid #5d450e;border-radius:10px;background:#120d04;color:#ffd35c;font-size:19px}
 .sr-nav{padding:12px}.sr-navbtn{width:100%;display:flex;align-items:center;gap:13px;text-align:left;border:1px solid transparent;background:transparent;color:#eee;padding:14px;border-radius:13px;font-size:15px;font-weight:850;margin:3px 0}.sr-navbtn:hover,.sr-navbtn.active{background:linear-gradient(90deg,#2a1c02,#151006);border-color:#5e4309;color:#ffd35c}.sr-ico{width:28px;text-align:center;font-size:19px}.sr-navbtn small{display:block;color:#887d68;font-size:11px;font-weight:500;margin-top:2px}
 #sr-drawer-section{padding:4px 12px 18px}.sr-mini{border:1px solid #42320d;background:#0d0c09;border-radius:12px;padding:13px;margin:8px 0;color:#ddd;font-size:13px}
+#sr-ledger-ov{position:fixed;inset:0;z-index:13000;background:rgba(0,0,0,.86);display:none;align-items:flex-end;justify-content:center}
+#sr-ledger-ov.show{display:flex}
+#sr-ledger-box{width:100%;max-width:560px;max-height:92vh;overflow:auto;background:#0d0d0f;border:1px solid #5f450b;border-radius:18px 18px 0 0;box-shadow:0 -20px 70px #000;color:#eee}
+#sr-ledger-head{position:sticky;top:0;z-index:2;background:#0d0d0f;border-bottom:1px solid #3d2d0b;padding:13px;display:flex;align-items:flex-start;gap:10px}
+#sr-ledger-head b{color:#ffd35c;font-size:16px;line-height:1.25}
+#sr-ledger-head small{display:block;color:#8e826c;margin-top:3px}
+#sr-ledger-close{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid #5d450e;background:#151007;color:#ffd35c;font-size:18px}
+#sr-ledger-body{padding:12px;display:grid;gap:10px}
+.sr-ledger-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sr-ledger-kpi{border:1px solid #33270b;background:#13110b;border-radius:11px;padding:9px;min-width:0}
+.sr-ledger-kpi small{display:block;color:#8e826c;font-size:10px;text-transform:uppercase}
+.sr-ledger-kpi b{display:block;color:#fff;font-size:14px;margin-top:3px;overflow-wrap:anywhere}
+.sr-ledger-note{border:1px solid #403113;background:#161107;border-radius:12px;padding:10px;color:#c9b988;font-size:12px;line-height:1.35}
+.sr-ledger-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sr-ledger-actions button{height:42px;border-radius:11px;border:1px solid #6f500c;background:#171107;color:#ffd35c;font-weight:1000}
+.sr-ledger-actions .gold{background:#ffd35c;color:#111;border:0}
+.sr-ledger-row{width:100%;border:1px solid #33270b;background:#121214;color:#eee;border-radius:12px;padding:10px;text-align:left;margin-bottom:8px}
+.sr-ledger-row:active{border-color:#ffd35c}
+.sr-ledger-row-top{display:flex;justify-content:space-between;gap:8px;font-weight:900}
+.sr-ledger-row-top strong{color:#22c55e;white-space:nowrap}
+.sr-ledger-row small{display:block;color:#8e826c;margin-top:4px}
+.sr-ledger-row-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px;font-size:11px}
+.sr-ledger-row-grid span{background:#0a0a0b;border:1px solid #28200b;border-radius:8px;padding:6px;color:#bfb7a7}
+.sr-ledger-row-grid b{display:block;color:#fff;margin-top:2px}
+#sr-ledger-search{width:100%;height:44px;background:#09090b;border:1px solid #5d450e;border-radius:11px;color:#fff;padding:0 12px;font:inherit}
+#sr-ledger-search-go{height:44px;border:0;border-radius:11px;background:#ffd35c;color:#111;font-weight:1000;padding:0 16px}
 #sr-screen{display:none;position:fixed;inset:58px 0 0;z-index:7000;background:#080808;color:#eee;overflow:auto;padding:18px}#sr-screen.open{display:block}.sr-screen-title{font-size:25px;font-weight:1000;color:#ffd15a;margin-bottom:5px}.sr-screen-sub{color:#8e826c;margin-bottom:18px}
+#sr-screen.ledger-pro{display:block;inset:0;z-index:12500;padding:0;background:#080808;overflow:auto}
+#sr-screen.ledger-pro #sr-ledger-box{width:100%;max-width:none;max-height:none;min-height:100dvh;border:0;border-radius:0;box-shadow:none}
+#sr-screen.ledger-pro #sr-ledger-head{padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
+.quick-ledger{display:block;width:100%;margin-top:9px;height:42px;border:1px solid #6f500c;border-radius:10px;background:linear-gradient(135deg,#211703,#120d04);color:#ffd35c;font-size:14px;font-weight:1000}
 .sr-feature{border:1px solid #44320b;background:linear-gradient(145deg,#12100b,#0b0b0b);border-radius:15px;padding:15px;margin:10px 0}.sr-feature b{color:#ffd15a}.sr-feature button{margin-top:10px;border:1px solid #765300;background:#1a1203;color:#ffd15a;border-radius:10px;padding:10px 13px;font-weight:800}
 #sr-quote-cart{display:grid;gap:9px}.sr-qrow{border:1px solid #44320b;background:#100d07;border-radius:13px;padding:12px}.sr-qgrid{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.sr-qgrid input{min-width:0;background:#080808;border:1px solid #5b430d;color:#fff;border-radius:9px;padding:10px;font-size:16px}.sr-del{background:#281010!important;border-color:#6b2424!important;color:#ff9b9b!important;margin:0!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
-@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}}
+@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}.quick-ledger{height:42px;font-size:14px}}
 @media(max-width:760px){
  #sr-appbar{height:auto;align-items:center;gap:7px;padding:8px;flex-wrap:wrap}
  #sr-hamb{width:40px;height:40px;flex:0 0 auto}
  #sr-brand{font-size:18px;letter-spacing:1px;min-width:0;max-width:calc(100vw - 62px);overflow:hidden;text-overflow:ellipsis}
  #sr-spacer{display:none}
- #sr-retail-dashboard,#sr-top-admin{height:36px;flex:1 1 calc(50% - 8px);padding:0 8px;font-size:10px}
+ #sr-top-admin,#sr-top-ledger{height:36px;flex:1 1 calc(50% - 8px);padding:0 8px;font-size:10px}
  #sr-refresh{width:38px;height:36px;flex:0 0 38px}
  .sr-pill{display:flex;align-items:center;justify-content:center;height:36px;flex:1 1 auto;min-width:74px;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- body.admin-on #sr-retail-dashboard{order:3}
  #sr-top-admin{order:4}
- .sr-pill{order:5}
- #sr-refresh{order:6}
+ #sr-top-ledger{order:5}
+ .sr-pill{order:6}
+ #sr-refresh{order:7}
  #sr-screen{inset:calc(58px + env(safe-area-inset-top)) 0 0}
 }
 
@@ -523,6 +562,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <style id="srq-advanced-css">
 #sr-brand{cursor:pointer}
 #sr-top-admin{height:38px;padding:0 11px;border-radius:10px;border:1px solid #72520d;background:#171106;color:#ffd35c;font-size:11px;font-weight:900;white-space:nowrap}
+#sr-top-ledger{height:38px;padding:0 11px;border-radius:10px;border:1px solid #72520d;background:#201602;color:#ffd35c;font-size:11px;font-weight:900;white-space:nowrap}
 .srq-party{padding:9px 12px;border-bottom:1px solid #29210d;background:#0a0907;display:grid;grid-template-columns:1.2fr 1fr .8fr 1.5fr;gap:7px}
 .srq-party input,.srq-party textarea{width:100%;min-width:0;background:#111;border:1px solid #49370d;border-radius:9px;color:#fff;padding:9px;font:inherit;font-size:12px;outline:none}
 .srq-party textarea{resize:none;height:37px}
@@ -544,13 +584,13 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 
 </head>
 <body>
-<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-retail-dashboard" onclick="openRetailDaddyDashboard()" title="Retail Daddy Dashboard">Retail Daddy</button><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
-<div id="sr-pull">↓ Pull to refresh</div><div id="sr-overlay"></div>
+<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><button id="sr-top-ledger" onclick="openItemLedgerSearch()" title="Item Ledger">Item Ledger</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
+<div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
-<button class="sr-navbtn sr-admin-only" type="button" onclick="openRetailDaddyDashboard()"><span class="sr-ico">▣</span><span>Retail Daddy<small>Receivables dashboard</small></span></button>
-</nav><div id="sr-drawer-section"><div class="sr-mini">↕ Pull down from the top of Home for a true refresh.</div></div></aside>
+<button class="sr-navbtn" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale history, purchase & bill links</small></span></button>
+</nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
 
 
@@ -1411,8 +1451,11 @@ function cardHTML(it, ri, topPx, q){
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
         <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
+        <button class="ab ig" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
       </div>
     </div>`:'';
+
+  const quickLedger = `<button class="quick-ledger" onclick="openItemLedger(${ri},event)">Item Ledger</button>`;
 
   return `<div class="c${exp?' exp':''}" style="top:${topPx}px" data-ri="${ri}" onclick="toggleCard(${ri})">
     <div class="c-name">${hl(it.name||'',q)}</div>
@@ -1433,6 +1476,7 @@ function cardHTML(it, ri, topPx, q){
       <div class="pb k"><div class="pl">Stock</div><div class="pv">${it.stock??'–'}</div></div>
       ${purchBlock}
     </div>
+    ${quickLedger}
     ${detHTML}
   </div>`;
 }
@@ -1895,7 +1939,6 @@ function shareItem(ri,e){
    ADMIN — BIOMETRIC + PIN
 ═══════════════════════════════════════════ */
 const BIO_KEY = 'sr_adm_bio_cred';
-const RETAIL_DADDY_DASHBOARD_URL = 'https://receivables.srfashionned.in';
 
 function setAdminUi(on){
   document.body.classList.toggle('admin-on', !!on);
@@ -1906,16 +1949,6 @@ function setAdminUi(on){
     btn.textContent = label;
     btn.classList.toggle('on', !!on);
   });
-}
-
-function openRetailDaddyDashboard(){
-  if(!isAdmin){
-    toast('🔒 Admin unlock required');
-    openAdm();
-    return;
-  }
-  const win = window.open(RETAIL_DADDY_DASHBOARD_URL, '_blank', 'noopener');
-  if(!win) toast('Allow popup, then tap Retail Daddy again');
 }
 
 async function initBiometric(){
@@ -1961,7 +1994,7 @@ function doLogin(){
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
     const m=document.getElementById("adm-msg"); m.textContent='✓ Granted'; m.className='g';
     isAdmin=true;
-    setTimeout(()=>{ closeAdm(); setAdminUi(true); vsRender(true); toast("🔓 Admin on"); },550);
+    setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("🔓 Admin on"); srOpenPendingLedger(); },550);
   }else{
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
     const m=document.getElementById("adm-msg"); m.textContent='✗ Wrong PIN'; m.className='e';
@@ -1971,6 +2004,8 @@ function doLogin(){
 function logout(){
   isAdmin=false;
   setAdminUi(false);
+  measureCardHeight();
+  rebuildOffsets();
   vsRender(true);
   toast("🔒 Logged out");
 }
@@ -2037,8 +2072,11 @@ function grantAdmin(toastMsg){
   setTimeout(()=>{
     closeAdm();
     setAdminUi(true);
+    measureCardHeight();
+    rebuildOffsets();
     vsRender(true);
     toast(toastMsg || "🔓 Admin on");
+    srOpenPendingLedger();
   }, 500);
 }
 
@@ -2621,6 +2659,198 @@ $("sr-brand").onclick=()=>home();
 
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+const ITEM_LEDGER_API_BASES=["https://dashboard.srfashionned.in","http://localhost:3020"];
+let srCurrentLedgerBill=null;
+let srPendingLedgerRi=null;
+let srPendingLedgerSearch=false;
+function srDate(v){
+  if(!v)return "-";
+  const m=String(v).match(/\/Date\((-?\d+)\)\//);
+  const d=m?new Date(+m[1]):new Date(v);
+  return isNaN(d)?"-":d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+}
+async function srLedgerApi(path){
+  let lastErr=null;
+  for(const base of ITEM_LEDGER_API_BASES){
+    try{
+      const r=await fetch(base+path,{cache:"no-store"});
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      return await r.json();
+    }catch(e){lastErr=e}
+  }
+  throw lastErr||new Error("Ledger not available");
+}
+function srLedgerEnsure(){
+  let ov=$("sr-ledger-ov");
+  if(ov)return ov;
+  ov=document.createElement("div");
+  ov.id="sr-ledger-ov";
+  ov.innerHTML=`<div id="sr-ledger-box"><div id="sr-ledger-head"><div><b id="sr-ledger-title">Item Ledger</b><small id="sr-ledger-sub">Live item history</small></div><button id="sr-ledger-close" onclick="srLedgerClose()">×</button></div><div id="sr-ledger-body"></div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener("click",e=>{if(e.target===ov)srLedgerClose()});
+  return ov;
+}
+function srLedgerClose(){ home(); }
+function srLedgerShow(title,sub,html){
+  drawer(false);
+  quoteOpen=false;
+  setActive("ledger");
+  document.body.style.overflow="hidden";
+  const screen=$("sr-screen");
+  screen.className="open ledger-pro";
+  screen.innerHTML=`<div id="sr-ledger-box"><div id="sr-ledger-head"><div><b id="sr-ledger-title">${title}</b><small id="sr-ledger-sub">${escq(sub||"")}</small></div><button id="sr-ledger-close" onclick="srLedgerClose()">×</button></div><div id="sr-ledger-body">${html}</div></div>`;
+  screen.scrollTop=0;
+}
+function srLedgerKpis(cells){
+  return `<div class="sr-ledger-grid">${cells.map(([l,v])=>`<div class="sr-ledger-kpi"><small>${escq(l)}</small><b>${escq(v)}</b></div>`).join("")}</div>`;
+}
+function srOpenPendingLedger(){
+  if(srPendingLedgerRi !== null){
+    const ri=srPendingLedgerRi;
+    srPendingLedgerRi=null;
+    openItemLedger(ri);
+    return;
+  }
+  if(srPendingLedgerSearch){
+    srPendingLedgerSearch=false;
+    openItemLedgerSearch();
+  }
+}
+async function openItemLedger(ri,e){
+  e&&e.stopPropagation();
+  if(!isAdmin){
+    srPendingLedgerRi=ri;
+    openAdm();
+    toast("Unlock admin to open item ledger");
+    return;
+  }
+  const it=raw[ri];
+  if(!it){toast("Item not found");return}
+  drawer(false);
+  srLedgerShow(escq(it.name||"Item Ledger"),"Loading sale history...","<div class='sr-ledger-note'>Checking live item records...</div>");
+  try{
+    const q=new URLSearchParams();
+    if(it.ProductID)q.set("productId",it.ProductID);
+    if(it.barcode)q.set("barcode",it.barcode);
+    if(it.name)q.set("name",it.name);
+    const [items=[],summaryRows=[],sales=[],purchases=[]]=await srLedgerApi("/api/item-history?"+q.toString());
+    const db=items[0]||{};
+    const sum=summaryRows[0]||{};
+    const title=escq(db.ProductName||it.name||"Item Ledger");
+    const code=[db.ProductCode||it.alias,db.ProductBarcode||it.barcode].filter(Boolean).join(" / ");
+    const rows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Rate<b>${money(r.Rate)}</b></span><span>MRP<b>${money(r.MRP)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
+    const purchaseRows=purchases.map(r=>{const body=`<span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.MovementType||"Purchase")}</b><strong>+${escq(r.Qty||0)}</strong></span><small>${srDate(r.Date)} · ${escq(r.PartyName||r.SupplierInvoiceNo||r.Barcode||code||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(r.PurchasePrice)}</b></span><span>Sale<b>${money(r.SalePrice)}</b></span><span>Wholesale<b>${money(r.WholesalePrice)}</b></span><span>MRP<b>${money(r.MRP)}</b></span></span>`;return +r.CanOpen?`<button class="sr-ledger-row" onclick="srLedgerOpenPurchase('${escq(r.RowCode)}')">${body}</button>`:`<div class="sr-ledger-row">${body}</div>`}).join("");
+    srLedgerShow(title,code||"SR item ledger",`
+      ${srLedgerKpis([
+        ["MRP",money(db.MRP||it.mrp)],["Sale",money(db.SalePrice||it.sale)],["Wholesale",money(db.WholesalePrice||it.wholesale)],
+        ["Purchase",money(db.PurchasePrice||it.purchase)],["Stock",String(db.CurrentStock??it.stock??"-")],["Invoices",String(sum.invoiceCount||0)],
+        ["Sold Qty",String(sum.soldQty||0)],["Sales",money(sum.saleAmount)],["Profit",money(sum.profitAmount)]
+      ])}
+      <div class="sr-ledger-note">This works like an item ledger: purchase/opening entries show stock coming in, and sale entries show where it went out, to whom, and in which invoice.</div>
+      <div><b style="display:block;color:#ffd35c;margin:3px 0 8px">Purchase / opening entries</b>${purchaseRows||"<div class='sr-ledger-note'>No purchase/opening row found for this item.</div>"}</div>
+      <div><b style="display:block;color:#ffd35c;margin:8px 0">Sale invoice entries</b></div>
+      <div>${rows||"<div class='sr-ledger-note'>No sale invoice found for this item yet.</div>"}</div>
+    `);
+  }catch(err){
+    srLedgerShow(escq(it.name||"Item Ledger"),"Could not load live item history",`<div class="sr-ledger-note">Live item history is not reachable right now. The stock card still shows saved prices and stock. Try again when the dashboard connection is online.</div>`);
+  }
+}
+function openItemLedgerSearch(){
+  if(!isAdmin){
+    srPendingLedgerSearch=true;
+    openAdm();
+    toast("Unlock admin to search item ledger");
+    return;
+  }
+  drawer(false);
+  srLedgerShow("Item Ledger","Search by barcode, code, or item name",`<div style="display:flex;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / item name"><button id="sr-ledger-search-go" onclick="srLedgerSearchGo()">Search</button></div><div class="sr-ledger-note">Tip: open any product card and tap Ledger for the most accurate product ID lookup.</div>`);
+  setTimeout(()=>$("sr-ledger-search")?.focus(),80);
+}
+function srLedgerSearchGo(){
+  const term=($("sr-ledger-search")?.value||"").trim().toLowerCase();
+  if(!term)return toast("Enter barcode or item name");
+  const idx=raw.findIndex(it=>String(it.barcode||"").toLowerCase()===term||String(it.alias||"").toLowerCase()===term||String(it.name||"").toLowerCase().includes(term));
+  if(idx>=0)return openItemLedger(idx);
+  srLedgerShow("Item Ledger","No local item match",`<div class="sr-ledger-note">No item matched "${escq(term)}" in the loaded stock list. Refresh stock and try again.</div>`);
+}
+async function srLedgerOpenBill(vchCode){
+  srLedgerShow("Bill "+escq(vchCode),"Loading bill products...","<div class='sr-ledger-note'>Opening invoice from Retail Daddy...</div>");
+  try{
+    const [headers=[],items=[]]=await srLedgerApi("/api/bill?vchCode="+encodeURIComponent(vchCode));
+    const h=headers[0]||{};
+    srCurrentLedgerBill={header:h,items};
+    const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Rate<b>${money(r.rate)}</b></span><span>MRP<b>${money(r.mrp)}</b></span><span>Profit<b>${money(r.profitAmount)}</b></span></span></div>`).join("");
+    srLedgerShow(escq(h.VchNo||("Bill "+vchCode)),`${srDate(h.Date)} · ${h.partyName||"Cash"} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${rows||"<div class='sr-ledger-note'>No products found in this bill.</div>"}`);
+  }catch(err){
+    srLedgerShow("Bill "+escq(vchCode),"Could not open bill",`<div class="sr-ledger-note">This bill could not be loaded from Retail Daddy right now.</div>`);
+  }
+}
+async function srLedgerOpenPurchase(stockId){
+  srLedgerShow("Purchase "+escq(stockId),"Loading purchase products...","<div class='sr-ledger-note'>Opening purchase invoice from Retail Daddy...</div>");
+  try{
+    const [headers=[],items=[]]=await srLedgerApi("/api/purchase-bill?stockId="+encodeURIComponent(stockId));
+    const h=headers[0]||{};
+    srCurrentLedgerBill={header:h,items};
+    const party=h.partyName||"Supplier";
+    const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Purchase<b>${money(r.rate)}</b></span><span>MRP<b>${money(r.mrp)}</b></span><span>Total<b>${money(r.amount)}</b></span></span></div>`).join("");
+    srLedgerShow(escq(h.VchNo||("Purchase "+stockId)),`${srDate(h.Date)} · ${escq(party)} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${h.SupplierInvoiceNo?`<div class="sr-ledger-note">Supplier invoice: ${escq(h.SupplierInvoiceNo)}${h.SupplierInvoiceDate?" · "+srDate(h.SupplierInvoiceDate):""}</div>`:""}${rows||"<div class='sr-ledger-note'>No products found in this purchase bill.</div>"}`);
+  }catch(err){
+    srLedgerShow("Purchase "+escq(stockId),"Could not open purchase",`<div class="sr-ledger-note">This purchase bill could not be loaded from Retail Daddy right now.</div>`);
+  }
+}
+function srBillChunks(items,size=12){
+  const out=[];
+  for(let i=0;i<items.length;i+=size)out.push(items.slice(i,i+size));
+  return out.length?out:[[]];
+}
+function srBillReceiptPagesHtml(){
+  const bill=srCurrentLedgerBill;
+  if(!bill)return "";
+  const h=bill.header||{}, chunks=srBillChunks(bill.items||[]);
+  return chunks.map((part,pi)=>`<section class="sr-receipt-page"><div class="sr-receipt-head"><h1>SR FASHION</h1><b>${escq(h.VchNo||"Invoice")}</b><span>${srDate(h.Date)} · ${escq(h.partyName||"Cash")}</span>${chunks.length>1?`<small>Page ${pi+1} of ${chunks.length}</small>`:""}</div><table><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amt</th></tr></thead><tbody>${part.map((r,i)=>`<tr><td>${pi*12+i+1}</td><td><b>${escq(r.itemName)}</b><br><small>${escq(r.barcode||r.itemGroup||"")}</small></td><td>${escq(r.qty)}</td><td>${Math.round(+r.rate||0)}</td><td>${Math.round(+r.amount||0)}</td></tr>`).join("")}</tbody></table>${pi===chunks.length-1?`<div class="sr-receipt-total"><span>Total</span><b>${money(h.VchAmtBaseCur)}</b></div>`:""}</section>`).join("");
+}
+function srLedgerExportBillPdf(){
+  if(!srCurrentLedgerBill)return toast("Open a bill first");
+  $("sr-print-area")?.remove();
+  const wrap=document.createElement("div");
+  wrap.id="sr-print-area";
+  wrap.innerHTML=`<style>.sr-receipt-page{width:76mm;min-height:110mm;padding:4mm;background:#fff;color:#000;font-family:Arial,sans-serif;page-break-after:always}.sr-receipt-page:last-child{page-break-after:auto}.sr-receipt-head{text-align:center;border-bottom:1px dashed #111;padding-bottom:5px;margin-bottom:6px}.sr-receipt-head h1{font-size:17px;margin:0}.sr-receipt-head b,.sr-receipt-head span,.sr-receipt-head small{display:block;font-size:11px}.sr-receipt-page table{width:100%;border-collapse:collapse;font-size:10px}.sr-receipt-page th,.sr-receipt-page td{border-bottom:1px solid #ddd;padding:4px 2px;text-align:left;vertical-align:top}.sr-receipt-page th:nth-child(3),.sr-receipt-page td:nth-child(3),.sr-receipt-page th:nth-child(4),.sr-receipt-page td:nth-child(4),.sr-receipt-page th:nth-child(5),.sr-receipt-page td:nth-child(5){text-align:right}.sr-receipt-total{display:flex;justify-content:space-between;border-top:2px solid #111;margin-top:7px;padding-top:7px;font-size:14px}</style>${srBillReceiptPagesHtml()}`;
+  document.body.appendChild(wrap);
+  window.print();
+  setTimeout(()=>wrap.remove(),900);
+}
+function srCanvasText(ctx,text,x,y,maxWidth,lineHeight){
+  const words=String(text||"").split(/\s+/), lines=[];let line="";
+  for(const w of words){const test=line?line+" "+w:w;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=w}else line=test}
+  if(line)lines.push(line);
+  lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));
+  return y+Math.max(1,lines.length)*lineHeight;
+}
+function srDownloadCanvas(canvas,name){
+  canvas.toBlob(blob=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),600)},"image/png",0.96);
+}
+function srLedgerExportBillPng(){
+  if(!srCurrentLedgerBill)return toast("Open a bill first");
+  const h=srCurrentLedgerBill.header||{}, chunks=srBillChunks(srCurrentLedgerBill.items||[],10);
+  chunks.forEach((part,pi)=>{
+    const canvas=document.createElement("canvas"), W=900, H=1280;
+    canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#111";ctx.textBaseline="top";ctx.textAlign="left";
+    ctx.font="bold 34px Arial";ctx.textAlign="center";ctx.fillText("SR FASHION",W/2,30);
+    ctx.font="bold 22px Arial";ctx.fillText(String(h.VchNo||"Invoice").trim(),W/2,78);
+    ctx.font="18px Arial";ctx.fillText(`${srDate(h.Date)} · ${h.partyName||"Cash"}`,W/2,110);
+    if(chunks.length>1){ctx.font="16px Arial";ctx.fillText(`Page ${pi+1} of ${chunks.length}`,W/2,138)}
+    ctx.textAlign="left";ctx.strokeStyle="#111";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(35,170);ctx.lineTo(W-35,170);ctx.stroke();
+    let y=195;ctx.font="bold 17px Arial";["#", "Item", "Qty", "Rate", "Amount"].forEach((t,i)=>ctx.fillText(t,[38,90,555,650,760][i],y));
+    y+=30;ctx.font="17px Arial";
+    part.forEach((r,i)=>{ctx.strokeStyle="#ddd";ctx.beginPath();ctx.moveTo(35,y-8);ctx.lineTo(W-35,y-8);ctx.stroke();ctx.fillStyle="#111";ctx.font="17px Arial";ctx.fillText(String(pi*10+i+1),38,y);let ny=srCanvasText(ctx,r.itemName,90,y,430,22);ctx.fillStyle="#666";ctx.font="14px Arial";ctx.fillText(String(r.barcode||r.itemGroup||""),90,ny);ctx.fillStyle="#111";ctx.font="17px Arial";ctx.textAlign="right";ctx.fillText(String(r.qty||""),620,y);ctx.fillText(String(Math.round(+r.rate||0)),720,y);ctx.fillText(String(Math.round(+r.amount||0)),850,y);ctx.textAlign="left";y=Math.max(ny+28,y+70)});
+    if(pi===chunks.length-1){ctx.strokeStyle="#111";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(35,H-135);ctx.lineTo(W-35,H-135);ctx.stroke();ctx.font="bold 30px Arial";ctx.fillText("Total",45,H-105);ctx.textAlign="right";ctx.fillText(money(h.VchAmtBaseCur),W-45,H-105)}
+    const no=String(h.VchNo||"invoice").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"")||"invoice";
+    srDownloadCanvas(canvas,`${no}-page-${pi+1}.png`);
+  });
+}
 function totals(){let qty=0,total=0,mrp=0,sale=0;cart.forEach(x=>{let q=+x.qty||0;qty+=q;total+=q*(+x.rate||0);mrp+=q*(+x.mrp||0);sale+=q*(+x.sale||0)});return{qty,total,mrp,sale}}
 function party(){try{return JSON.parse(localStorage.getItem(PARTY_KEY)||"{}")}catch(e){return{}}}
 function savePartyField(k,v){let p=party();p[k]=v;localStorage.setItem(PARTY_KEY,JSON.stringify(p))}
@@ -2854,14 +3084,9 @@ window.srQuoteScan=async()=>{
 window.srAddPrice=function(ri,type,e){e&&e.stopPropagation();if(!quoteOpen){if(type==="mrp"){copyItem(ri,e);return}return openExp(ri,type,e)}srPickQty(ri,type)};
 const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(c=>{if(c.dataset.srprice)return;c.dataset.srprice="1";[[".pb.m","mrp"],[".pb.s","sale"],[".pb.w","wholesale"]].forEach(([sel,type])=>{let p=c.querySelector(sel);if(!p)return;let m=(p.getAttribute("onclick")||"").match(/\((\d+)/);if(m)p.setAttribute("onclick",`srAddPrice(${m[1]},'${type}',event)`)})}));observer.observe(document.body,{childList:true,subtree:true});
 
-async function srTrueRefresh(){const pull=$("sr-pull"),btn=$("sr-refresh");if(pull){pull.classList.add("show");pull.textContent="↻ Refreshing live stock…"}if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live Retail Daddy stock loaded · Home reset")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false);if(pull){pull.textContent="✓ Refreshed";setTimeout(()=>pull.classList.remove("show"),650)}}}
+async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen()});
-
-let sy=0,pulling=false;
-document.addEventListener("touchstart",e=>{let sc=$("scroll"),atTop=!quoteOpen&&(!sc||sc.scrollTop<=2)&&window.scrollY<=2;if(atTop&&e.touches.length===1){sy=e.touches[0].clientY;pulling=true}},{passive:true});
-document.addEventListener("touchmove",e=>{if(!pulling)return;let d=e.touches[0].clientY-sy;if(d>32){$("sr-pull").classList.add("show");$("sr-pull").textContent=d>90?"↻ Release to refresh":"↓ Pull to refresh"}},{passive:true});
-document.addEventListener("touchend",()=>{if(!pulling)return;pulling=false;let ok=$("sr-pull").classList.contains("show")&&$("sr-pull").textContent.includes("Release");ok?srTrueRefresh():$("sr-pull").classList.remove("show")},{passive:true});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="ledger")return openItemLedgerSearch()});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

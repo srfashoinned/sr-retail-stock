@@ -638,8 +638,13 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
 <button class="sr-navbtn" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
 <button class="sr-navbtn" data-view="fast-scan"><span class="sr-ico">▣</span><span>Fast Scan<small>Barcode to product screen</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="ai-search"><span class="sr-ico">⌕</span><span>AI Search<small>Words like red suit under 500</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="photo-search"><span class="sr-ico">▧</span><span>Photo Search<small>Capture and match by hint</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="staff-tasks"><span class="sr-ico">☑</span><span>Staff Tasks<small>Photos, scan, price checks</small></span></button>
 <button class="sr-navbtn" data-view="share-catalog"><span class="sr-ico">↗</span><span>Share Catalog<small>Send current filtered link</small></span></button>
 <div class="sr-drawer-tools">
+<button class="sr-navbtn sr-admin-only" data-view="owner-brief"><span class="sr-ico">◈</span><span>Owner Brief<small>Today stock decisions</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="festival"><span class="sr-ico">✺</span><span>Festival Planner<small>Eid, Diwali, wedding sets</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
@@ -3138,6 +3143,106 @@ async function srOpenMissingImagesReport(mode="all"){
   }
   srShowReport(title,`${missing.length} of ${sample.length} checked ${desc}`,missing,`No ${desc} found in the checked items.`,{upload:true});
 }
+function srSmartTermParts(text){
+  let q=String(text||"").toLowerCase().trim();
+  let max=null,min=null,low=false,inStock=false,outStock=false;
+  q=q.replace(/\b(under|below|less than)\s*(rs\.?|₹)?\s*(\d+)/g,(_,a,b,n)=>{max=Number(n);return " "});
+  q=q.replace(/\b(above|over|more than)\s*(rs\.?|₹)?\s*(\d+)/g,(_,a,b,n)=>{min=Number(n);return " "});
+  q=q.replace(/\blow stock\b/g,()=>{low=true;return " "});
+  q=q.replace(/\bout of stock\b/g,()=>{outStock=true;return " "});
+  q=q.replace(/\bin stock\b/g,()=>{inStock=true;return " "});
+  const words=q.replace(/[^\w\s-]/g," ").split(/\s+/).filter(Boolean);
+  return {words,max,min,low,inStock,outStock};
+}
+function srSmartMatchItem(it,parts){
+  const hay=[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory].join(" ").toLowerCase();
+  if(parts.max!==null && pn(it.sale)>parts.max)return false;
+  if(parts.min!==null && pn(it.sale)<parts.min)return false;
+  if(parts.low && !(Number(it.stock||0)>0 && Number(it.stock||0)<=LOW_STOCK_THRESHOLD))return false;
+  if(parts.inStock && !(Number(it.stock||0)>0))return false;
+  if(parts.outStock && !(Number(it.stock||0)<=0))return false;
+  return parts.words.every(w=>hay.includes(w));
+}
+function srSmartRows(term,limit=250){
+  const parts=srSmartTermParts(term);
+  return raw.map((it,ri)=>[it,ri])
+    .filter(([it])=>srSmartMatchItem(it,parts))
+    .sort((a,b)=>Number(b[0].stock||0)-Number(a[0].stock||0) || pn(a[0].sale)-pn(b[0].sale))
+    .slice(0,limit);
+}
+function srOpenAiShopAssistant(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for AI search"); return; }
+  drawer(false);
+  srLedgerShow("AI Shop Search","Type normal shop language",`<div class="sr-ledger-note">Try: red cotton dupatta under 500, party wear suit low stock, pashmina in stock.</div><div style="display:grid;grid-template-columns:1fr auto;gap:8px"><input id="sr-ai-term" placeholder="Search in simple words"><button class="gold" onclick="srAiShopSearchGo()">Search</button></div><div class="sr-ledger-actions"><button onclick="srAiQuick('suit low stock')">Low suit</button><button onclick="srAiQuick('dupatta under 500 in stock')">Dupatta under 500</button><button onclick="srAiQuick('pashmina in stock')">Pashmina</button></div><div id="sr-ai-results"></div>`);
+  setTimeout(()=>{const x=$("sr-ai-term"); if(x){x.focus(); x.oninput=()=>srAiPreview(x.value)}},80);
+}
+function srAiPreview(term){
+  const box=$("sr-ai-results"); if(!box)return;
+  const rows=srSmartRows(term,20);
+  box.innerHTML=rows.length?`<div class="sr-report-list" style="margin-top:10px">${rows.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`:`<div class="sr-ledger-note" style="margin-top:10px">No matching items yet.</div>`;
+}
+function srAiShopSearchGo(){
+  const term=($("sr-ai-term")?.value||"").trim();
+  if(!term)return toast("Type what you want to find");
+  const rows=srSmartRows(term);
+  srShowReport("AI Search",`${rows.length} matches for "${term}"`,rows,"No item matched this search.");
+}
+function srAiQuick(term){
+  const x=$("sr-ai-term"); if(x)x.value=term;
+  if(x)return srAiShopSearchGo();
+  srOpenSmartSearchReport(term);
+}
+function srOpenSmartSearchReport(term,title){
+  const rows=srSmartRows(term);
+  srShowReport(title||"Smart Search",`${rows.length} matches for "${term}"`,rows,"No item matched this search.");
+}
+function srOpenPhotoSearch(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for photo search"); return; }
+  drawer(false);
+  srLedgerShow("Photo Search","Capture a sample, then add a hint",`<div class="sr-ledger-note">This helper keeps the camera workflow ready now. Type one or two words from the item, color, barcode, or group after taking the photo. Full visual matching can be connected later with an AI image service.</div><input id="sr-photo-file" type="file" accept="image/*" capture="environment"><div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px"><input id="sr-photo-hint" placeholder="Example: black suit 800"><button class="gold" onclick="srPhotoSearchGo()">Find</button></div><div id="sr-photo-preview" class="sr-ledger-note" style="margin-top:10px">No photo selected yet.</div>`);
+  setTimeout(()=>{
+    const f=$("sr-photo-file"), p=$("sr-photo-preview");
+    if(f)f.onchange=()=>{const file=f.files&&f.files[0]; if(!file||!p)return; const url=URL.createObjectURL(file); p.innerHTML=`<img src="${url}" style="max-width:100%;border-radius:12px;max-height:220px;object-fit:contain"><small>Now type a hint and tap Find.</small>`};
+  },80);
+}
+function srPhotoSearchGo(){
+  const term=($("sr-photo-hint")?.value||"").trim();
+  if(!term)return toast("Type a barcode, color, group, or item hint");
+  const rows=srSmartRows(term);
+  srShowReport("Photo Search",`${rows.length} matches for "${term}"`,rows,"No matching product found from this hint.");
+}
+function srOpenStaffTasks(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock staff/admin tools"); return; }
+  drawer(false);
+  const low=raw.filter(it=>Number(it.stock||0)>0 && Number(it.stock||0)<=LOW_STOCK_THRESHOLD).length;
+  const negative=raw.filter(it=>Number(it.stock||0)<0).length;
+  const noCode=raw.filter(it=>!String(it.barcode||it.alias||"").trim()).length;
+  const noPrice=raw.filter(it=>pn(it.sale)<=0 || pn(it.mrp)<=0).length;
+  const inStock=raw.filter(it=>Number(it.stock||0)>0).length;
+  const outStock=raw.filter(it=>Number(it.stock||0)<=0).length;
+  srLedgerShow("Staff Tasks","Small jobs that improve the shop data",`<div class="sr-ledger-grid"><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Photo work</small><b>${inStock}</b><span>check in-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('out')"><small>Old photo work</small><b>${outStock}</b><span>check out-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low}</b><span>needs reorder attention</span></button><button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative+noCode+noPrice}</b><span>${negative} negative, ${noCode} no code, ${noPrice} no price</span></button></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenFastScan()">Fast Scan</button><button onclick="srOpenAiShopAssistant()">AI Search</button><button onclick="srOpenHealthCheck()">Health</button></div>`);
+}
+function srOpenOwnerBrief(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin for owner brief"); return; }
+  drawer(false);
+  const inRows=raw.filter(it=>Number(it.stock||0)>0);
+  const outRows=raw.filter(it=>Number(it.stock||0)<=0);
+  const low=inRows.filter(it=>Number(it.stock||0)<=LOW_STOCK_THRESHOLD);
+  const saleValue=inRows.reduce((s,it)=>s+pn(it.sale)*Number(it.stock||0),0);
+  const purchaseValue=inRows.reduce((s,it)=>s+pn(it.purchase)*Number(it.stock||0),0);
+  const margin=saleValue-purchaseValue;
+  const topGroups=Array.from(inRows.reduce((m,it)=>{const k=it.group||it.PartGroup||"General";m.set(k,(m.get(k)||0)+Number(it.stock||0));return m},new Map()).entries()).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  srLedgerShow("Owner Brief","Compact stock command center",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>In stock</small><b>${inRows.length}</b></div><div class="sr-ledger-kpi"><small>Out stock</small><b>${outRows.length}</b></div><div class="sr-ledger-kpi"><small>Sale value</small><b>${money(saleValue)}</b></div><div class="sr-ledger-kpi"><small>Est. margin</small><b>${money(margin)}</b></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenSmartReorderReport()">Reorder</button><button onclick="srOpenDeadStockReport()">Clear Dead Stock</button><button onclick="srOpenLowStockReport()">Low Stock (${low.length})</button></div><div class="sr-report-list">${topGroups.map(([g,n])=>`<button class="sr-report-item" onclick="srOpenSmartSearchReport('${String(g).replace(/'/g,"\\'")} in stock','${String(g).replace(/'/g,"\\'")}')"><span class="sr-report-item-top"><b>${escq(g)}</b><strong>${n}</strong></span><small>Tap to view this group</small></button>`).join("")}</div>`);
+}
+function srOpenFestivalPlanner(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin for festival planner"); return; }
+  drawer(false);
+  srLedgerShow("Festival Planner","Ready-made selling collections",`<div class="sr-ledger-actions"><button class="gold" onclick="srFestivalRun('eid suit dupatta')">Eid</button><button onclick="srFestivalRun('wedding suit premium')">Wedding</button><button onclick="srFestivalRun('diwali suit dress')">Diwali</button><button onclick="srFestivalRun('clearance in stock')">Clearance</button></div><div class="sr-ledger-note">After opening any collection, use Share Catalog to send that filtered product list.</div>`);
+}
+function srFestivalRun(term){
+  const rows=srSmartRows(term);
+  srShowReport("Festival: "+term,`${rows.length} matching items`,rows,"No products found for this collection.");
+}
 function srDownloadReportCsv(){
   const rows=window.srLastReportRows||[];
   if(!rows.length)return toast("No report rows");
@@ -3246,6 +3351,16 @@ Object.assign(window,{
   srOpenLowStockReport,
   srOpenMissingImagesReport,
   srOpenStockIssuesReport,
+  srOpenAiShopAssistant,
+  srAiShopSearchGo,
+  srAiQuick,
+  srOpenSmartSearchReport,
+  srOpenPhotoSearch,
+  srPhotoSearchGo,
+  srOpenStaffTasks,
+  srOpenOwnerBrief,
+  srOpenFestivalPlanner,
+  srFestivalRun,
   srOpenCardFromReport,
   srDownloadReportCsv,
   srLedgerClose,
@@ -3490,7 +3605,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="ai-search")return srOpenAiShopAssistant();if(v==="photo-search")return srOpenPhotoSearch();if(v==="staff-tasks")return srOpenStaffTasks();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="owner-brief")return srOpenOwnerBrief();if(v==="festival")return srOpenFestivalPlanner();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

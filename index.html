@@ -151,6 +151,8 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .ab.sh{background:rgba(34,197,94,0.10);color:var(--green);border:1px solid rgba(34,197,94,0.20)}
 .ab.ig{background:rgba(192,132,252,0.12);color:var(--purple);border:1px solid rgba(192,132,252,0.25)}
 .ab.wa{background:rgba(37,211,102,0.12);color:#25d366;border:1px solid rgba(37,211,102,0.3)}
+.sr-card-upload{display:none;margin-top:9px;width:100%;height:36px;border-radius:9px;border:1px solid rgba(245,197,66,.42);background:linear-gradient(135deg,rgba(245,197,66,.22),rgba(192,132,252,.16));color:#ffd35c;font-weight:900;font-size:13px;font-family:inherit}
+body.admin-on .sr-card-upload,body.staff-on .sr-card-upload{display:block}
 #welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;gap:14px}
 #welcome .w-logo{font-size:52px;font-weight:900;letter-spacing:5px;color:var(--gold);line-height:1}
 #welcome .w-sub{font-size:18px;font-weight:800;letter-spacing:3px;color:var(--txt)}
@@ -1553,6 +1555,7 @@ function cardHTML(it, ri, topPx, q){
     ${["offer","new","clearance","premium"].map(t=>`<button class="${tag===t?"on":""}" onclick="srSetItemTag(${ri},'${t}',event)">${srTagLabel(t)}</button>`).join("")}
     <button onclick="srSetItemTag(${ri},'',event)">Clear Tag</button>
   </div>` : "";
+  const staffUpload = (isAdmin || isStaff) ? `<button class="sr-card-upload" onclick="openPim(${ri},event)">📷 Upload Photo / Images</button>` : "";
   const detHTML = exp?`
     <div class="det">
       ${it.barcode?`<div class="drow"><span>Barcode</span><span>${it.barcode}</span></div>`:''}
@@ -1574,6 +1577,7 @@ function cardHTML(it, ri, topPx, q){
     ${tagBadge}
     ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
     ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
+    ${staffUpload}
     <div class="prices">
       <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
       <div class="pb s shareable" onclick="openExp(${ri},'sale',event)" title="Tap to share Sale price image">

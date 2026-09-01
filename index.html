@@ -534,6 +534,9 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 .sr-report-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
 .sr-report-meta span{border:1px solid #29210b;background:#09090b;border-radius:8px;padding:6px;color:#8e826c;font-size:10px}
 .sr-report-meta b{display:block;color:#fff;font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.sr-report-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sr-report-actions button{height:36px;border-radius:9px;border:1px solid #49370d;background:#151108;color:#ddd;font-size:11px;font-weight:900}
+.sr-report-actions .gold{background:linear-gradient(135deg,#ffd35c,#d89a00);border:0;color:#111}
 .sr-tag-badge{display:inline-flex;margin-top:6px;border:1px solid #7a5a10;background:#211604;color:#ffd35c;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900}
 .sr-tag-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:8px}
 .sr-tag-row button{min-height:34px;border-radius:8px;border:1px solid #42310b;background:#100d08;color:#d8c990;font-size:10px;font-weight:900}
@@ -642,6 +645,8 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn sr-admin-only" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>Image Missing<small>Upload pending photos</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images-in"><span class="sr-ico">✅</span><span>In-Stock Photos<small>Available items without images</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images-out"><span class="sr-ico">×</span><span>Out-Stock Photos<small>Sold-out items without images</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
@@ -2959,9 +2964,14 @@ function srOpenCardFromReport(ri){
     }catch(e){}
   },80);
 }
-function srReportItem(it,ri){
+function srReportItem(it,ri,opts={}){
   const purchaseCell = isAdmin ? `<span>Purchase<b>${money(it.purchase||0)}</b></span>` : `<span>Images<b>Open</b></span>`;
-  return `<button class="sr-report-item" type="button" onclick="srOpenCardFromReport(${ri})">
+  const actions = opts.upload ? `<span class="sr-report-actions">
+      <button class="gold" type="button" onclick="openPim(${ri},event)">Upload Photo</button>
+      <button type="button" onclick="srOpenCardFromReport(${ri})">Open Item</button>
+    </span>` : "";
+  const openClick = opts.upload ? "" : ` onclick="srOpenCardFromReport(${ri})"`;
+  return `<div class="sr-report-item" role="button" tabindex="0"${openClick}>
     <span class="sr-report-item-top"><b>${escq(it.name||"Unnamed item")}</b><strong>${money(it.sale||0)}</strong></span>
     <small>${escq([it.alias,it.barcode,it.group||it.PartGroup].filter(Boolean).join(" · "))}</small>
     <span class="sr-report-meta">
@@ -2970,15 +2980,17 @@ function srReportItem(it,ri){
       <span>Wholesale<b>${money(it.wholesale||0)}</b></span>
       ${purchaseCell}
     </span>
-  </button>`;
+    ${actions}
+  </div>`;
 }
-function srShowReport(title,sub,rows,empty){
+function srShowReport(title,sub,rows,empty,opts={}){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to open reports"); return; }
   drawer(false);
   setActive("");
-  const csv = rows.length ? `<div class="sr-ledger-actions"><button class="gold" onclick="srDownloadReportCsv()">Download CSV</button><button onclick="srTrueRefresh()">Refresh Live</button></div>` : "";
+  const firstUpload = opts.upload && rows.length ? `<button onclick="openPim(${rows[0][1]},event)">Upload First</button>` : `<button onclick="srTrueRefresh()">Refresh Live</button>`;
+  const csv = rows.length ? `<div class="sr-ledger-actions"><button class="gold" onclick="srDownloadReportCsv()">Download CSV</button>${firstUpload}</div>` : "";
   const html = rows.length
-    ? `${csv}<div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`
+    ? `${csv}<div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri,opts)).join("")}</div>`
     : `<div class="sr-ledger-note">${escq(empty||"No item found.")}</div>`;
   window.srLastReportRows = rows;
   window.srLastReportTitle = title;
@@ -3090,11 +3102,23 @@ function srOpenReceivables(){
   drawer(false);
   window.location.href = "https://receivables.srfashionned.in/";
 }
-async function srOpenMissingImagesReport(){
+function srMissingImageFilter(mode){
+  if(mode==="in")return it=>Number(it.stock||0)>0;
+  if(mode==="out")return it=>Number(it.stock||0)<=0;
+  return ()=>true;
+}
+function srMissingImageTitle(mode){
+  if(mode==="in")return ["In-Stock Photos","available items have no image yet"];
+  if(mode==="out")return ["Out-Stock Photos","sold-out items have no image yet"];
+  return ["Image Missing","items have no Hostinger image yet"];
+}
+async function srOpenMissingImagesReport(mode="all"){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
   drawer(false);
-  srLedgerShow("Image Missing","Checking Hostinger product images...","<div class='sr-ledger-note'>Checking image storage. Keep this screen open for a moment.</div>");
-  const sample=raw.map((it,ri)=>[it,ri]).filter(([it])=>String(it.alias||it.barcode||it.name||"").trim()).slice(0,500);
+  const [title,desc]=srMissingImageTitle(mode);
+  srLedgerShow(title,"Checking Hostinger product images...","<div class='sr-ledger-note'>Checking image storage. Keep this screen open for a moment.</div>");
+  const filter=srMissingImageFilter(mode);
+  const sample=raw.map((it,ri)=>[it,ri]).filter(([it])=>String(it.alias||it.barcode||it.name||"").trim() && filter(it)).slice(0,800);
   const missing=[];
   let done=0;
   for(let i=0;i<sample.length;i+=8){
@@ -3110,9 +3134,9 @@ async function srOpenMissingImagesReport(){
       }
       done++;
     }));
-    srLedgerShow("Image Missing",`Checked ${done} of ${sample.length} items`,missing.length?`<div class="sr-ledger-note">${missing.length} items have no Hostinger image yet.</div><div class="sr-report-list">${missing.slice(0,120).map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`:"<div class='sr-ledger-note'>No missing image found yet. Still checking...</div>");
+    srLedgerShow(title,`Checked ${done} of ${sample.length} items`,missing.length?`<div class="sr-ledger-note">${missing.length} ${desc}. Use Upload Photo to add gallery/camera photos.</div><div class="sr-report-list">${missing.slice(0,160).map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")}</div>`:"<div class='sr-ledger-note'>No missing image found yet. Still checking...</div>");
   }
-  srShowReport("Image Missing",`${missing.length} of ${sample.length} checked items have no Hostinger image`,missing,"No missing Hostinger images found in the checked items.");
+  srShowReport(title,`${missing.length} of ${sample.length} checked ${desc}`,missing,`No ${desc} found in the checked items.`,{upload:true});
 }
 function srDownloadReportCsv(){
   const rows=window.srLastReportRows||[];
@@ -3466,7 +3490,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport();if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

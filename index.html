@@ -601,7 +601,10 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
 <div class="sr-drawer-tools">
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="missing-images"><span class="sr-ico">🖼️</span><span>Image Missing<small>Hostinger image check</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
 </div>
 </nav><div id="sr-drawer-section"></div></aside>
@@ -2813,10 +2816,22 @@ function srShowReport(title,sub,rows,empty){
   if(!isAdmin){ openAdm(); toast("Unlock admin to open reports"); return; }
   drawer(false);
   setActive("");
+  const csv = rows.length ? `<div class="sr-ledger-actions"><button class="gold" onclick="srDownloadReportCsv()">Download CSV</button><button onclick="srTrueRefresh()">Refresh Live</button></div>` : "";
   const html = rows.length
-    ? `<div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`
+    ? `${csv}<div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`
     : `<div class="sr-ledger-note">${escq(empty||"No item found.")}</div>`;
+  window.srLastReportRows = rows;
+  window.srLastReportTitle = title;
   srLedgerShow(title,sub,html);
+}
+function srItemAgeDays(it){
+  const d=new Date(it.entryDate||it.EntryDate||it.date||"");
+  if(isNaN(d))return 0;
+  return Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));
+}
+function srMarginPct(it){
+  const sale=Number(it.sale||0), purchase=Number(it.purchase||0);
+  return sale>0&&purchase>0 ? Math.round((sale-purchase)/sale*100) : 0;
 }
 function srOpenLowStockReport(){
   const rows=raw.map((it,ri)=>[it,ri])
@@ -2825,12 +2840,65 @@ function srOpenLowStockReport(){
     .slice(0,250);
   srShowReport("Low Stock",`${rows.length} items with stock 1 to 5`,rows,"No low-stock items found.");
 }
+function srOpenSmartReorderReport(){
+  const rows=raw.map((it,ri)=>[it,ri])
+    .filter(([it])=>Number(it.stock||0)>=0 && Number(it.stock||0)<=8)
+    .sort((a,b)=>{
+      const ma=srMarginPct(a[0]), mb=srMarginPct(b[0]);
+      return Number(a[0].stock||0)-Number(b[0].stock||0) || mb-ma || String(a[0].name||"").localeCompare(String(b[0].name||""));
+    })
+    .slice(0,250);
+  srShowReport("Smart Reorder",`${rows.length} low-stock items sorted by urgency and margin`,rows,"Nothing urgent to reorder from the loaded stock.");
+}
+function srOpenDeadStockReport(){
+  const rows=raw.map((it,ri)=>[it,ri])
+    .filter(([it])=>Number(it.stock||0)>0 && srItemAgeDays(it)>=60)
+    .sort((a,b)=>srItemAgeDays(b[0])-srItemAgeDays(a[0]) || Number(b[0].stock||0)-Number(a[0].stock||0))
+    .slice(0,250);
+  srShowReport("Dead Stock",`${rows.length} items older than 60 days with stock still available`,rows,"No old-stock candidates found from the loaded stock.");
+}
 function srOpenStockIssuesReport(){
   const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>{
     const stock=Number(it.stock||0), sale=Number(it.sale||0), mrp=Number(it.mrp||0);
     return stock<0 || !String(it.barcode||it.alias||"").trim() || sale<=0 || mrp<=0;
   }).sort((a,b)=>Number(a[0].stock||0)-Number(b[0].stock||0)).slice(0,250);
   srShowReport("Stock Issues",`${rows.length} items to review`,rows,"No obvious stock issues found.");
+}
+async function srOpenMissingImagesReport(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin to check images"); return; }
+  drawer(false);
+  srLedgerShow("Image Missing","Checking Hostinger product images...","<div class='sr-ledger-note'>Checking image storage. Keep this screen open for a moment.</div>");
+  const sample=raw.map((it,ri)=>[it,ri]).filter(([it])=>String(it.alias||it.barcode||it.name||"").trim()).slice(0,500);
+  const missing=[];
+  let done=0;
+  for(let i=0;i<sample.length;i+=8){
+    const part=sample.slice(i,i+8);
+    await Promise.all(part.map(async ([it,ri])=>{
+      const alias=(it.alias||it.barcode||it.name||"").trim();
+      try{
+        const r=await fetch(`${IMAGE_API_BASE}/list?alias=${encodeURIComponent(alias)}&t=${Date.now()}`,{cache:"no-store"});
+        const data=r.ok?await r.json():{images:[]};
+        const has=(data.images||[]).some(f=>/\.(jpe?g|png|webp|gif)$/i.test(f.name||""));
+        if(!has && !(it.images&&it.images.length))missing.push([it,ri]);
+      }catch(e){
+        if(!(it.images&&it.images.length))missing.push([it,ri]);
+      }
+      done++;
+    }));
+    srLedgerShow("Image Missing",`Checked ${done} of ${sample.length} items`,missing.length?`<div class="sr-ledger-note">${missing.length} items have no Hostinger image yet.</div><div class="sr-report-list">${missing.slice(0,120).map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`:"<div class='sr-ledger-note'>No missing image found yet. Still checking...</div>");
+  }
+  srShowReport("Image Missing",`${missing.length} of ${sample.length} checked items have no Hostinger image`,missing,"No missing Hostinger images found in the checked items.");
+}
+function srDownloadReportCsv(){
+  const rows=window.srLastReportRows||[];
+  if(!rows.length)return toast("No report rows");
+  const csv=[["Name","Alias","Barcode","Group","MRP","Sale","Wholesale","Purchase","Stock","Entry Date"],...rows.map(([it])=>[it.name||"",it.alias||"",it.barcode||"",it.group||it.PartGroup||"",it.mrp||"",it.sale||"",it.wholesale||"",it.purchase||"",it.stock??"",it.entryDate||""])]
+    .map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=String(window.srLastReportTitle||"sr-stock-report").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()+".csv";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),600);
 }
 async function srLedgerOpenBill(vchCode){
   srLedgerShow("Bill "+escq(vchCode),"Loading bill products...","<div class='sr-ledger-note'>Opening invoice from Retail Daddy...</div>");
@@ -2913,9 +2981,13 @@ function srLedgerExportBillPng(){
 Object.assign(window,{
   openItemLedger,
   openItemLedgerSearch,
+  srOpenSmartReorderReport,
+  srOpenDeadStockReport,
   srOpenLowStockReport,
+  srOpenMissingImagesReport,
   srOpenStockIssuesReport,
   srOpenCardFromReport,
+  srDownloadReportCsv,
   srLedgerClose,
   srLedgerSearchGo,
   srLedgerOpenBill,
@@ -3158,7 +3230,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="ledger")return openItemLedgerSearch();if(v==="low-stock")return srOpenLowStockReport();if(v==="stock-issues")return srOpenStockIssuesReport()});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport();if(v==="stock-issues")return srOpenStockIssuesReport()});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

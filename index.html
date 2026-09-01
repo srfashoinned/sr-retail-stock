@@ -501,7 +501,8 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #sr-screen.ledger-pro{display:block;inset:0;z-index:12500;padding:0;background:#080808;overflow:auto}
 #sr-screen.ledger-pro #sr-ledger-box{width:100%;max-width:none;max-height:none;min-height:100dvh;border:0;border-radius:0;box-shadow:none}
 #sr-screen.ledger-pro #sr-ledger-head{padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
-.sr-mobile-admin-only{display:none!important}
+.sr-ledger-admin-only{display:none!important}
+body.admin-on .sr-ledger-admin-only{display:flex!important}
 .sr-feature{border:1px solid #44320b;background:linear-gradient(145deg,#12100b,#0b0b0b);border-radius:15px;padding:15px;margin:10px 0}.sr-feature b{color:#ffd15a}.sr-feature button{margin-top:10px;border:1px solid #765300;background:#1a1203;color:#ffd15a;border-radius:10px;padding:10px 13px;font-weight:800}
 #sr-quote-cart{display:grid;gap:9px}.sr-qrow{border:1px solid #44320b;background:#100d07;border-radius:13px;padding:12px}.sr-qgrid{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.sr-qgrid input{min-width:0;background:#080808;border:1px solid #5b430d;color:#fff;border-radius:9px;padding:10px;font-size:16px}.sr-del{background:#281010!important;border-color:#6b2424!important;color:#ff9b9b!important;margin:0!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
@@ -516,7 +517,6 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
  #sr-top-admin{height:36px;flex:1 1 auto;padding:0 8px;font-size:10px}
  #sr-refresh{width:38px;height:36px;flex:0 0 38px}
  .sr-pill{display:flex;align-items:center;justify-content:center;height:36px;flex:1 1 auto;min-width:74px;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- body.admin-on .sr-mobile-admin-only{display:flex!important}
  #sr-top-admin{order:4}
  .sr-pill{order:5}
  #sr-refresh{order:6}
@@ -1449,7 +1449,7 @@ function cardHTML(it, ri, topPx, q){
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
         <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
-        <button class="ab ig sr-mobile-admin-only" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
+        <button class="ab ig sr-ledger-admin-only" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
       </div>
     </div>`:'';
 
@@ -2654,7 +2654,7 @@ $("sr-brand").onclick=()=>home();
 
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-const ITEM_LEDGER_API_BASES=["https://dashboard.srfashionned.in","http://localhost:3020"];
+const ITEM_LEDGER_API_BASES=["https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
 let srCurrentLedgerBill=null;
 let srPendingLedgerRi=null;
 let srPendingLedgerSearch=false;

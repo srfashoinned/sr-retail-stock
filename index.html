@@ -506,6 +506,10 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 .sr-report-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
 .sr-report-meta span{border:1px solid #29210b;background:#09090b;border-radius:8px;padding:6px;color:#8e826c;font-size:10px}
 .sr-report-meta b{display:block;color:#fff;font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.sr-tag-badge{display:inline-flex;margin-top:6px;border:1px solid #7a5a10;background:#211604;color:#ffd35c;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900}
+.sr-tag-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:8px}
+.sr-tag-row button{min-height:34px;border-radius:8px;border:1px solid #42310b;background:#100d08;color:#d8c990;font-size:10px;font-weight:900}
+.sr-tag-row button.on{background:#ffd35c;color:#111;border-color:#ffd35c}
 .sr-drawer-tools{display:none;border-top:1px solid #2d230c;margin-top:8px;padding-top:8px}
 body.admin-on .sr-drawer-tools{display:block}
 #sr-screen{display:none;position:fixed;inset:58px 0 0;z-index:7000;background:#080808;color:#eee;overflow:auto;padding:18px}#sr-screen.open{display:block}.sr-screen-title{font-size:25px;font-weight:1000;color:#ffd15a;margin-bottom:5px}.sr-screen-sub{color:#8e826c;margin-bottom:18px}
@@ -519,7 +523,7 @@ body.admin-on .sr-ledger-admin-only{display:flex!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
-@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid,.sr-report-meta{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
+@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid,.sr-report-meta,.sr-tag-row{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
 @media(max-width:760px){
  #sr-appbar{height:auto;align-items:center;gap:7px;padding:8px;flex-wrap:wrap}
  #sr-hamb{width:40px;height:40px;flex:0 0 auto}
@@ -599,6 +603,8 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
+<button class="sr-navbtn" data-view="fast-scan"><span class="sr-ico">▣</span><span>Fast Scan<small>Barcode to product screen</small></span></button>
+<button class="sr-navbtn" data-view="share-catalog"><span class="sr-ico">↗</span><span>Share Catalog<small>Send current filtered link</small></span></button>
 <div class="sr-drawer-tools">
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
@@ -606,6 +612,12 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn sr-admin-only" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="missing-images"><span class="sr-ico">🖼️</span><span>Image Missing<small>Hostinger image check</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="health"><span class="sr-ico">●</span><span>Health Check<small>APIs, images and live data</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="tag-offer"><span class="sr-ico">🏷</span><span>Offers<small>Filter tagged offer items</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="tag-new"><span class="sr-ico">✦</span><span>New Arrivals<small>Filter tagged new items</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="tag-clearance"><span class="sr-ico">%</span><span>Clearance<small>Filter clearance items</small></span></button>
 </div>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
@@ -861,6 +873,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
    CONFIG
 ═══════════════════════════════════════════ */
 const PASS  = "7865";
+const STAFF_PASS = "777";
 const SHOP_NAME    = "SR FASHION";
 const SHOP_ADDRESS = "GN Azad College Road, Vasant Nagar, Pusad – 445 204";
 const SHOP_PHONE   = "7588756668";
@@ -953,6 +966,7 @@ let pool     = [];
 let heights  = [];
 let offsets  = [];
 let isAdmin  = false;
+let isStaff  = false;
 let activeGroup = '';
 let pMin     = null;
 let pMax     = null;
@@ -960,6 +974,7 @@ let query    = '';
 let activeSort = 'df';
 let activeStock = 'all';
 let activeBrand = '';
+let activeTag = '';
 let expanded = new Set();
 let expandedHeights = {};
 let vsStart  = 0;
@@ -1012,6 +1027,8 @@ async function getStockData(forceLive = false) {
     const payload = await fetchStockJson(apiUrl);
     const items = payload.items || [];
     if (!Array.isArray(items)) throw new Error("Bad stock response");
+    const oldStock = localStorage.getItem(STOCK_CACHE_KEY);
+    if (oldStock) localStorage.setItem(SR_PREV_STOCK_KEY, oldStock);
     localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(items));
     localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
     return { source: payload.source || "live", items, updatedAt: payload.updatedAt || new Date().toISOString() };
@@ -1060,7 +1077,7 @@ async function refreshLiveStockInBackground() {
   try {
     const payload = await getStockData(true);
     applyStockPayload(payload, "live");
-    if (typeof applyAll === "function" && (search.value || currentGroup || currentBrand || stockMode !== "all")) {
+    if (typeof applyAll === "function" && (search.value || activeGroup || activeBrand || activeTag || activeStock !== "all")) {
       applyAll();
     }
   } catch (e) {
@@ -1084,10 +1101,22 @@ async function loadData(){
     toast("Stock load failed: "+e.message);
   }
   if (!painted) setStockStatus("cache", 0, "loading");
-  showWelcome();
+  if(!applyUrlFilters()) showWelcome();
   initBiometric();
   pimInitToken();
   refreshLiveStockInBackground();
+}
+
+function applyUrlFilters(){
+  const p=new URLSearchParams(location.search);
+  const q=p.get("q")||"", group=p.get("group")||"", brand=p.get("brand")||"", tag=p.get("tag")||"";
+  if(!q && !group && !brand && !tag)return false;
+  query=q; activeGroup=group; activeBrand=brand; activeTag=tag;
+  const s=document.getElementById("search"); if(s)s.value=q;
+  if(group){document.getElementById("grp-btn-label").textContent=group;document.getElementById("grp-btn").classList.add("active")}
+  if(brand){document.getElementById("brand-btn-label").textContent=brand;document.getElementById("brand-btn").classList.add("active")}
+  applyAll();
+  return true;
 }
 
 async function refreshData(){
@@ -1122,7 +1151,7 @@ function showWelcome(){
 
 function goHome(){
   document.getElementById("search").value = '';
-  query = ''; pMin = null; pMax = null; activeGroup = ''; activeStock = 'all'; activeBrand = '';
+  query = ''; pMin = null; pMax = null; activeGroup = ''; activeStock = 'all'; activeBrand = ''; activeTag = '';
   document.getElementById("pmin").value = '';
   document.getElementById("pmax").value = '';
   activeSort='df';
@@ -1320,10 +1349,29 @@ document.getElementById("sort-row").addEventListener("click",function(e){
 
 /* ═══ FILTER + SORT ═══ */
 function pn(v){ return v==null||v===''?0:parseFloat(String(v).replace(/[^0-9.]/g,''))||0; }
+const SR_TAG_KEY = "sr_item_tags_v1";
+const SR_PREV_STOCK_KEY = "sr_previous_stock_snapshot_v1";
+function srItemKey(it){return String(it.ProductID||it.alias||it.barcode||it.name||"").trim()}
+function srTags(){try{return JSON.parse(localStorage.getItem(SR_TAG_KEY)||"{}")}catch(e){return {}}}
+function srItemTag(it){return srTags()[srItemKey(it)]||""}
+function srSetItemTag(ri,tag,e){
+  e&&e.stopPropagation();
+  if(!isAdmin)return toast("Admin only");
+  const it=raw[ri], key=srItemKey(it);
+  if(!key)return toast("Cannot tag this item");
+  const all=srTags();
+  if(tag)all[key]=tag; else delete all[key];
+  localStorage.setItem(SR_TAG_KEY,JSON.stringify(all));
+  measureCardHeight(); rebuildOffsets(); vsRender(true);
+  toast(tag?`Tagged ${tag}`:"Tag removed");
+}
+function srTagLabel(tag){
+  return tag==="offer"?"Offer":tag==="new"?"New Arrival":tag==="clearance"?"Clearance":tag==="premium"?"Premium":"";
+}
 
 function applyAll(){
   const q = query.trim().toLowerCase();
-  const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='';
+  const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='' || activeTag;
   if(!hasFilter){ showWelcome(); return; }
   expanded.clear();
   expandedHeights = {};
@@ -1338,6 +1386,7 @@ function applyAll(){
       const first = (it.name||'').trim().split(/\s+/)[0];
       if(first !== activeBrand) continue;
     }
+    if(activeTag && srItemTag(it)!==activeTag) continue;
     if(q){
       const n=(it.name||'').toLowerCase();
       const a=(it.alias||'').toLowerCase();
@@ -1359,11 +1408,12 @@ function applyAll(){
   const sortLabel = activeSort==='grp'?' · sorted by group':activeSort==='na'?' · A–Z':activeSort==='sa'?' · price ↑':activeSort==='sd'?' · price ↓':'';
   const stockLabel = activeStock==='in'?' · in stock':activeStock==='low'?' · low stock':activeStock==='out'?' · out of stock':'';
   const brandLabel = activeBrand ? ' · '+activeBrand : '';
+  const tagLabel = activeTag ? ' · '+srTagLabel(activeTag) : '';
   document.getElementById("status").textContent =
     (pool.length===raw.length
       ? raw.length.toLocaleString()+" items"
       : pool.length.toLocaleString()+" of "+raw.length.toLocaleString()+" items")
-    + sortLabel + stockLabel + brandLabel;
+    + sortLabel + stockLabel + brandLabel + tagLabel;
 
   scrollEl.scrollTop = 0;
   vsRender(true);
@@ -1455,8 +1505,14 @@ function marginStr(it){
 
 function cardHTML(it, ri, topPx, q){
   const exp = expanded.has(ri);
+  const tag = srItemTag(it);
+  const tagBadge = tag ? `<span class="sr-tag-badge">${srTagLabel(tag)}</span>` : "";
   const purchBlock = isAdmin
     ?`<div class="pb p"><div class="pl">Purchase</div><div class="pv">${fmt(it.purchase)}${marginStr(it)}</div></div>`:'';
+  const tagTools = isAdmin ? `<div class="sr-tag-row">
+    ${["offer","new","clearance","premium"].map(t=>`<button class="${tag===t?"on":""}" onclick="srSetItemTag(${ri},'${t}',event)">${srTagLabel(t)}</button>`).join("")}
+    <button onclick="srSetItemTag(${ri},'',event)">Clear Tag</button>
+  </div>` : "";
   const detHTML = exp?`
     <div class="det">
       ${it.barcode?`<div class="drow"><span>Barcode</span><span>${it.barcode}</span></div>`:''}
@@ -1470,10 +1526,12 @@ function cardHTML(it, ri, topPx, q){
         <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
         <button class="ab ig sr-ledger-admin-only" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
       </div>
+      ${tagTools}
     </div>`:'';
 
   return `<div class="c${exp?' exp':''}" style="top:${topPx}px" data-ri="${ri}" onclick="toggleCard(${ri})">
     <div class="c-name">${hl(it.name||'',q)}</div>
+    ${tagBadge}
     ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
     ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
     <div class="prices">
@@ -1956,12 +2014,13 @@ const BIO_KEY = 'sr_adm_bio_cred';
 
 function setAdminUi(on){
   document.body.classList.toggle('admin-on', !!on);
-  const label = on ? '🔓 Logout' : '⚡ Admin';
+  document.body.classList.toggle('staff-on', !!isStaff);
+  const label = on ? '🔓 Logout' : isStaff ? '👤 Staff' : '⚡ Admin';
   ['admin-btn','sr-top-admin'].forEach(id=>{
     const btn = document.getElementById(id);
     if(!btn) return;
     btn.textContent = label;
-    btn.classList.toggle('on', !!on);
+    btn.classList.toggle('on', !!on || !!isStaff);
   });
 }
 
@@ -1977,7 +2036,7 @@ async function initBiometric(){
 }
 
 function openAdm(){
-  if(isAdmin){ logout(); return; }
+  if(isAdmin || isStaff){ logout(); return; }
   document.getElementById("adm-ov").classList.add("show");
   setTimeout(()=>document.getElementById("adm-pw").focus(), 150);
 }
@@ -2007,8 +2066,13 @@ function doLogin(){
   if(pw.value===PASS){
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
     const m=document.getElementById("adm-msg"); m.textContent='✓ Granted'; m.className='g';
-    isAdmin=true;
+    isAdmin=true; isStaff=false;
     setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("🔓 Admin on"); srOpenPendingLedger(); },550);
+  }else if(pw.value===STAFF_PASS){
+    [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
+    const m=document.getElementById("adm-msg"); m.textContent='✓ Staff'; m.className='g';
+    isAdmin=false; isStaff=true;
+    setTimeout(()=>{ closeAdm(); setAdminUi(false); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("👤 Staff mode on"); },550);
   }else{
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
     const m=document.getElementById("adm-msg"); m.textContent='✗ Wrong PIN'; m.className='e';
@@ -2017,6 +2081,7 @@ function doLogin(){
 }
 function logout(){
   isAdmin=false;
+  isStaff=false;
   setAdminUi(false);
   measureCardHeight();
   rebuildOffsets();
@@ -2080,6 +2145,7 @@ async function doBiometric(){
 
 function grantAdmin(toastMsg){
   isAdmin = true;
+  isStaff = false;
   const m = document.getElementById('adm-msg');
   m.textContent = '✓ Granted'; m.className = 'g';
   [0,1,2,3].forEach(i=>dot(i,'g'));
@@ -2219,18 +2285,18 @@ function pimRenderGrid(){
   document.getElementById('pim-count-badge').textContent = count + ' / ' + MAX_IMAGES;
 
   const hasUploadKey = !!pimToken;
-  const canUpload = isAdmin && hasUploadKey && pimStorageCount < MAX_IMAGES;
-  const canDelete = isAdmin && hasUploadKey;
+  const canUpload = (isAdmin || isStaff) && hasUploadKey && pimStorageCount < MAX_IMAGES;
+  const canDelete = (isAdmin || isStaff) && hasUploadKey;
 
   /* footer hint */
   const hint = document.getElementById('pim-footer-hint');
-  if(!isAdmin){
+  if(!isAdmin && !isStaff){
     hint.textContent = '🔒 Open admin mode to upload or delete images.';
     hint.style.color = 'var(--muted)';
   } else if(!hasUploadKey){
     hint.textContent = '🔐 Enter upload password to save images on website storage.';
     hint.style.color = 'var(--muted)';
-  } else if(!isAdmin && count > 0){
+  } else if(!isAdmin && !isStaff && count > 0){
     hint.textContent = '👀 View only. Only admins can delete images.';
     hint.style.color = 'var(--muted)';
   } else {
@@ -2327,7 +2393,7 @@ function pimCompress(file){
 async function pimHandleFiles(files){
   if(!files || !files.length) return;
   if(!pimCurrentItem){ toast('No product selected'); return; }
-  if(!isAdmin){ toast('🔒 Open admin mode first'); return; }
+  if(!isAdmin && !isStaff){ toast('🔒 Open admin/staff mode first'); return; }
   if(!pimToken){ toast('🔐 Enter upload password first'); return; }
 
   const available = MAX_IMAGES - pimStorageCount;
@@ -2390,7 +2456,7 @@ async function pimUploadOne(file){
 /* ─── Delete image ─── */
 function pimConfirmDelete(idx, e){
   if(e) e.stopPropagation();
-  if(!isAdmin){ toast('🔒 Admin only'); return; }
+  if(!isAdmin && !isStaff){ toast('🔒 Admin/staff only'); return; }
   if(!pimToken){ toast('🔐 Upload password required'); return; }
   const img = pimImages[idx];
   if(!img) return;
@@ -2777,13 +2843,28 @@ function openItemLedgerSearch(){
     return;
   }
   drawer(false);
-  srLedgerShow("Item Ledger","Search by barcode, code, or item name",`<div style="display:flex;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / item name"><button id="sr-ledger-search-go" onclick="srLedgerSearchGo()">Search</button></div><div class="sr-ledger-note">Tip: open any product card and tap Ledger for the most accurate product ID lookup.</div>`);
-  setTimeout(()=>$("sr-ledger-search")?.focus(),80);
+  srLedgerShow("Item Ledger","Search by barcode, code, or item name",`<div style="display:flex;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / item name"><button id="sr-ledger-search-go" onclick="srLedgerSearchGo()">Search</button></div><div id="sr-ledger-suggestions"></div><div class="sr-ledger-note">Type to see matching products. Tap any result to open its complete sale and purchase ledger.</div>`);
+  setTimeout(()=>{const x=$("sr-ledger-search"); if(x){x.focus(); x.oninput=()=>srLedgerSuggest(x.value,"openItemLedger")}},80);
+}
+function srFindItemIndex(term){
+  term=String(term||"").trim().toLowerCase();
+  if(!term)return -1;
+  let idx=raw.findIndex(it=>String(it.barcode||"").toLowerCase()===term||String(it.alias||"").toLowerCase()===term);
+  if(idx>=0)return idx;
+  return raw.findIndex(it=>[it.name,it.alias,it.barcode,it.group,it.PartGroup].some(v=>String(v||"").toLowerCase().includes(term)));
+}
+function srLedgerSuggest(term,fnName="openItemLedger"){
+  const box=$("sr-ledger-suggestions");
+  if(!box)return;
+  term=String(term||"").trim().toLowerCase();
+  if(term.length<2){box.innerHTML="";return}
+  const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>[it.name,it.alias,it.barcode,it.group,it.PartGroup].some(v=>String(v||"").toLowerCase().includes(term))).slice(0,20);
+  box.innerHTML=rows.length?`<div class="sr-report-list" style="margin-top:10px">${rows.map(([it,ri])=>`<button class="sr-report-item" onclick="${fnName}(${ri})"><span class="sr-report-item-top"><b>${escq(it.name||"")}</b><strong>${money(it.sale)}</strong></span><small>${escq([it.alias,it.barcode,it.group||it.PartGroup].filter(Boolean).join(" · "))}</small></button>`).join("")}</div>`:`<div class="sr-ledger-note" style="margin-top:10px">No matching product found.</div>`;
 }
 function srLedgerSearchGo(){
   const term=($("sr-ledger-search")?.value||"").trim().toLowerCase();
   if(!term)return toast("Enter barcode or item name");
-  const idx=raw.findIndex(it=>String(it.barcode||"").toLowerCase()===term||String(it.alias||"").toLowerCase()===term||String(it.name||"").toLowerCase().includes(term));
+  const idx=srFindItemIndex(term);
   if(idx>=0)return openItemLedger(idx);
   srLedgerShow("Item Ledger","No local item match",`<div class="sr-ledger-note">No item matched "${escq(term)}" in the loaded stock list. Refresh stock and try again.</div>`);
 }
@@ -2863,6 +2944,68 @@ function srOpenStockIssuesReport(){
     return stock<0 || !String(it.barcode||it.alias||"").trim() || sale<=0 || mrp<=0;
   }).sort((a,b)=>Number(a[0].stock||0)-Number(b[0].stock||0)).slice(0,250);
   srShowReport("Stock Issues",`${rows.length} items to review`,rows,"No obvious stock issues found.");
+}
+function srOpenTagFilter(tag){
+  if(!isAdmin){ openAdm(); toast("Unlock admin to filter tags"); return; }
+  activeTag=tag; activeStock="all"; query="";
+  const s=document.getElementById("search"); if(s)s.value="";
+  drawer(false);
+  applyAll();
+}
+function srOpenPriceChangesReport(){
+  let prev=[];
+  try{prev=JSON.parse(localStorage.getItem(SR_PREV_STOCK_KEY)||"[]")}catch(e){}
+  const byKey=new Map(prev.map(it=>[srItemKey(it),it]));
+  const rows=raw.map((it,ri)=>[it,ri,byKey.get(srItemKey(it))]).filter(([it,ri,old])=>{
+    if(!old)return false;
+    return ["mrp","sale","wholesale","purchase","stock"].some(k=>Number(it[k]||0)!==Number(old[k]||0));
+  }).sort((a,b)=>String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,250);
+  srShowReport("Price Changes",`${rows.length} items changed since the previous saved stock`,rows,"No recent browser-saved price change found yet.");
+}
+function srOpenFastScan(){
+  drawer(false);
+  srLedgerShow("Fast Scan","Scan or type barcode for one clean item screen",`<div style="display:grid;grid-template-columns:1fr auto;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / code / item name"><button id="sr-ledger-search-go" onclick="srFastScanGo()">Open</button></div><div class="sr-ledger-actions"><button class="gold" onclick="srQuoteScan()">Camera Scan</button><button onclick="home()">Home</button></div><div id="sr-ledger-suggestions"></div>`);
+  setTimeout(()=>{const x=$("sr-ledger-search"); if(x){x.focus(); x.oninput=()=>srLedgerSuggest(x.value,"srFastScanOpen")}},80);
+}
+function srFastScanGo(){
+  const term=($("sr-ledger-search")?.value||"").trim().toLowerCase();
+  const idx=srFindItemIndex(term);
+  if(idx>=0)return srOpenCardFromReport(idx);
+  toast("Item not found");
+}
+function srFastScanOpen(ri){srOpenCardFromReport(ri)}
+function srOpenBarcodeSheet(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin to print labels"); return; }
+  const rows=(pool&&pool.length?pool:raw.map((_,i)=>i)).slice(0,60).map(i=>raw[i]);
+  const html=`<div id="sr-print-area"><style>@media print{body>*{display:none!important}#sr-print-area{display:grid!important;grid-template-columns:repeat(3,1fr);gap:4mm;position:absolute;inset:0;background:#fff;color:#000;padding:6mm;font-family:Arial,sans-serif}@page{size:A4;margin:5mm}}.sr-label{border:1px solid #111;padding:4mm;min-height:28mm;text-align:center;break-inside:avoid}.sr-label b{display:block;font-size:11px}.sr-label strong{font-size:18px;letter-spacing:2px}.sr-label span{display:block;font-size:10px;margin-top:2px}</style>${rows.map(it=>`<div class="sr-label"><b>${escq((it.name||"").slice(0,34))}</b><strong>${escq(it.barcode||it.alias||"")}</strong><span>MRP ${money(it.mrp)} · Sale ${money(it.sale)}</span></div>`).join("")}</div>`;
+  $("sr-print-area")?.remove();
+  const wrap=document.createElement("div"); wrap.innerHTML=html; document.body.appendChild(wrap.firstChild); window.print(); setTimeout(()=>$("sr-print-area")?.remove(),900);
+}
+async function srOpenHealthCheck(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin for health check"); return; }
+  drawer(false);
+  srLedgerShow("Health Check","Testing live services...","<div class='sr-ledger-note'>Checking stock, receivables, and image upload path.</div>");
+  const checks=[
+    ["Stock API",LIVE_STOCK_API],
+    ["Receivables API",ITEM_LEDGER_API_BASES[0]+"/api/kpis"],
+    ["Image API",IMAGE_API_BASE+"/list?alias=health-check"]
+  ];
+  const rows=[];
+  for(const [name,url] of checks){
+    try{const r=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"});rows.push([name,r.ok?"Online":"Error "+r.status,r.ok])}
+    catch(e){rows.push([name,"Offline",false])}
+  }
+  srLedgerShow("Health Check","Live service status",`<div class="sr-ledger-grid">${rows.map(([n,v,ok])=>`<div class="sr-ledger-kpi"><small>${escq(n)}</small><b style="color:${ok?"#22c55e":"#f87171"}">${escq(v)}</b></div>`).join("")}</div><div class="sr-ledger-note">If Cloudflare tunnel or shop PC is off, live Retail Daddy features cannot update, but browser/file cache can still show saved stock.</div>`);
+}
+function srShareCatalog(){
+  const params=new URLSearchParams();
+  if(query)params.set("q",query);
+  if(activeGroup)params.set("group",activeGroup);
+  if(activeBrand)params.set("brand",activeBrand);
+  if(activeTag)params.set("tag",activeTag);
+  const url=location.origin+location.pathname+(params.toString()?"?"+params.toString():"");
+  if(navigator.share)navigator.share({title:"SR Fashion Catalog",url}).catch(()=>{});
+  else navigator.clipboard?.writeText(url).then(()=>toast("Catalog link copied"));
 }
 async function srOpenMissingImagesReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin to check images"); return; }
@@ -2981,6 +3124,16 @@ function srLedgerExportBillPng(){
 Object.assign(window,{
   openItemLedger,
   openItemLedgerSearch,
+  srLedgerSuggest,
+  srSetItemTag,
+  srShareCatalog,
+  srOpenTagFilter,
+  srOpenPriceChangesReport,
+  srOpenFastScan,
+  srFastScanGo,
+  srFastScanOpen,
+  srOpenBarcodeSheet,
+  srOpenHealthCheck,
   srOpenSmartReorderReport,
   srOpenDeadStockReport,
   srOpenLowStockReport,
@@ -3230,7 +3383,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport();if(v==="stock-issues")return srOpenStockIssuesReport()});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="fast-scan")return srOpenFastScan();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport();if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

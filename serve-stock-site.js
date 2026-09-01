@@ -22,6 +22,7 @@ const types = {
   ".json": "application/json; charset=utf-8",
   ".js": "application/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
+  ".webmanifest": "application/manifest+json",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -31,7 +32,12 @@ const types = {
 };
 
 function send(res, status, body, headers = {}) {
-  res.writeHead(status, headers);
+  res.writeHead(status, {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, x-sr-image-key",
+    ...headers
+  });
   res.end(body);
 }
 
@@ -179,6 +185,9 @@ async function handleImageApi(req, res, url) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+  if (req.method === "OPTIONS") {
+    return send(res, 204, "");
+  }
   if (url.pathname.startsWith("/image-api/")) {
     handleImageApi(req, res, url).catch(error => sendJson(res, 500, { ok: false, error: error.message }));
     return;

@@ -316,6 +316,32 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #pim-token-status{font-size:10px;white-space:nowrap;flex-shrink:0}
 #pim-token-status.ok{color:var(--green)}
 #pim-token-status.no{color:var(--muted)}
+#pim-upload-actions{
+  display:none;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:10px 14px;
+  border-bottom:1px solid var(--bord);
+  background:rgba(255,255,255,.025);
+  flex-shrink:0;
+}
+#pim-upload-actions.show{display:grid}
+#pim-upload-actions button{
+  min-height:44px;
+  border-radius:10px;
+  border:1px solid rgba(245,197,66,.32);
+  background:linear-gradient(135deg,rgba(245,197,66,.18),rgba(192,132,252,.13));
+  color:#ffd35c;
+  font-size:13px;
+  font-weight:900;
+  font-family:inherit;
+}
+#pim-upload-actions button:disabled{
+  opacity:.45;
+  color:var(--muted);
+  border-color:var(--bord);
+  background:var(--surf);
+}
 
 /* Fullscreen viewer overlay */
 #pim-fs-ov{
@@ -822,6 +848,11 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
       <button id="pim-token-save" onclick="pimSaveToken()">Save</button>
       <button id="pim-token-clear" onclick="pimClearToken()" style="display:none">Clear</button>
       <span id="pim-token-status" class="no">Locked</span>
+    </div>
+
+    <div id="pim-upload-actions">
+      <button id="pim-gallery-btn" type="button" onclick="document.getElementById('pim-file-input').click()">📁 Upload Gallery</button>
+      <button id="pim-camera-btn" type="button" onclick="document.getElementById('pim-cam-input').click()">📷 Capture Camera</button>
     </div>
 
     <!-- Scrollable content -->
@@ -2256,6 +2287,22 @@ function pimShowTokenStatus(ok){
   s.textContent = ok ? '✓ Ready' : 'Locked';
   s.className = ok ? 'ok' : 'no';
   document.getElementById('pim-token-clear').style.display = ok ? '' : 'none';
+  pimRenderUploadActions();
+}
+
+function pimCanUpload(){
+  return !!pimToken && pimStorageCount < MAX_IMAGES;
+}
+
+function pimRenderUploadActions(){
+  const box = document.getElementById('pim-upload-actions');
+  if(!box) return;
+  const allowed = pimCanUpload();
+  box.classList.toggle('show', !!pimToken);
+  ['pim-gallery-btn','pim-camera-btn'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(btn) btn.disabled = !allowed;
+  });
 }
 
 /* ─── Open modal ─── */
@@ -2326,8 +2373,9 @@ function pimRenderGrid(){
   document.getElementById('pim-count-badge').textContent = count + ' / ' + MAX_IMAGES;
 
   const hasUploadKey = !!pimToken;
-  const canUpload = (isAdmin || isStaff) && hasUploadKey && pimStorageCount < MAX_IMAGES;
-  const canDelete = (isAdmin || isStaff) && hasUploadKey;
+  const canUpload = hasUploadKey && pimStorageCount < MAX_IMAGES;
+  const canDelete = hasUploadKey;
+  pimRenderUploadActions();
 
   /* footer hint */
   const hint = document.getElementById('pim-footer-hint');
@@ -2434,7 +2482,6 @@ function pimCompress(file){
 async function pimHandleFiles(files){
   if(!files || !files.length) return;
   if(!pimCurrentItem){ toast('No product selected'); return; }
-  if(!isAdmin && !isStaff){ toast('🔒 Open admin/staff mode first'); return; }
   if(!pimToken){ toast('🔐 Enter upload password first'); return; }
 
   const available = MAX_IMAGES - pimStorageCount;

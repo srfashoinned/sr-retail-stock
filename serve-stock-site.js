@@ -8,13 +8,28 @@ const IMAGE_ROOT = path.join(ROOT, "images", "products");
 const PRIVATE_DIR = path.join(ROOT, "private");
 const IMAGE_KEY_FILE = path.join(PRIVATE_DIR, "image-upload-key.txt");
 
-function readImageKey() {
-  if (process.env.SR_IMAGE_UPLOAD_KEY) return process.env.SR_IMAGE_UPLOAD_KEY;
-  try {
-    return fs.readFileSync(IMAGE_KEY_FILE, "utf8").trim();
-  } catch {
-    return "";
+function readImageKeys() {
+  const keys = new Set();
+  if (process.env.SR_IMAGE_UPLOAD_KEY) {
+    process.env.SR_IMAGE_UPLOAD_KEY
+      .split(/[,\s]+/)
+      .map(value => value.trim())
+      .filter(Boolean)
+      .forEach(value => keys.add(value));
   }
+  try {
+    fs.readFileSync(IMAGE_KEY_FILE, "utf8")
+      .split(/[,\s]+/)
+      .map(value => value.trim())
+      .filter(Boolean)
+      .forEach(value => keys.add(value));
+  } catch {
+  }
+  return keys;
+}
+
+function imageKeyAllowed(value) {
+  return readImageKeys().has(String(value || "").trim());
 }
 
 const types = {
@@ -132,7 +147,7 @@ async function handleImageApi(req, res, url) {
   }
 
   if (url.pathname === "/image-api/upload" && req.method === "POST") {
-    if (!readImageKey() || (req.headers["x-sr-image-key"] || "") !== readImageKey()) {
+    if (!imageKeyAllowed(req.headers["x-sr-image-key"])) {
       return sendJson(res, 403, { ok: false, error: "Image upload password required" });
     }
     const body = await readBody(req);
@@ -165,7 +180,7 @@ async function handleImageApi(req, res, url) {
   }
 
   if (url.pathname === "/image-api/delete" && req.method === "POST") {
-    if (!readImageKey() || (req.headers["x-sr-image-key"] || "") !== readImageKey()) {
+    if (!imageKeyAllowed(req.headers["x-sr-image-key"])) {
       return sendJson(res, 403, { ok: false, error: "Image upload password required" });
     }
     const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");

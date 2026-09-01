@@ -884,6 +884,7 @@ const SHOP_PHONE   = "7588756668";
 /* Image storage config */
 const MAX_IMAGES = 10;
 const IMAGE_API_BASES = [
+  'https://live-stock.srfashionned.in/image-api',
   'https://dashboard.srfashionned.in/image-api',
   'https://srfashionned.in/image-api',
   '/image-api',
@@ -2105,6 +2106,7 @@ function doLogin(){
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
     const m=document.getElementById("adm-msg"); m.textContent='✓ Staff'; m.className='g';
     isAdmin=false; isStaff=true;
+    pimSetToken(STAFF_PASS, false);
     setTimeout(()=>{ closeAdm(); setAdminUi(false); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("👤 Staff mode on"); },550);
   }else{
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
@@ -2221,15 +2223,20 @@ function pimInitToken(){
   const t = sessionStorage.getItem('sr_image_upload_key') || '';
   if(t){ pimToken = t; pimShowTokenStatus(true); }
 }
+function pimSetToken(token, announce = true){
+  const t = String(token || '').trim();
+  if(!t) return;
+  pimToken = t;
+  sessionStorage.setItem('sr_image_upload_key', t);
+  const input = document.getElementById('pim-token-input');
+  if(input) input.value = '';
+  pimShowTokenStatus(true);
+  if(announce) toast('🔐 Upload password saved for this session');
+}
 function pimSaveToken(){
   const t = document.getElementById('pim-token-input').value.trim();
   if(!t){ toast('⚠️ Upload password is empty'); return; }
-  pimToken = t;
-  sessionStorage.setItem('sr_image_upload_key', t);
-  document.getElementById('pim-token-input').value = '';
-  document.getElementById('pim-token-clear').style.display = '';
-  pimShowTokenStatus(true);
-  toast('🔐 Upload password saved for this session');
+  pimSetToken(t);
   if(pimCurrentItem) pimLoad();
 }
 function pimClearToken(){
@@ -2252,6 +2259,7 @@ function openPim(ri, e){
   if(e) e.stopPropagation();
   const it = raw[ri];
   if(!it){ toast('Product not found'); return; }
+  if(isStaff && !pimToken) pimSetToken(STAFF_PASS, false);
   pimCurrentItem = it;
   pimImages = [];
 

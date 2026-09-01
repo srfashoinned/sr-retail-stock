@@ -6,7 +6,17 @@ const sql = require("mssql");
 const ROOT = __dirname;
 const PORT = Number(process.env.STOCK_API_PORT || 3030);
 const CACHE_FILE = path.join(ROOT, "items.json");
+const IMAGE_ROOT = path.join(ROOT, "images", "products");
+const PRIVATE_DIR = path.join(ROOT, "private");
+const IMAGE_KEY_FILE = path.join(PRIVATE_DIR, "image-upload-key.txt");
 const config = require("./config.json");
+const imageTypes = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif"
+};
 
 let memoryCache = {
   items: null,
@@ -16,8 +26,8 @@ let memoryCache = {
 
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-sr-image-key");
 }
 
 function sendJson(res, status, payload, cache = "no-store") {
@@ -29,9 +39,169 @@ function sendJson(res, status, payload, cache = "no-store") {
   res.end(JSON.stringify(payload));
 }
 
+function sendImageFile(res, urlPath) {
+  const cleanPath = decodeURIComponent(urlPath.split("?")[0]).replace(/^\/images\/products\/?/, "");
+  const target = path.resolve(IMAGE_ROOT, cleanPath);
+  if (!target.startsWith(IMAGE_ROOT)) return sendJson(res, 403, { error: "Forbidden" });
+  const ext = path.extname(target).toLowerCase();
+  if (!imageTypes[ext]) return sendJson(res, 403, { error: "Forbidden" });
+  fs.readFile(target, (error, data) => {
+    if (error) return sendJson(res, 404, { error: "Image not found" });
+    cors(res);
+    res.writeHead(200, {
+      "Content-Type": imageTypes[ext],
+      "Cache-Control": "public, max-age=300"
+    });
+    res.end(data);
+  });
+}
+
 function loadFileCache() {
   if (!fs.existsSync(CACHE_FILE)) return [];
   return JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
+}
+
+function safeAlias(value = "") {
+  return String(value).trim().replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+function readImageKeys() {
+  const keys = new Set();
+  if (process.env.SR_IMAGE_UPLOAD_KEY) {
+    process.env.SR_IMAGE_UPLOAD_KEY
+      .split(/[,\s]+/)
+      .map(value => value.trim())
+      .filter(Boolean)
+      .forEach(value => keys.add(value));
+  }
+  try {
+    fs.readFileSync(IMAGE_KEY_FILE, "utf8")
+      .split(/[,\s]+/)
+      .map(value => value.trim())
+      .filter(Boolean)
+      .forEach(value => keys.add(value));
+  } catch {
+  }
+  return keys;
+}
+
+function imageKeyAllowed(value) {
+  return readImageKeys().has(String(value || "").trim());
+}
+
+function readBody(req, limit = 9 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on("data", chunk => {
+      size += chunk.length;
+      if (size > limit) {
+        reject(new Error("Image too large"));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
+}
+
+function parseMultipart(buffer, contentType) {
+  const boundaryMatch = /boundary=(?:"([^"]+)"|([^;]+))/i.exec(contentType || "");
+  if (!boundaryMatch) throw new Error("Missing upload boundary");
+  const boundary = Buffer.from("--" + (boundaryMatch[1] || boundaryMatch[2]));
+  const parts = [];
+  let start = buffer.indexOf(boundary);
+  while (start !== -1) {
+    start += boundary.length;
+    if (buffer[start] === 45 && buffer[start + 1] === 45) break;
+    if (buffer[start] === 13 && buffer[start + 1] === 10) start += 2;
+    const headerEnd = buffer.indexOf(Buffer.from("\r\n\r\n"), start);
+    if (headerEnd === -1) break;
+    const next = buffer.indexOf(boundary, headerEnd + 4);
+    if (next === -1) break;
+    const headers = buffer.slice(start, headerEnd).toString("utf8");
+    let data = buffer.slice(headerEnd + 4, next);
+    if (data.length >= 2 && data[data.length - 2] === 13 && data[data.length - 1] === 10) {
+      data = data.slice(0, -2);
+    }
+    parts.push({ headers, data });
+    start = next;
+  }
+  return parts;
+}
+
+function imageList(alias) {
+  const folder = path.join(IMAGE_ROOT, alias);
+  if (!folder.startsWith(IMAGE_ROOT) || !fs.existsSync(folder)) return [];
+  return fs.readdirSync(folder)
+    .filter(name => /\.(jpe?g|png|webp|gif)$/i.test(name))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map(name => ({
+      name,
+      url: `/images/products/${encodeURIComponent(alias)}/${encodeURIComponent(name)}?v=${fs.statSync(path.join(folder, name)).mtimeMs}`
+    }));
+}
+
+async function handleImageApi(req, res, url) {
+  if (url.pathname === "/image-api/list" && req.method === "GET") {
+    const alias = safeAlias(url.searchParams.get("alias"));
+    if (!alias) return sendJson(res, 400, { ok: false, error: "Missing product code" });
+    return sendJson(res, 200, { ok: true, images: imageList(alias) });
+  }
+
+  if (url.pathname === "/image-api/upload" && req.method === "POST") {
+    if (!imageKeyAllowed(req.headers["x-sr-image-key"])) {
+      return sendJson(res, 403, { ok: false, error: "Image upload password required" });
+    }
+    const body = await readBody(req);
+    const parts = parseMultipart(body, req.headers["content-type"]);
+    const fields = {};
+    let file = null;
+    for (const part of parts) {
+      const nameMatch = /name="([^"]+)"/i.exec(part.headers);
+      if (!nameMatch) continue;
+      const name = nameMatch[1];
+      if (name === "file") file = part;
+      else fields[name] = part.data.toString("utf8");
+    }
+    const alias = safeAlias(fields.alias);
+    if (!alias || !file?.data?.length) return sendJson(res, 400, { ok: false, error: "Missing image" });
+    const contentType = /content-type:\s*([^\r\n]+)/i.exec(file.headers)?.[1] || "image/jpeg";
+    if (!/^image\/(jpeg|png|webp|gif)$/i.test(contentType)) {
+      return sendJson(res, 400, { ok: false, error: "Only image files allowed" });
+    }
+
+    const folder = path.join(IMAGE_ROOT, alias);
+    if (!folder.startsWith(IMAGE_ROOT)) return sendJson(res, 403, { ok: false, error: "Invalid product code" });
+    fs.mkdirSync(folder, { recursive: true });
+    const used = new Set(imageList(alias).map(img => parseInt(img.name, 10)));
+    let num = 1;
+    while (used.has(num)) num++;
+    if (num > 10) return sendJson(res, 400, { ok: false, error: "Max 10 images reached" });
+    const filename = `${num}.jpg`;
+    fs.writeFileSync(path.join(folder, filename), file.data);
+    return sendJson(res, 200, { ok: true, image: imageList(alias).find(img => img.name === filename) });
+  }
+
+  if (url.pathname === "/image-api/delete" && req.method === "POST") {
+    if (!imageKeyAllowed(req.headers["x-sr-image-key"])) {
+      return sendJson(res, 403, { ok: false, error: "Image upload password required" });
+    }
+    const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");
+    const alias = safeAlias(body.alias);
+    const name = String(body.name || "").replace(/[^a-zA-Z0-9_.-]/g, "");
+    if (!alias || !/^\d+\.(jpe?g|png|webp|gif)$/i.test(name)) {
+      return sendJson(res, 400, { ok: false, error: "Invalid image" });
+    }
+    const file = path.join(IMAGE_ROOT, alias, name);
+    if (!file.startsWith(path.join(IMAGE_ROOT, alias))) return sendJson(res, 403, { ok: false, error: "Invalid path" });
+    if (fs.existsSync(file)) fs.unlinkSync(file);
+    return sendJson(res, 200, { ok: true });
+  }
+
+  return sendJson(res, 404, { ok: false, error: "Image API not found" });
 }
 
 function normalizeDate(value) {
@@ -157,6 +327,13 @@ const server = http.createServer(async (req, res) => {
     }
 
     const url = new URL(req.url, `http://${req.headers.host}`);
+    if (url.pathname.startsWith("/image-api/")) {
+      return handleImageApi(req, res, url);
+    }
+    if (url.pathname.startsWith("/images/products/")) {
+      return sendImageFile(res, url.pathname);
+    }
+
     if (url.pathname === "/api/health") {
       return sendJson(res, 200, {
         ok: true,

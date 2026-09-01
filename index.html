@@ -497,6 +497,17 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 .sr-ledger-row-grid b{display:block;color:#fff;margin-top:2px}
 #sr-ledger-search{width:100%;height:44px;background:#09090b;border:1px solid #5d450e;border-radius:11px;color:#fff;padding:0 12px;font:inherit}
 #sr-ledger-search-go{height:44px;border:0;border-radius:11px;background:#ffd35c;color:#111;font-weight:1000;padding:0 16px}
+.sr-report-list{display:grid;gap:8px}
+.sr-report-item{width:100%;border:1px solid #33270b;background:#111113;color:#eee;border-radius:12px;padding:10px;text-align:left;display:grid;gap:7px}
+.sr-report-item:active{border-color:#ffd35c}
+.sr-report-item-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.sr-report-item-top b{font-size:14px;color:#fff;overflow-wrap:anywhere}
+.sr-report-item-top strong{color:#ffd35c;white-space:nowrap}
+.sr-report-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.sr-report-meta span{border:1px solid #29210b;background:#09090b;border-radius:8px;padding:6px;color:#8e826c;font-size:10px}
+.sr-report-meta b{display:block;color:#fff;font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.sr-drawer-tools{display:none;border-top:1px solid #2d230c;margin-top:8px;padding-top:8px}
+body.admin-on .sr-drawer-tools{display:block}
 #sr-screen{display:none;position:fixed;inset:58px 0 0;z-index:7000;background:#080808;color:#eee;overflow:auto;padding:18px}#sr-screen.open{display:block}.sr-screen-title{font-size:25px;font-weight:1000;color:#ffd15a;margin-bottom:5px}.sr-screen-sub{color:#8e826c;margin-bottom:18px}
 #sr-screen.ledger-pro{display:block;inset:0;z-index:12500;padding:0;background:#080808;overflow:auto}
 #sr-screen.ledger-pro #sr-ledger-box{width:100%;max-width:none;max-height:none;min-height:100dvh;border:0;border-radius:0;box-shadow:none}
@@ -508,7 +519,7 @@ body.admin-on .sr-ledger-admin-only{display:flex!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
-@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
+@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid,.sr-report-meta{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
 @media(max-width:760px){
  #sr-appbar{height:auto;align-items:center;gap:7px;padding:8px;flex-wrap:wrap}
  #sr-hamb{width:40px;height:40px;flex:0 0 auto}
@@ -588,6 +599,11 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
+<div class="sr-drawer-tools">
+<button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
+</div>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
 
@@ -2768,6 +2784,54 @@ function srLedgerSearchGo(){
   if(idx>=0)return openItemLedger(idx);
   srLedgerShow("Item Ledger","No local item match",`<div class="sr-ledger-note">No item matched "${escq(term)}" in the loaded stock list. Refresh stock and try again.</div>`);
 }
+function srOpenCardFromReport(ri){
+  home();
+  setTimeout(()=>{
+    try{
+      expanded.add(ri);
+      query = raw[ri]?.name || raw[ri]?.barcode || raw[ri]?.alias || "";
+      const s=document.getElementById("search");
+      if(s)s.value=query;
+      applyAll();
+      window.scrollTo({top:0,behavior:"smooth"});
+    }catch(e){}
+  },80);
+}
+function srReportItem(it,ri){
+  return `<button class="sr-report-item" type="button" onclick="srOpenCardFromReport(${ri})">
+    <span class="sr-report-item-top"><b>${escq(it.name||"Unnamed item")}</b><strong>${money(it.sale||0)}</strong></span>
+    <small>${escq([it.alias,it.barcode,it.group||it.PartGroup].filter(Boolean).join(" · "))}</small>
+    <span class="sr-report-meta">
+      <span>Stock<b>${escq(it.stock??"-")}</b></span>
+      <span>MRP<b>${money(it.mrp||0)}</b></span>
+      <span>Wholesale<b>${money(it.wholesale||0)}</b></span>
+      <span>Purchase<b>${money(it.purchase||0)}</b></span>
+    </span>
+  </button>`;
+}
+function srShowReport(title,sub,rows,empty){
+  if(!isAdmin){ openAdm(); toast("Unlock admin to open reports"); return; }
+  drawer(false);
+  setActive("");
+  const html = rows.length
+    ? `<div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`
+    : `<div class="sr-ledger-note">${escq(empty||"No item found.")}</div>`;
+  srLedgerShow(title,sub,html);
+}
+function srOpenLowStockReport(){
+  const rows=raw.map((it,ri)=>[it,ri])
+    .filter(([it])=>Number(it.stock||0)>0 && Number(it.stock||0)<=5)
+    .sort((a,b)=>Number(a[0].stock||0)-Number(b[0].stock||0) || String(a[0].name||"").localeCompare(String(b[0].name||"")))
+    .slice(0,250);
+  srShowReport("Low Stock",`${rows.length} items with stock 1 to 5`,rows,"No low-stock items found.");
+}
+function srOpenStockIssuesReport(){
+  const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>{
+    const stock=Number(it.stock||0), sale=Number(it.sale||0), mrp=Number(it.mrp||0);
+    return stock<0 || !String(it.barcode||it.alias||"").trim() || sale<=0 || mrp<=0;
+  }).sort((a,b)=>Number(a[0].stock||0)-Number(b[0].stock||0)).slice(0,250);
+  srShowReport("Stock Issues",`${rows.length} items to review`,rows,"No obvious stock issues found.");
+}
 async function srLedgerOpenBill(vchCode){
   srLedgerShow("Bill "+escq(vchCode),"Loading bill products...","<div class='sr-ledger-note'>Opening invoice from Retail Daddy...</div>");
   try{
@@ -2849,6 +2913,9 @@ function srLedgerExportBillPng(){
 Object.assign(window,{
   openItemLedger,
   openItemLedgerSearch,
+  srOpenLowStockReport,
+  srOpenStockIssuesReport,
+  srOpenCardFromReport,
   srLedgerClose,
   srLedgerSearchGo,
   srLedgerOpenBill,
@@ -3091,7 +3158,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="ledger")return openItemLedgerSearch()});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="ledger")return openItemLedgerSearch();if(v==="low-stock")return srOpenLowStockReport();if(v==="stock-issues")return srOpenStockIssuesReport()});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

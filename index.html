@@ -636,7 +636,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
-<button class="sr-navbtn" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
 <button class="sr-navbtn" data-view="fast-scan"><span class="sr-ico">▣</span><span>Fast Scan<small>Barcode to product screen</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="ai-search"><span class="sr-ico">⌕</span><span>AI Search<small>Words like red suit under 500</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="photo-search"><span class="sr-ico">▧</span><span>Photo Search<small>Capture and match by hint</small></span></button>
@@ -1424,9 +1424,23 @@ document.getElementById("sort-row").addEventListener("click",function(e){
 function pn(v){ return v==null||v===''?0:parseFloat(String(v).replace(/[^0-9.]/g,''))||0; }
 const SR_TAG_KEY = "sr_item_tags_v1";
 const SR_PREV_STOCK_KEY = "sr_previous_stock_snapshot_v1";
+const SR_IMAGE_SEEN_KEY = "sr_image_seen_v1";
 function srItemKey(it){return String(it.ProductID||it.alias||it.barcode||it.name||"").trim()}
 function srTags(){try{return JSON.parse(localStorage.getItem(SR_TAG_KEY)||"{}")}catch(e){return {}}}
 function srItemTag(it){return srTags()[srItemKey(it)]||""}
+function srImageAlias(it){return String(it?.alias||it?.barcode||it?.name||"").trim()}
+function srImageSeen(){try{return JSON.parse(localStorage.getItem(SR_IMAGE_SEEN_KEY)||"{}")}catch(e){return {}}}
+function srImageSeenKey(alias){return String(alias||"").trim().toLowerCase()}
+function srSetImageSeen(alias,hasImage){
+  const key=srImageSeenKey(alias); if(!key)return;
+  const map=srImageSeen();
+  if(hasImage)map[key]=Date.now(); else delete map[key];
+  localStorage.setItem(SR_IMAGE_SEEN_KEY,JSON.stringify(map));
+}
+function srKnownHasImage(it){
+  const alias=srImageAlias(it);
+  return !!(alias && srImageSeen()[srImageSeenKey(alias)]) || !!(it?.images&&it.images.length);
+}
 function srSetItemTag(ri,tag,e){
   e&&e.stopPropagation();
   if(!isAdmin)return toast("Admin only");
@@ -2362,10 +2376,12 @@ async function pimLoad(){
       .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
     pimStorageCount = siteImages.length;
     pimImages = siteImages.length ? siteImages : await loadLegacyImages(alias);
+    srSetImageSeen(alias, pimImages.length > 0);
     pimRenderGrid();
   }catch(err){
     pimStorageCount = 0;
     pimImages = await loadLegacyImages(alias);
+    if(pimImages.length)srSetImageSeen(alias, true);
     pimRenderGrid();
     if(!pimImages.length) toast('⚠️ ' + err.message);
   }
@@ -2524,7 +2540,11 @@ async function pimHandleFiles(files){
   document.getElementById('pim-file-input').value = '';
   document.getElementById('pim-cam-input').value  = '';
 
-  if(uploaded > 0) await pimLoad();
+  if(uploaded > 0){
+    srSetImageSeen((pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim(), true);
+    srRemoveMissingImageRow(pimCurrentItem);
+    await pimLoad();
+  }
 }
 
 /* ─── Upload one file to website storage ─── */
@@ -2972,11 +2992,13 @@ function srOpenCardFromReport(ri){
 function srReportItem(it,ri,opts={}){
   const purchaseCell = isAdmin ? `<span>Purchase<b>${money(it.purchase||0)}</b></span>` : `<span>Images<b>Open</b></span>`;
   const actions = opts.upload ? `<span class="sr-report-actions">
-      <button class="gold" type="button" onclick="openPim(${ri},event)">Upload Photo</button>
+      <button class="gold" type="button" onclick="srQueueUpload(${ri},'gallery',event)">Gallery</button>
+      <button class="gold" type="button" onclick="srQueueUpload(${ri},'camera',event)">Camera</button>
+      <button type="button" onclick="openPim(${ri},event)">View</button>
       <button type="button" onclick="srOpenCardFromReport(${ri})">Open Item</button>
     </span>` : "";
   const openClick = opts.upload ? "" : ` onclick="srOpenCardFromReport(${ri})"`;
-  return `<div class="sr-report-item" role="button" tabindex="0"${openClick}>
+  return `<div class="sr-report-item" role="button" tabindex="0" data-ri="${ri}"${openClick}>
     <span class="sr-report-item-top"><b>${escq(it.name||"Unnamed item")}</b><strong>${money(it.sale||0)}</strong></span>
     <small>${escq([it.alias,it.barcode,it.group||it.PartGroup].filter(Boolean).join(" · "))}</small>
     <span class="sr-report-meta">
@@ -2987,6 +3009,33 @@ function srReportItem(it,ri,opts={}){
     </span>
     ${actions}
   </div>`;
+}
+function srQueueUpload(ri,source,e){
+  if(e)e.stopPropagation();
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to upload photos"); return; }
+  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
+  const it=raw[ri];
+  if(!it){toast("Product not found");return}
+  if(!pimToken){ openPim(ri,e); toast("Enter upload password first"); return; }
+  pimCurrentItem=it;
+  pimImages=[];
+  pimStorageCount=0;
+  const input=document.getElementById(source==="camera"?"pim-cam-input":"pim-file-input");
+  if(input)input.click();
+}
+function srRemoveMissingImageRow(item){
+  const alias=srImageAlias(item);
+  if(!alias)return;
+  document.querySelectorAll(".sr-report-item[data-ri]").forEach(row=>{
+    const it=raw[Number(row.dataset.ri)];
+    if(srImageAlias(it)===alias)row.remove();
+  });
+  const rows=window.srLastReportRows||[];
+  window.srLastReportRows=rows.filter(([it])=>srImageAlias(it)!==alias);
+  const list=document.querySelector("#sr-ledger-body .sr-report-list");
+  if(list && !list.querySelector(".sr-report-item")){
+    list.innerHTML=`<div class="sr-ledger-note">All visible products in this queue now have photos.</div>`;
+  }
 }
 function srShowReport(title,sub,rows,empty,opts={}){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to open reports"); return; }
@@ -3104,6 +3153,7 @@ function srShareCatalog(){
   else navigator.clipboard?.writeText(url).then(()=>toast("Catalog link copied"));
 }
 function srOpenReceivables(){
+  if(!isAdmin){ openAdm(); toast("Receivables is admin only"); return; }
   drawer(false);
   window.location.href = "https://receivables.srfashionned.in/";
 }
@@ -3121,25 +3171,41 @@ async function srOpenMissingImagesReport(mode="all"){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
   drawer(false);
   const [title,desc]=srMissingImageTitle(mode);
-  srLedgerShow(title,"Checking Hostinger product images...","<div class='sr-ledger-note'>Checking image storage. Keep this screen open for a moment.</div>");
   const filter=srMissingImageFilter(mode);
-  const sample=raw.map((it,ri)=>[it,ri]).filter(([it])=>String(it.alias||it.barcode||it.name||"").trim() && filter(it)).slice(0,800);
+  const rows=raw.map((it,ri)=>[it,ri])
+    .filter(([it])=>srImageAlias(it) && filter(it) && !srKnownHasImage(it))
+    .slice(0,400);
+  window.srMissingImageMode=mode;
+  srShowReport(title,`${rows.length} instant ${desc}. Uploading removes the product from this list.`,rows,`No ${desc} in the instant queue.`,{upload:true});
+  const body=document.getElementById("sr-ledger-body");
+  if(body){
+    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Instant queue uses saved image memory, so it opens fast. Use Deep Check only when you want to re-scan Hostinger storage.</div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
+  }
+}
+async function srDeepCheckMissingImages(mode="all"){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
+  drawer(false);
+  const [title,desc]=srMissingImageTitle(mode);
+  srLedgerShow(title,"Deep checking image storage...","<div class='sr-ledger-note'>Checking Hostinger image storage. You can use Instant Queue next time.</div>");
+  const filter=srMissingImageFilter(mode);
+  const sample=raw.map((it,ri)=>[it,ri]).filter(([it])=>srImageAlias(it) && filter(it)).slice(0,600);
   const missing=[];
   let done=0;
-  for(let i=0;i<sample.length;i+=8){
-    const part=sample.slice(i,i+8);
+  for(let i=0;i<sample.length;i+=16){
+    const part=sample.slice(i,i+16);
     await Promise.all(part.map(async ([it,ri])=>{
-      const alias=(it.alias||it.barcode||it.name||"").trim();
+      const alias=srImageAlias(it);
       try{
         const data=await imageApiFetch(`/list?alias=${encodeURIComponent(alias)}&t=${Date.now()}`,{cache:"no-store"}).catch(()=>({images:[]}));
         const has=(data.images||[]).some(f=>/\.(jpe?g|png|webp|gif)$/i.test(f.name||""));
+        srSetImageSeen(alias, has || !!(it.images&&it.images.length));
         if(!has && !(it.images&&it.images.length))missing.push([it,ri]);
       }catch(e){
         if(!(it.images&&it.images.length))missing.push([it,ri]);
       }
       done++;
     }));
-    srLedgerShow(title,`Checked ${done} of ${sample.length} items`,missing.length?`<div class="sr-ledger-note">${missing.length} ${desc}. Use Upload Photo to add gallery/camera photos.</div><div class="sr-report-list">${missing.slice(0,160).map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")}</div>`:"<div class='sr-ledger-note'>No missing image found yet. Still checking...</div>");
+    srLedgerShow(title,`Checked ${done} of ${sample.length} items`,missing.length?`<div class="sr-ledger-note">${missing.length} ${desc}. Use Gallery/Camera to add photos.</div><div class="sr-report-list">${missing.slice(0,160).map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")}</div>`:"<div class='sr-ledger-note'>No missing image found yet. Still checking...</div>");
   }
   srShowReport(title,`${missing.length} of ${sample.length} checked ${desc}`,missing,`No ${desc} found in the checked items.`,{upload:true});
 }
@@ -3350,6 +3416,9 @@ Object.assign(window,{
   srOpenDeadStockReport,
   srOpenLowStockReport,
   srOpenMissingImagesReport,
+  srDeepCheckMissingImages,
+  srQueueUpload,
+  srRemoveMissingImageRow,
   srOpenStockIssuesReport,
   srOpenAiShopAssistant,
   srAiShopSearchGo,

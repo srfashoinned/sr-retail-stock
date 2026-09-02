@@ -637,7 +637,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
-<button class="sr-navbtn" data-view="fast-scan"><span class="sr-ico">▣</span><span>Fast Scan<small>Barcode to product screen</small></span></button>
+<button class="sr-navbtn" data-view="missing-images"><span class="sr-ico">▧</span><span>Image Work<small>Missing product photos</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="ai-search"><span class="sr-ico">⌕</span><span>AI Search<small>Words like red suit under 500</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="photo-search"><span class="sr-ico">▧</span><span>Photo Search<small>Capture and match by hint</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="staff-tasks"><span class="sr-ico">☑</span><span>Staff Tasks<small>Photos, scan, price checks</small></span></button>
@@ -649,7 +649,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>Image Missing<small>Upload pending photos</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>All Missing Photos<small>Upload pending photos</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images-in"><span class="sr-ico">✅</span><span>In-Stock Photos<small>Available items without images</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images-out"><span class="sr-ico">×</span><span>Out-Stock Photos<small>Sold-out items without images</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
@@ -3286,7 +3286,7 @@ function srOpenStaffTasks(){
   const noPrice=raw.filter(it=>pn(it.sale)<=0 || pn(it.mrp)<=0).length;
   const inStock=raw.filter(it=>Number(it.stock||0)>0).length;
   const outStock=raw.filter(it=>Number(it.stock||0)<=0).length;
-  srLedgerShow("Staff Tasks","Small jobs that improve the shop data",`<div class="sr-ledger-grid"><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Photo work</small><b>${inStock}</b><span>check in-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('out')"><small>Old photo work</small><b>${outStock}</b><span>check out-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low}</b><span>needs reorder attention</span></button><button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative+noCode+noPrice}</b><span>${negative} negative, ${noCode} no code, ${noPrice} no price</span></button></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenFastScan()">Fast Scan</button><button onclick="srOpenAiShopAssistant()">AI Search</button><button onclick="srOpenHealthCheck()">Health</button></div>`);
+  srLedgerShow("Staff Tasks","Small jobs that improve the shop data",`<div class="sr-ledger-grid"><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Photo work</small><b>${inStock}</b><span>check in-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('out')"><small>Old photo work</small><b>${outStock}</b><span>check out-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low}</b><span>needs reorder attention</span></button><button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative+noCode+noPrice}</b><span>${negative} negative, ${noCode} no code, ${noPrice} no price</span></button></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('all')">Image Work</button><button onclick="srOpenAiShopAssistant()">AI Search</button><button onclick="srOpenHealthCheck()">Health</button></div>`);
 }
 function srOpenOwnerBrief(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner brief"); return; }

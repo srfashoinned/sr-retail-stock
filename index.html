@@ -276,9 +276,9 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
   white-space:nowrap;flex-shrink:0;
 }
 #pim-close{
-  width:30px;height:30px;border-radius:50%;
+  min-width:72px;height:34px;border-radius:999px;padding:0 10px;
   background:var(--surf);border:1px solid var(--bord);
-  color:var(--muted);font-size:14px;cursor:pointer;
+  color:var(--txt);font-size:12px;font-weight:800;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;
 }
@@ -534,7 +534,7 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 .sr-report-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
 .sr-report-meta span{border:1px solid #29210b;background:#09090b;border-radius:8px;padding:6px;color:#8e826c;font-size:10px}
 .sr-report-meta b{display:block;color:#fff;font-size:12px;margin-top:2px;overflow-wrap:anywhere}
-.sr-report-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sr-report-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .sr-report-actions button{height:36px;border-radius:9px;border:1px solid #49370d;background:#151108;color:#ddd;font-size:11px;font-weight:900}
 .sr-report-actions .gold{background:linear-gradient(135deg,#ffd35c,#d89a00);border:0;color:#111}
 .sr-tag-badge{display:inline-flex;margin-top:6px;border:1px solid #7a5a10;background:#211604;color:#ffd35c;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900}
@@ -850,7 +850,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
         <div id="pim-alias"></div>
       </div>
       <div id="pim-count-badge">0 / 10</div>
-      <button id="pim-close" onclick="closePim()">✕</button>
+      <button id="pim-close" onclick="closePim()">Close</button>
     </div>
 
     <!-- Website image upload password -->
@@ -3006,6 +3006,7 @@ function srOpenCardFromReport(ri){
 function srReportItem(it,ri,opts={}){
   const purchaseCell = isAdmin ? `<span>Purchase<b>${money(it.purchase||0)}</b></span>` : `<span>Images<b>Open</b></span>`;
   const actions = opts.upload ? `<span class="sr-report-actions">
+      <button type="button" onclick="srQueueImages(${ri},event)">Images</button>
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'gallery',event)">Upload</button>
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'camera',event)">Camera</button>
       <button type="button" onclick="srQueueDone(${ri},event)">Done</button>
@@ -3037,6 +3038,14 @@ function srQueueUpload(ri,source,e){
   pimQueueRow=e?.target?.closest(".sr-report-item")||null;
   const input=document.getElementById(source==="camera"?"pim-cam-input":"pim-file-input");
   if(input)input.click();
+}
+function srQueueImages(ri,e){
+  if(e)e.stopPropagation();
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to view and upload photos"); return; }
+  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
+  pimQueueMode=false;
+  pimQueueRow=null;
+  openPim(ri,e);
 }
 function srQueueDone(ri,e){
   if(e)e.stopPropagation();
@@ -3455,6 +3464,7 @@ Object.assign(window,{
   srOpenMissingImagesReport,
   srDeepCheckMissingImages,
   srQueueUpload,
+  srQueueImages,
   srQueueDone,
   srRemoveMissingImageRow,
   srFilterMissingImageQueue,

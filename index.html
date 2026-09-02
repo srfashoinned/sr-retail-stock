@@ -652,8 +652,11 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 <button class="sr-navbtn sr-admin-only" data-view="festival"><span class="sr-ico">✺</span><span>Festival Planner<small>Eid, Diwali, wedding sets</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="stock-ageing"><span class="sr-ico">◷</span><span>Stock Ageing<small>Fresh, ageing, old stock</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="complete-stock"><span class="sr-ico">▤</span><span>Complete Stock<small>All items compact list</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="complete-filters"><span class="sr-ico">☷</span><span>Complete Filters<small>Age, stock, price, group</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>All Missing Photos<small>Upload pending photos</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images-in"><span class="sr-ico">✅</span><span>In-Stock Photos<small>Available items without images</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images-out"><span class="sr-ico">×</span><span>Out-Stock Photos<small>Sold-out items without images</small></span></button>
@@ -3121,6 +3124,75 @@ function srOpenDeadStockReport(){
     .slice(0,250);
   srShowReport("Dead Stock",`${rows.length} items older than 60 days with stock still available`,rows,"No old-stock candidates found from the loaded stock.");
 }
+function srAgeBucket(it){
+  const d=srItemAgeDays(it);
+  if(d>=180)return "180+ days";
+  if(d>=90)return "90-179 days";
+  if(d>=60)return "60-89 days";
+  if(d>=30)return "30-59 days";
+  if(d>=1)return "1-29 days";
+  return "No date";
+}
+function srOpenStockAgeingReport(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for stock ageing"); return; }
+  const inRows=raw.map((it,ri)=>[it,ri]).filter(([it])=>Number(it.stock||0)>0);
+  const buckets=["180+ days","90-179 days","60-89 days","30-59 days","1-29 days","No date"];
+  const cards=buckets.map(label=>{
+    const list=inRows.filter(([it])=>srAgeBucket(it)===label);
+    const value=list.reduce((s,[it])=>s+pn(it.sale)*Number(it.stock||0),0);
+    return `<button class="sr-ledger-kpi" onclick="srOpenAgeBucket('${label}')"><small>${label}</small><b>${list.length}</b><span>${money(value)}</span></button>`;
+  }).join("");
+  const oldest=inRows.sort((a,b)=>srItemAgeDays(b[0])-srItemAgeDays(a[0])).slice(0,120);
+  srLedgerShow("Stock Ageing","Age-wise live stock view",`<div class="sr-ledger-grid">${cards}</div><div class="sr-ledger-note">Tap any age box to open only that bucket.</div><div class="sr-report-list">${oldest.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`);
+  window.srLastReportRows=oldest;
+  window.srLastReportTitle="Stock Ageing";
+}
+function srOpenAgeBucket(label){
+  const rows=raw.map((it,ri)=>[it,ri])
+    .filter(([it])=>Number(it.stock||0)>0 && srAgeBucket(it)===label)
+    .sort((a,b)=>srItemAgeDays(b[0])-srItemAgeDays(a[0]) || Number(b[0].stock||0)-Number(a[0].stock||0))
+    .slice(0,300);
+  srShowReport("Stock Ageing: "+label,`${rows.length} items in this age bucket`,rows,"No stock found in this age bucket.");
+}
+function srOpenCompleteStockReport(){
+  const rows=raw.map((it,ri)=>[it,ri]).sort((a,b)=>String(a[0].group||"").localeCompare(String(b[0].group||"")) || String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,800);
+  srShowReport("Complete Stock",`${raw.length} total items. Showing first ${rows.length} compact rows.`,rows,"No stock loaded.");
+}
+function srOpenCompleteFilters(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for stock filters"); return; }
+  drawer(false);
+  const groups=[...new Set(raw.map(it=>it.group||it.PartGroup).filter(Boolean))].sort().slice(0,120);
+  srLedgerShow("Complete Filters","Filter stock by age, availability, group and price",`<div style="display:grid;gap:8px"><input id="sr-filter-q" placeholder="Name, barcode, group"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="sr-filter-min" type="number" placeholder="Min sale"><input id="sr-filter-max" type="number" placeholder="Max sale"></div><select id="sr-filter-stock"><option value="all">All stock</option><option value="in">In stock</option><option value="out">Out of stock</option><option value="low">Low stock</option><option value="dead">Dead stock 60+ days</option></select><select id="sr-filter-age"><option value="">Any age</option><option value="180+ days">180+ days</option><option value="90-179 days">90-179 days</option><option value="60-89 days">60-89 days</option><option value="30-59 days">30-59 days</option><option value="1-29 days">1-29 days</option><option value="No date">No date</option></select><select id="sr-filter-group"><option value="">All groups</option>${groups.map(g=>`<option>${escq(g)}</option>`).join("")}</select></div><div class="sr-ledger-actions"><button class="gold" onclick="srRunCompleteFilters()">Show Stock</button><button onclick="srOpenCompleteStockReport()">Complete Stock</button><button onclick="srOpenStockAgeingReport()">Ageing</button></div><div id="sr-filter-result" class="sr-ledger-note">Choose filters and tap Show Stock.</div>`);
+}
+function srRunCompleteFilters(){
+  const q=($("sr-filter-q")?.value||"").trim().toLowerCase();
+  const min=($("sr-filter-min")?.value||"").trim();
+  const max=($("sr-filter-max")?.value||"").trim();
+  const stock=$("sr-filter-stock")?.value||"all";
+  const age=$("sr-filter-age")?.value||"";
+  const group=$("sr-filter-group")?.value||"";
+  const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>{
+    const hay=[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory].join(" ").toLowerCase();
+    if(q && !hay.includes(q))return false;
+    if(min!=="" && pn(it.sale)<Number(min))return false;
+    if(max!=="" && pn(it.sale)>Number(max))return false;
+    if(group && (it.group||it.PartGroup)!==group)return false;
+    if(age && srAgeBucket(it)!==age)return false;
+    const st=Number(it.stock||0);
+    if(stock==="in" && !(st>0))return false;
+    if(stock==="out" && !(st<=0))return false;
+    if(stock==="low" && !(st>0 && st<=LOW_STOCK_THRESHOLD))return false;
+    if(stock==="dead" && !(st>0 && srItemAgeDays(it)>=60))return false;
+    return true;
+  }).sort((a,b)=>srItemAgeDays(b[0])-srItemAgeDays(a[0]) || String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,800);
+  const result=$("sr-filter-result");
+  if(result){
+    result.className="";
+    result.innerHTML=rows.length?`<div class="sr-ledger-actions"><button class="gold" onclick="srDownloadReportCsv()">Download CSV</button></div><div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri)).join("")}</div>`:`<div class="sr-ledger-note">No stock matched these filters.</div>`;
+  }
+  window.srLastReportRows=rows;
+  window.srLastReportTitle="Complete Filters";
+}
 function srOpenStockIssuesReport(){
   const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>{
     const stock=Number(it.stock||0), sale=Number(it.sale||0), mrp=Number(it.mrp||0);
@@ -3466,6 +3538,11 @@ Object.assign(window,{
   srOpenHealthCheck,
   srOpenSmartReorderReport,
   srOpenDeadStockReport,
+  srOpenStockAgeingReport,
+  srOpenAgeBucket,
+  srOpenCompleteStockReport,
+  srOpenCompleteFilters,
+  srRunCompleteFilters,
   srOpenLowStockReport,
   srOpenMissingImagesReport,
   srDeepCheckMissingImages,
@@ -3729,7 +3806,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="ai-search")return srOpenAiShopAssistant();if(v==="photo-search")return srOpenPhotoSearch();if(v==="staff-tasks")return srOpenStaffTasks();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="owner-brief")return srOpenOwnerBrief();if(v==="festival")return srOpenFestivalPlanner();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="ai-search")return srOpenAiShopAssistant();if(v==="photo-search")return srOpenPhotoSearch();if(v==="staff-tasks")return srOpenStaffTasks();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="owner-brief")return srOpenOwnerBrief();if(v==="festival")return srOpenFestivalPlanner();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="stock-ageing")return srOpenStockAgeingReport();if(v==="complete-stock")return srOpenCompleteStockReport();if(v==="complete-filters")return srOpenCompleteFilters();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

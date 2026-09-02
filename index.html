@@ -614,6 +614,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 .srq-party input,.srq-party textarea{width:100%;min-width:0;background:#111;border:1px solid #49370d;border-radius:9px;color:#fff;padding:9px;font:inherit;font-size:12px;outline:none}
 .srq-party textarea{resize:none;height:37px}
 .srq-pricepick{cursor:pointer!important;transition:.12s}.srq-pricepick:active{transform:scale(.96);border-color:#ffd35c}
+.sr-uploading{opacity:.55;pointer-events:none}
 .srq-qpop-bg{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:18px}
 .srq-qpop{width:min(360px,100%);background:#11100d;border:1px solid #74530d;border-radius:18px;padding:18px;box-shadow:0 25px 80px #000}
 .srq-qpop h3{color:#ffd35c;margin-bottom:4px}.srq-qpop small{color:#8e826c}.srq-qpop input{width:100%;margin:15px 0 10px;height:48px;border-radius:11px;border:1px solid #72520d;background:#080808;color:#fff;font-size:20px;padding:0 12px}
@@ -2277,6 +2278,8 @@ let pimCurrentItem = null;
 let pimImages = [];    /* [{name, url}] loaded from website image storage */
 let pimStorageCount = 0;
 let pimFsIdx  = 0;
+let pimQueueMode = false;
+let pimQueueRow = null;
 
 function pimInitToken(){
   const t = sessionStorage.getItem('sr_image_upload_key') || '';
@@ -2543,7 +2546,18 @@ async function pimHandleFiles(files){
   if(uploaded > 0){
     srSetImageSeen((pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim(), true);
     srRemoveMissingImageRow(pimCurrentItem);
-    await pimLoad();
+    if(pimQueueMode){
+      if(pimQueueRow)pimQueueRow.remove();
+      toast("Photo saved and product removed from Image Work");
+    }else{
+      await pimLoad();
+    }
+  }
+  if(pimQueueMode){
+    pimQueueMode=false;
+    pimQueueRow=null;
+    pimCurrentItem=null;
+    pimImages=[];
   }
 }
 
@@ -2992,10 +3006,8 @@ function srOpenCardFromReport(ri){
 function srReportItem(it,ri,opts={}){
   const purchaseCell = isAdmin ? `<span>Purchase<b>${money(it.purchase||0)}</b></span>` : `<span>Images<b>Open</b></span>`;
   const actions = opts.upload ? `<span class="sr-report-actions">
-      <button class="gold" type="button" onclick="srQueueUpload(${ri},'gallery',event)">Gallery</button>
+      <button class="gold" type="button" onclick="srQueueUpload(${ri},'gallery',event)">Upload</button>
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'camera',event)">Camera</button>
-      <button type="button" onclick="openPim(${ri},event)">View</button>
-      <button type="button" onclick="srOpenCardFromReport(${ri})">Open Item</button>
     </span>` : "";
   const openClick = opts.upload ? "" : ` onclick="srOpenCardFromReport(${ri})"`;
   return `<div class="sr-report-item" role="button" tabindex="0" data-ri="${ri}"${openClick}>
@@ -3020,6 +3032,9 @@ function srQueueUpload(ri,source,e){
   pimCurrentItem=it;
   pimImages=[];
   pimStorageCount=0;
+  pimQueueMode=true;
+  pimQueueRow=e?.target?.closest(".sr-report-item")||null;
+  if(pimQueueRow)pimQueueRow.classList.add("sr-uploading");
   const input=document.getElementById(source==="camera"?"pim-cam-input":"pim-file-input");
   if(input)input.click();
 }
@@ -3041,7 +3056,7 @@ function srShowReport(title,sub,rows,empty,opts={}){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to open reports"); return; }
   drawer(false);
   setActive("");
-  const firstUpload = opts.upload && rows.length ? `<button onclick="openPim(${rows[0][1]},event)">Upload First</button>` : `<button onclick="srTrueRefresh()">Refresh Live</button>`;
+  const firstUpload = opts.upload && rows.length ? `<button onclick="srQueueUpload(${rows[0][1]},'gallery',event)">Upload First</button>` : `<button onclick="srTrueRefresh()">Refresh Live</button>`;
   const csv = rows.length ? `<div class="sr-ledger-actions"><button class="gold" onclick="srDownloadReportCsv()">Download CSV</button>${firstUpload}</div>` : "";
   const html = rows.length
     ? `${csv}<div class="sr-report-list">${rows.map(([it,ri])=>srReportItem(it,ri,opts)).join("")}</div>`
@@ -3169,6 +3184,7 @@ function srMissingImageTitle(mode){
 }
 async function srOpenMissingImagesReport(mode="all"){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
+  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
   drawer(false);
   const [title,desc]=srMissingImageTitle(mode);
   const filter=srMissingImageFilter(mode);
@@ -3176,14 +3192,27 @@ async function srOpenMissingImagesReport(mode="all"){
     .filter(([it])=>srImageAlias(it) && filter(it) && !srKnownHasImage(it))
     .slice(0,400);
   window.srMissingImageMode=mode;
+  window.srMissingImageRows=rows;
   srShowReport(title,`${rows.length} instant ${desc}. Uploading removes the product from this list.`,rows,`No ${desc} in the instant queue.`,{upload:true});
   const body=document.getElementById("sr-ledger-body");
   if(body){
-    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Instant queue uses saved image memory, so it opens fast. Use Deep Check only when you want to re-scan Hostinger storage.</div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
+    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Search a product, then tap Upload or Camera in that same row. Staff PIN is enough; no second image password.</div><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px"><input id="sr-missing-image-search" placeholder="Search product, barcode, group..." oninput="srFilterMissingImageQueue(this.value)"></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
   }
+}
+function srFilterMissingImageQueue(term=""){
+  const rows=window.srMissingImageRows||[];
+  const q=String(term||"").trim().toLowerCase();
+  const filtered=q ? rows.filter(([it])=>[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory].some(v=>String(v||"").toLowerCase().includes(q))) : rows;
+  window.srLastReportRows=filtered;
+  const list=document.querySelector("#sr-ledger-body .sr-report-list");
+  if(!list)return;
+  list.innerHTML=filtered.length
+    ? filtered.slice(0,400).map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")
+    : `<div class="sr-ledger-note">No missing-photo product matched this search.</div>`;
 }
 async function srDeepCheckMissingImages(mode="all"){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
+  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
   drawer(false);
   const [title,desc]=srMissingImageTitle(mode);
   srLedgerShow(title,"Deep checking image storage...","<div class='sr-ledger-note'>Checking Hostinger image storage. You can use Instant Queue next time.</div>");
@@ -3419,6 +3448,7 @@ Object.assign(window,{
   srDeepCheckMissingImages,
   srQueueUpload,
   srRemoveMissingImageRow,
+  srFilterMissingImageQueue,
   srOpenStockIssuesReport,
   srOpenAiShopAssistant,
   srAiShopSearchGo,

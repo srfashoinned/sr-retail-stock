@@ -205,7 +205,7 @@ body.admin-on .sr-card-upload,body.staff-on .sr-card-upload{display:block}
 #img-title-wrap{display:flex;flex-direction:column;gap:2px}
 #img-title{font-size:15px;font-weight:800;color:var(--txt)}
 #img-subtitle{font-size:11px;color:var(--muted)}
-#img-close{background:rgba(255,255,255,0.08);border:1px solid var(--bord);color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#img-close{background:rgba(255,255,255,0.08);border:1px solid var(--bord);color:var(--txt);min-width:72px;height:36px;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 10px}
 #img-main{position:relative;width:100%;display:flex;align-items:center;justify-content:center;min-height:260px;padding:16px}
 #img-el{max-width:100%;max-height:60vh;border-radius:12px;object-fit:contain;display:block}
 #img-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 20px;color:var(--muted);text-align:center}
@@ -353,9 +353,9 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #pim-fs-img{max-width:100%;max-height:100vh;object-fit:contain;display:block;touch-action:none;transform-origin:center center;transition:transform 0.05s linear;user-select:none;-webkit-user-select:none}
 #pim-fs-close{
   position:absolute;top:14px;right:14px;
-  width:36px;height:36px;border-radius:50%;
+  min-width:72px;height:40px;border-radius:999px;padding:0 12px;
   background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);
-  color:#fff;font-size:16px;cursor:pointer;
+  color:#fff;font-size:12px;font-weight:900;cursor:pointer;
   display:flex;align-items:center;justify-content:center;z-index:1;
 }
 #pim-fs-prev,#pim-fs-next{
@@ -614,7 +614,8 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 .srq-party input,.srq-party textarea{width:100%;min-width:0;background:#111;border:1px solid #49370d;border-radius:9px;color:#fff;padding:9px;font:inherit;font-size:12px;outline:none}
 .srq-party textarea{resize:none;height:37px}
 .srq-pricepick{cursor:pointer!important;transition:.12s}.srq-pricepick:active{transform:scale(.96);border-color:#ffd35c}
-.sr-uploading{opacity:.55;pointer-events:none}
+.sr-photo-added{outline:1px solid rgba(34,197,94,.45);box-shadow:inset 0 0 0 1px rgba(34,197,94,.18)}
+.sr-photo-added::after{content:"Photo added, add more or tap Done";display:block;margin-top:6px;color:#22c55e;font-size:11px;font-weight:800}
 .srq-qpop-bg{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:18px}
 .srq-qpop{width:min(360px,100%);background:#11100d;border:1px solid #74530d;border-radius:18px;padding:18px;box-shadow:0 25px 80px #000}
 .srq-qpop h3{color:#ffd35c;margin-bottom:4px}.srq-qpop small{color:#8e826c}.srq-qpop input{width:100%;margin:15px 0 10px;height:48px;border-radius:11px;border:1px solid #72520d;background:#080808;color:#fff;font-size:20px;padding:0 12px}
@@ -774,7 +775,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
         <div id="img-title">Product Images</div>
         <div id="img-subtitle"></div>
       </div>
-      <button id="img-close" onclick="closeImgViewer()">✕</button>
+      <button id="img-close" onclick="closeImgViewer()">Close</button>
     </div>
     <div id="img-main">
       <img id="img-el" src="" alt="Product" style="display:none" onerror="imgLoadError()" onload="imgLoaded()">
@@ -897,7 +898,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 
 <!-- Fullscreen image viewer -->
 <div id="pim-fs-ov">
-  <button id="pim-fs-close" onclick="closePimFs()">✕</button>
+  <button id="pim-fs-close" onclick="closePimFs()">Close</button>
   <button id="pim-fs-prev" onclick="pimFsNav(-1)">‹</button>
   <img id="pim-fs-img" src="" alt="">
   <button id="pim-fs-next" onclick="pimFsNav(1)">›</button>
@@ -2545,10 +2546,9 @@ async function pimHandleFiles(files){
 
   if(uploaded > 0){
     srSetImageSeen((pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim(), true);
-    srRemoveMissingImageRow(pimCurrentItem);
     if(pimQueueMode){
-      if(pimQueueRow)pimQueueRow.remove();
-      toast("Photo saved and product removed from Image Work");
+      if(pimQueueRow)pimQueueRow.classList.add("sr-photo-added");
+      toast("Photo saved. Add more or tap Done.");
     }else{
       await pimLoad();
     }
@@ -3008,6 +3008,7 @@ function srReportItem(it,ri,opts={}){
   const actions = opts.upload ? `<span class="sr-report-actions">
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'gallery',event)">Upload</button>
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'camera',event)">Camera</button>
+      <button type="button" onclick="srQueueDone(${ri},event)">Done</button>
     </span>` : "";
   const openClick = opts.upload ? "" : ` onclick="srOpenCardFromReport(${ri})"`;
   return `<div class="sr-report-item" role="button" tabindex="0" data-ri="${ri}"${openClick}>
@@ -3034,9 +3035,16 @@ function srQueueUpload(ri,source,e){
   pimStorageCount=0;
   pimQueueMode=true;
   pimQueueRow=e?.target?.closest(".sr-report-item")||null;
-  if(pimQueueRow)pimQueueRow.classList.add("sr-uploading");
   const input=document.getElementById(source==="camera"?"pim-cam-input":"pim-file-input");
   if(input)input.click();
+}
+function srQueueDone(ri,e){
+  if(e)e.stopPropagation();
+  const it=raw[ri];
+  if(!it)return;
+  srSetImageSeen(srImageAlias(it), true);
+  srRemoveMissingImageRow(it);
+  toast("Removed from Image Work");
 }
 function srRemoveMissingImageRow(item){
   const alias=srImageAlias(item);
@@ -3447,6 +3455,7 @@ Object.assign(window,{
   srOpenMissingImagesReport,
   srDeepCheckMissingImages,
   srQueueUpload,
+  srQueueDone,
   srRemoveMissingImageRow,
   srFilterMissingImageQueue,
   srOpenStockIssuesReport,

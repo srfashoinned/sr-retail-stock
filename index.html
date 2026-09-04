@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v16">
+<meta name="sr-build" content="main-mobile-v17">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1427,10 +1427,6 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
 <button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="health"><span class="sr-ico">●</span><span>Health Check<small>APIs, images and live data</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="tag-offer"><span class="sr-ico">₹</span><span>Deal Rack<small>Best selling price picks</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="tag-new"><span class="sr-ico">✦</span><span>Fresh Drop<small>Newest counter arrivals</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="tag-clearance"><span class="sr-ico">%</span><span>Clear Rack<small>Move these first</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="tag-premium"><span class="sr-ico">◆</span><span>Showcase<small>Premium display stock</small></span></button>
 </div>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
@@ -2389,14 +2385,8 @@ function marginStr(it){
 
 function cardHTML(it, ri, topPx, q){
   const exp = expanded.has(ri);
-  const tag = srItemTag(it);
-  const tagBadge = tag ? `<span class="sr-tag-badge">${srTagLabel(tag)}</span>` : "";
   const purchBlock = isAdmin
     ?`<div class="pb p"><div class="pl">Purchase</div><div class="pv">${fmt(it.purchase)}${marginStr(it)}</div></div>`:'';
-  const tagTools = isAdmin ? `<div class="sr-tag-row">
-    ${["offer","new","clearance","premium"].map(t=>`<button class="${tag===t?"on":""}" onclick="srSetItemTag(${ri},'${t}',event)">${srTagLabel(t)}</button>`).join("")}
-    <button onclick="srSetItemTag(${ri},'',event)">No Label</button>
-  </div>` : "";
   const staffUpload = (isAdmin || isStaff) ? `<button class="sr-card-upload" onclick="openPim(${ri},event)">Add / View Photos</button>` : "";
   const detHTML = exp?`
     <div class="det">
@@ -2411,12 +2401,10 @@ function cardHTML(it, ri, topPx, q){
         <button class="ab ig" onclick="openPim(${ri},event)">Photos</button>
         <button class="ab ig sr-ledger-admin-only" onclick="openItemLedger(${ri},event)">Ledger</button>
       </div>
-      ${tagTools}
     </div>`:'';
 
   return `<div class="c${exp?' exp':''}" style="top:${topPx}px" data-ri="${ri}" onclick="toggleCard(${ri})">
     <div class="c-name">${hl(it.name||'',q)}</div>
-    ${tagBadge}
     ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
     ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
     ${staffUpload}

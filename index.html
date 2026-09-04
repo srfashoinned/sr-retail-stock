@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v18">
+<meta name="sr-build" content="main-mobile-v19">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -2226,10 +2226,10 @@ function srSetItemTag(ri,tag,e){
   if(tag)all[key]=tag; else delete all[key];
   localStorage.setItem(SR_TAG_KEY,JSON.stringify(all));
   measureCardHeight(); rebuildOffsets(); vsRender(true);
-  toast(tag?srTagLabel(tag):"Label removed");
+  toast("Saved");
 }
 function srTagLabel(tag){
-  return tag==="offer"?"Deal Rack":tag==="new"?"Fresh Drop":tag==="clearance"?"Clear Rack":tag==="premium"?"Showcase":"";
+  return "";
 }
 
 function applyAll(){
@@ -4498,10 +4498,10 @@ function srOpenControlCenter(){
   `);
 }
 function srOpenFestivalPlanner(){
-  if(!isAdmin){ openAdm(); toast("Unlock admin for festival planner"); return; }
+  if(!isAdmin){ openAdm(); toast("Unlock admin"); return; }
   srNextView("festival");
   drawer(false);
-  srLedgerShow("Festival Planner","Ready-made selling collections",`<div class="sr-ledger-actions"><button class="gold" onclick="srFestivalRun('eid suit dupatta')">Eid</button><button onclick="srFestivalRun('wedding suit premium')">Wedding</button><button onclick="srFestivalRun('diwali suit dress')">Diwali</button><button onclick="srFestivalRun('clearance in stock')">Clearance</button></div><div class="sr-ledger-note">After opening any collection, use Share Catalog to send that filtered product list.</div>`);
+  srLedgerShow("Season Plan","Ready-made selling collections",`<div class="sr-ledger-actions"><button class="gold" onclick="srFestivalRun('eid suit dupatta')">Eid</button><button onclick="srFestivalRun('wedding suit')">Wedding</button><button onclick="srFestivalRun('diwali suit dress')">Diwali</button></div><div class="sr-ledger-note">After opening any collection, use Share Catalog to send that filtered product list.</div>`);
 }
 function srFestivalRun(term){
   const rows=srSmartRows(term);
@@ -4886,7 +4886,22 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{srNavFromDrawer=$("sr-drawer")?.classList.contains("open");let v=b.dataset.view;if(v==="home"){srNavFromDrawer=false;return home()}if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="ai-search")return srOpenAiShopAssistant();if(v==="photo-search")return srOpenPhotoSearch();if(v==="voice-mode")return srOpenVoiceMode();if(v==="offline-center")return srOpenOfflineCenter();if(v==="staff-tasks")return srOpenStaffTasks();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="control-center")return srOpenControlCenter();if(v==="owner-brief")return srOpenOwnerBrief();if(v==="festival")return srOpenFestivalPlanner();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="stock-ageing")return srOpenStockAgeingReport();if(v==="complete-filters")return srOpenCompleteFilters();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance");if(v==="tag-premium")return srOpenTagFilter("premium")});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
+  srNavFromDrawer=$("sr-drawer")?.classList.contains("open");
+  const v=b.dataset.view;
+  if(v==="home"){srNavFromDrawer=false;return home();}
+  if(v==="quote")return renderQuoteScreen();
+  if(v==="missing-images")return srOpenMissingImagesReport("all");
+  if(v==="complete-filters")return srOpenCompleteFilters();
+  if(v==="share-catalog"){drawer(false);return srShareCatalog();}
+  if(v==="control-center")return srOpenControlCenter();
+  if(v==="ledger")return openItemLedgerSearch();
+  if(v==="receivables")return srOpenReceivables();
+  if(v==="stock-issues")return srOpenStockIssuesReport();
+  if(v==="price-changes")return srOpenPriceChangesReport();
+  if(v==="barcode-sheet")return srOpenBarcodeSheet();
+  if(v==="health")return srOpenHealthCheck();
+});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){

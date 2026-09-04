@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v19">
+<meta name="sr-build" content="main-mobile-v20">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -353,11 +353,12 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #pim-fs-ov.show{display:flex}
 #pim-fs-img{max-width:100%;max-height:100vh;object-fit:contain;display:block;touch-action:none;transform-origin:center center;transition:transform 0.05s linear;user-select:none;-webkit-user-select:none}
 #pim-fs-close{
-  position:absolute;top:14px;right:14px;
-  min-width:72px;height:40px;border-radius:999px;padding:0 12px;
-  background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);
-  color:#fff;font-size:12px;font-weight:900;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;z-index:1;
+  position:fixed!important;top:calc(12px + env(safe-area-inset-top))!important;right:12px!important;
+  min-width:82px;height:42px;border-radius:999px;padding:0 14px;
+  background:linear-gradient(135deg,#ffd35c,#d89a00)!important;border:1px solid rgba(255,255,255,0.28)!important;
+  color:#111!important;font-size:14px;font-weight:1000;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;z-index:20060!important;
+  box-shadow:0 10px 36px rgba(0,0,0,.65)!important;
 }
 #pim-fs-prev,#pim-fs-next{
   position:absolute;top:50%;transform:translateY(-50%);
@@ -375,7 +376,7 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
   font-variant-numeric:tabular-nums;
 }
 #pim-ov .sr-image-bottom-close{z-index:12001}
-#pim-fs-ov .sr-image-bottom-close{z-index:5}
+#pim-fs-ov .sr-image-bottom-close{z-index:20060}
 
 /* Scroll area */
 #pim-scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
@@ -1235,6 +1236,26 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
   background:var(--sr-gold)!important;
   opacity:1!important;
   border-radius:999px!important;
+}
+#sr-top-admin{
+  width:auto!important;
+  min-width:64px!important;
+  max-width:78px!important;
+  height:34px!important;
+  flex:0 0 auto!important;
+  padding:0 10px!important;
+  border:1px solid #72520d!important;
+  background:#171106!important;
+  color:#ffd35c!important;
+  opacity:1!important;
+  border-radius:11px!important;
+  font-size:11px!important;
+  font-weight:1000!important;
+}
+#sr-top-admin::before,#sr-top-admin::after{display:none!important}
+#sr-top-admin.on{
+  background:linear-gradient(135deg,var(--sr-gold),#f59e0b)!important;
+  color:#050505!important;
 }
 #ctrl{
   padding:8px!important;
@@ -3088,6 +3109,8 @@ let pimToken = '';
 let pimCurrentItem = null;
 let pimImages = [];    /* [{name, url}] loaded from website image storage */
 let pimStorageCount = 0;
+const pimImageListCache = new Map();
+const PIM_CACHE_MS = 5 * 60 * 1000;
 let pimFsIdx  = 0;
 let pimQueueMode = false;
 let pimQueueRow = null;
@@ -3185,22 +3208,38 @@ async function pimLoad(){
   const alias = (pimCurrentItem.alias || pimCurrentItem.barcode || pimCurrentItem.name || '').trim();
   if(!alias){ pimShowArea('empty'); return; }
 
+  const cached = pimImageListCache.get(alias);
+  if(cached && Date.now() - cached.at < PIM_CACHE_MS){
+    pimStorageCount = cached.storageCount || 0;
+    pimImages = cached.images || [];
+    srSetImageSeen(alias, pimImages.length > 0);
+    pimRenderGrid();
+    pimRefreshImages(alias, true);
+    return;
+  }
+
   pimShowArea('loading');
+  await pimRefreshImages(alias, false);
+}
+
+async function pimRefreshImages(alias, silent){
   try{
-    const data = await imageApiFetch(`/list?alias=${encodeURIComponent(alias)}&t=${Date.now()}`, { cache:'no-store' });
+    const data = await imageApiFetch(`/list?alias=${encodeURIComponent(alias)}`, { cache:'default' });
     const siteImages = (data.images || [])
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
       .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
     pimStorageCount = siteImages.length;
     pimImages = siteImages.length ? siteImages : await loadLegacyImages(alias);
+    pimImageListCache.set(alias, { at:Date.now(), storageCount:pimStorageCount, images:pimImages });
     srSetImageSeen(alias, pimImages.length > 0);
     pimRenderGrid();
   }catch(err){
     pimStorageCount = 0;
     pimImages = await loadLegacyImages(alias);
+    pimImageListCache.set(alias, { at:Date.now(), storageCount:pimStorageCount, images:pimImages });
     if(pimImages.length)srSetImageSeen(alias, true);
     pimRenderGrid();
-    if(!pimImages.length) toast('⚠️ ' + err.message);
+    if(!silent && !pimImages.length) toast('⚠️ ' + err.message);
   }
 }
 
@@ -3253,7 +3292,7 @@ function pimRenderGrid(){
       ? `<button class="pim-del show" onclick="pimConfirmDelete(${idx},event)" title="Delete image">✕</button>`
       : '';
     html += `<div class="pim-cell" onclick="pimOpenFs(${idx})">
-      <img src="${img.url}" alt="${img.name}" loading="lazy">
+      <img src="${img.url}" alt="${img.name}" loading="${idx<4?'eager':'lazy'}" decoding="async">
       <div class="pim-num">${img.legacy ? 'Old' : idx+1}</div>
       ${delBtn}
     </div>`;
@@ -3389,6 +3428,7 @@ async function pimUploadOne(file){
     },
     body: form
   });
+  if(alias) pimImageListCache.delete(alias);
   toast('✅ Uploaded ' + (data.image?.name || 'image'));
 }
 
@@ -3419,6 +3459,7 @@ async function pimDeleteOne(img, idx){
         name: img.name
       })
     });
+    if(alias) pimImageListCache.delete(alias);
     toast('🗑️ Deleted ' + img.name);
     await pimLoad();
   }catch(err){
@@ -3442,7 +3483,10 @@ function closePimFs(){
 function pimFsShow(){
   const img = pimImages[pimFsIdx];
   if(!img) return;
-  document.getElementById('pim-fs-img').src = img.url;
+  const fsImg = document.getElementById('pim-fs-img');
+  fsImg.removeAttribute('src');
+  fsImg.decoding = 'async';
+  fsImg.src = img.url;
   document.getElementById('pim-fs-counter').textContent = (pimFsIdx+1) + ' / ' + pimImages.length;
   const single = pimImages.length <= 1;
   document.getElementById('pim-fs-prev').style.display = single ? 'none' : '';

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v17">
+<meta name="sr-build" content="main-mobile-v18">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1250,12 +1250,15 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
   font-size:15px!important;
   color:var(--sr-text)!important;
 }
-#scan-btn{
+#scan-btn,#sr-filter-btn{
   width:42px!important;
   height:42px!important;
   border-radius:13px!important;
   background:#151920!important;
   border:1px solid #2a303a!important;
+  color:var(--sr-gold)!important;
+  font-weight:1000!important;
+  font-size:17px!important;
 }
 #sort-row,#stock-row{
   display:flex!important;
@@ -1292,26 +1295,28 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
 #pf label{font-size:11px!important;color:#8f98a8!important}
 .pi{height:27px!important;min-width:0!important;border-radius:8px!important;background:#090b0f!important;border:1px solid #242a34!important;color:#fff!important}
 #pf-go,#pf-clr{height:28px!important;border-radius:9px!important}
-#status{padding:6px 10px!important;font-size:11px!important;color:#858e9c!important}
-#scroll{top:258px!important;background:var(--sr-bg)!important}
+#status{padding:4px 9px!important;font-size:10px!important;color:#858e9c!important}
+#sort-row,#brand-btn,#grp-btn,#pf{display:none!important}
+#stock-row{padding-top:6px!important}
+#scroll{top:auto!important;background:var(--sr-bg)!important}
 .c{
   left:8px!important;
   right:8px!important;
   border-radius:14px!important;
-  padding:11px!important;
+  padding:9px!important;
   background:linear-gradient(180deg,#15181f 0%,#101216 100%)!important;
   border:1px solid #252b35!important;
   box-shadow:0 8px 20px rgba(0,0,0,.22)!important;
 }
 .c-name{
-  font-size:15.5px!important;
+  font-size:15px!important;
   line-height:1.16!important;
   letter-spacing:0!important;
   margin-right:0!important;
 }
 .c-alias{
   display:inline-flex!important;
-  margin:4px 7px 0 0!important;
+  margin:3px 7px 0 0!important;
   font-size:11px!important;
   color:#8d96a6!important;
 }
@@ -1329,16 +1334,16 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
 }
 .prices{
   grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:5px!important;
-  margin-top:9px!important;
+  gap:4px!important;
+  margin-top:7px!important;
 }
 .pb{
-  min-height:46px!important;
-  padding:6px!important;
-  border-radius:11px!important;
+  min-height:39px!important;
+  padding:5px!important;
+  border-radius:10px!important;
 }
-.pl{font-size:8.5px!important;letter-spacing:.45px!important;white-space:nowrap!important}
-.pv{font-size:13.5px!important;line-height:1.1!important;white-space:nowrap!important}
+.pl{font-size:7.5px!important;letter-spacing:.3px!important;white-space:nowrap!important}
+.pv{font-size:12.5px!important;line-height:1.05!important;white-space:nowrap!important}
 .pb.p{grid-column:span 2!important}
 .sr-card-upload{
   height:34px!important;
@@ -1384,14 +1389,14 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
   .sr-pill{max-width:76px!important;overflow:hidden!important;text-overflow:ellipsis!important}
   #ctrl{padding:7px!important}
   #search{height:40px!important;font-size:14px!important}
-  #scan-btn{width:40px!important;height:40px!important}
-  #scroll{top:246px!important}
-  .c{left:7px!important;right:7px!important;padding:10px!important}
-  .prices{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #scan-btn,#sr-filter-btn{width:40px!important;height:40px!important}
+  #scroll{top:auto!important}
+  .c{left:7px!important;right:7px!important;padding:8px!important}
+  .prices{grid-template-columns:repeat(4,minmax(0,1fr))!important}
   .pb.p{grid-column:span 1!important}
 }
 @media(min-width:860px){
-  #scroll{top:252px!important}
+  #scroll{top:auto!important}
   .c{left:14px!important;right:14px!important}
   .prices{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 }
@@ -1403,26 +1408,13 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="ai-search"><span class="sr-ico">⌕</span><span>AI Search<small>Words like red suit under 500</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="photo-search"><span class="sr-ico">▧</span><span>Photo Search<small>Capture and match by hint</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="staff-tasks"><span class="sr-ico">☑</span><span>Staff Tasks<small>Photos, stock checks, prices</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="voice-mode"><span class="sr-ico">◉</span><span>Voice Mode<small>Say search, ledger, image work</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="offline-center"><span class="sr-ico">▣</span><span>Offline Center<small>Saved stock and app health</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">▧</span><span>Image Work<small>Upload pending photos</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="complete-filters"><span class="sr-ico">☷</span><span>Stock Filters<small>Age, stock, price, group</small></span></button>
 <button class="sr-navbtn" data-view="share-catalog"><span class="sr-ico">↗</span><span>Share Catalog<small>Send current filtered link</small></span></button>
 <div class="sr-drawer-tools">
 <button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="owner-brief"><span class="sr-ico">◈</span><span>Owner Brief<small>Today stock decisions</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="festival"><span class="sr-ico">✺</span><span>Festival Planner<small>Eid, Diwali, wedding sets</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="stock-ageing"><span class="sr-ico">◷</span><span>Stock Ageing<small>Fresh, ageing, old stock</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="complete-filters"><span class="sr-ico">☷</span><span>Complete Filters<small>Age, stock, price, group</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>Image Work<small>Upload pending photos</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="missing-images-in"><span class="sr-ico">✅</span><span>In-Stock Photos<small>Available items without images</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="missing-images-out"><span class="sr-ico">×</span><span>Out-Stock Photos<small>Sold-out items without images</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
@@ -1457,6 +1449,7 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
         <line x1="13" y1="14" x2="13" y2="16"/>
       </svg>
     </button>
+    <button id="sr-filter-btn" onclick="srOpenCompleteFilters()" title="Filters" aria-label="Filters">☷</button>
   </div>
   <div id="sort-row">
     <div class="chip on" data-sort="df">Counter</div>
@@ -2387,7 +2380,6 @@ function cardHTML(it, ri, topPx, q){
   const exp = expanded.has(ri);
   const purchBlock = isAdmin
     ?`<div class="pb p"><div class="pl">Purchase</div><div class="pv">${fmt(it.purchase)}${marginStr(it)}</div></div>`:'';
-  const staffUpload = (isAdmin || isStaff) ? `<button class="sr-card-upload" onclick="openPim(${ri},event)">Add / View Photos</button>` : "";
   const detHTML = exp?`
     <div class="det">
       ${it.barcode?`<div class="drow"><span>Barcode</span><span>${it.barcode}</span></div>`:''}
@@ -2407,7 +2399,6 @@ function cardHTML(it, ri, topPx, q){
     <div class="c-name">${hl(it.name||'',q)}</div>
     ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
     ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
-    ${staffUpload}
     <div class="prices">
       <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
       <div class="pb s shareable" onclick="openExp(${ri},'sale',event)" title="Tap to share Sale price image">

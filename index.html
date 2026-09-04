@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="ledger-mobile-v4">
+<meta name="sr-build" content="main-mobile-v16">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -492,6 +492,7 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 :root{--sr-gold:#ffc542;--sr-gold2:#d79a00;--sr-bg:#070707;--sr-panel:#101010;--sr-line:#3b2b08}
 #sr-appbar{min-height:58px;display:flex;align-items:center;gap:10px;padding:8px 12px;position:sticky;top:0;z-index:8000;background:rgba(5,5,5,.97);border-bottom:1px solid #2e2208;backdrop-filter:blur(14px)}
 #sr-hamb{width:42px;height:42px;border:1px solid #705000;border-radius:12px;background:#130e03;color:var(--sr-gold);font-size:25px;line-height:1;cursor:pointer}
+#sr-real-back{width:42px;height:42px;border:1px solid #40300d;border-radius:12px;background:#0f0f10;color:#ffd35c;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #sr-brand{font-size:21px;font-weight:1000;letter-spacing:2px;color:var(--sr-gold);white-space:nowrap}
 #sr-spacer{flex:1}.sr-pill{border:1px solid #393014;background:#101010;color:#a99b7c;border-radius:999px;padding:7px 10px;font-size:11px}
 .sr-admin-only{display:none!important}body.admin-on .sr-admin-only{display:flex!important}
@@ -508,7 +509,9 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 #sr-ledger-head{position:sticky;top:0;z-index:2;background:#0d0d0f;border-bottom:1px solid #3d2d0b;padding:13px;display:flex;align-items:flex-start;gap:10px}
 #sr-ledger-head b{color:#ffd35c;font-size:16px;line-height:1.25}
 #sr-ledger-head small{display:block;color:#8e826c;margin-top:3px}
-#sr-ledger-close{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid #5d450e;background:#151007;color:#ffd35c;font-size:18px}
+#sr-ledger-actions-head{margin-left:auto;display:flex;align-items:center;gap:8px}
+#sr-ledger-back{height:36px;border-radius:10px;border:1px solid #5d450e;background:#1a1305;color:#ffd35c;font-size:13px;font-weight:900;padding:0 12px}
+#sr-ledger-close{width:36px;height:36px;border-radius:10px;border:1px solid #5d450e;background:#151007;color:#ffd35c;font-size:18px}
 #sr-ledger-body{padding:12px;display:grid;gap:10px}
 .sr-ledger-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .sr-ledger-kpi{border:1px solid #33270b;background:#13110b;border-radius:11px;padding:9px;min-width:0}
@@ -544,25 +547,33 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 .sr-tag-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:8px}
 .sr-tag-row button{min-height:34px;border-radius:8px;border:1px solid #42310b;background:#100d08;color:#d8c990;font-size:10px;font-weight:900}
 .sr-tag-row button.on{background:#ffd35c;color:#111;border-color:#ffd35c}
-.sr-drawer-tools{display:none;border-top:1px solid #2d230c;margin-top:8px;padding-top:8px}
-body.admin-on .sr-drawer-tools,body.staff-on .sr-drawer-tools{display:block}
+.sr-drawer-tools{display:block;border-top:1px solid #2d230c;margin-top:8px;padding-top:8px}
 #sr-screen{display:none;position:fixed;inset:58px 0 0;z-index:7000;background:#080808;color:#eee;overflow:auto;padding:18px}#sr-screen.open{display:block}.sr-screen-title{font-size:25px;font-weight:1000;color:#ffd15a;margin-bottom:5px}.sr-screen-sub{color:#8e826c;margin-bottom:18px}
 #sr-screen.ledger-pro{display:block;inset:0;z-index:12500;padding:0;background:#080808;overflow:auto}
 #sr-screen.ledger-pro #sr-ledger-box{width:100%;max-width:none;max-height:none;min-height:100dvh;border:0;border-radius:0;box-shadow:none}
 #sr-screen.ledger-pro #sr-ledger-head{padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
 .sr-ledger-admin-only{display:none!important}
 body.admin-on .sr-ledger-admin-only{display:flex!important}
-.sr-staff-tool{display:none!important}
-body.admin-on .sr-staff-tool,body.staff-on .sr-staff-tool{display:flex!important}
+.sr-staff-tool{display:flex!important}
 .sr-feature{border:1px solid #44320b;background:linear-gradient(145deg,#12100b,#0b0b0b);border-radius:15px;padding:15px;margin:10px 0}.sr-feature b{color:#ffd15a}.sr-feature button{margin-top:10px;border:1px solid #765300;background:#1a1203;color:#ffd15a;border-radius:10px;padding:10px 13px;font-weight:800}
 #sr-quote-cart{display:grid;gap:9px}.sr-qrow{border:1px solid #44320b;background:#100d07;border-radius:13px;padding:12px}.sr-qgrid{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.sr-qgrid input{min-width:0;background:#080808;border:1px solid #5b430d;color:#fff;border-radius:9px;padding:10px;font-size:16px}.sr-del{background:#281010!important;border-color:#6b2424!important;color:#ff9b9b!important;margin:0!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
 @media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid,.sr-report-meta,.sr-tag-row{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
+@media(max-width:520px){
+ .sr-ledger-actions{grid-template-columns:1fr}
+ .sr-ledger-kpi{min-height:68px;text-align:left}
+ .sr-report-item,.sr-ledger-row{padding:9px;border-radius:10px}
+ .sr-report-item-top,.sr-ledger-row-top{align-items:flex-start}
+ .sr-report-item-top strong,.sr-ledger-row-top strong{font-size:13px}
+ #sr-ledger-box{max-height:100dvh;border-radius:0}
+ #sr-ledger-back{height:42px;font-size:14px;padding:0 14px}
+ #sr-ledger-close{width:42px;height:42px;font-size:22px}
+}
 @media(max-width:760px){
  #sr-appbar{height:auto;align-items:center;gap:7px;padding:8px;flex-wrap:wrap}
- #sr-hamb{width:40px;height:40px;flex:0 0 auto}
+ #sr-hamb,#sr-real-back{width:40px;height:40px;flex:0 0 auto}
  #sr-brand{font-size:18px;letter-spacing:1px;min-width:0;max-width:calc(100vw - 62px);overflow:hidden;text-overflow:ellipsis}
  #sr-spacer{display:none}
  #sr-top-admin{height:36px;flex:1 1 auto;padding:0 8px;font-size:10px}
@@ -633,40 +644,793 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
  @page{size:76mm auto;margin:2mm}
 }
 </style>
+<style id="sr-main-mobile-v11">
+@media(max-width:760px){
+  html,body{width:100%;max-width:100%;overflow:hidden}
+  #sr-appbar{min-height:48px;padding:6px 8px;gap:6px}
+  #sr-hamb,#sr-real-back,#sr-refresh{width:38px;height:38px;border-radius:10px}
+  #sr-brand{font-size:17px;letter-spacing:1.4px;flex:1 1 auto}
+  #sr-top-admin{height:34px;flex:0 1 86px;padding:0 7px;font-size:10px}
+  .sr-pill{height:34px;flex:0 0 auto;max-width:86px;padding:0 8px;font-size:10px}
+  #sr-screen{inset:50px 0 0;overflow:hidden}
+  #sr-ledger-box{height:100%;max-height:100dvh;border-radius:0;border-left:0;border-right:0}
+  #sr-ledger-head{padding:8px 9px;align-items:center}
+  #sr-ledger-head b{font-size:14px}
+  #sr-ledger-head small{font-size:10px;line-height:1.2}
+  #sr-ledger-back,#sr-ledger-close{height:34px;border-radius:9px}
+  #sr-ledger-back{padding:0 10px;font-size:12px}
+  #sr-ledger-close{width:34px;font-size:18px}
+  #sr-ledger-body{padding:8px;gap:7px}
+  .sr-ledger-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .sr-ledger-kpi{min-height:54px;padding:7px;border-radius:9px}
+  .sr-ledger-kpi small{font-size:8px}
+  .sr-ledger-kpi b{font-size:12px}
+  .sr-ledger-kpi span{font-size:9px}
+  .sr-ledger-note{padding:8px;border-radius:9px;font-size:11px}
+  .sr-ledger-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .sr-ledger-actions button{height:36px;border-radius:9px;font-size:11px;padding:0 7px}
+  .sr-report-list{display:grid;gap:6px}
+  .sr-report-item{padding:8px;border-radius:10px;gap:5px;overflow:hidden}
+  .sr-report-item-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+  .sr-report-item-top b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+  .sr-report-item-top strong{font-size:12px}
+  .sr-report-item small{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sr-report-meta{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+  .sr-report-meta span{padding:5px 4px;font-size:8px;border-radius:7px}
+  .sr-report-meta b{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sr-report-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+  .sr-report-actions button{height:34px;font-size:10px;border-radius:8px;padding:0 4px}
+  #sr-ledger-search,#sr-ledger-search-go,#sr-missing-image-search,#sr-filter-q,#sr-filter-min,#sr-filter-max,#sr-filter-stock,#sr-filter-age,#sr-filter-group,#sr-ai-term,#sr-photo-hint{height:38px;border-radius:9px;font-size:13px;min-width:0}
+  #pim-box{width:100%;height:100dvh;max-height:100dvh;border-radius:0}
+  #pim-head{padding:9px}
+  #pim-title{font-size:14px}
+  #pim-grid{gap:6px;padding:8px}
+  .pim-cell,.pim-add-cell,.pim-cam-cell{border-radius:10px}
+}
+@media(max-width:430px){
+  .sr-ledger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sr-report-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sr-report-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #sr-brand{max-width:118px}
+}
+</style>
+<style id="sr-pocket-ui-v12">
+:root{
+  --bg:#050607;
+  --surf:#0b1014;
+  --card:#10161c;
+  --bord:rgba(255,255,255,.10);
+  --gold:#ffd166;
+  --green:#20e3a2;
+  --blue:#62a8ff;
+  --purple:#b987ff;
+  --red:#ff6b82;
+  --txt:#f4f7fb;
+  --muted:#8793a3;
+  --ink2:#cdd6e2;
+  --glass:rgba(16,22,28,.82);
+  --shadow:0 12px 34px rgba(0,0,0,.36);
+}
+body{
+  background:
+    radial-gradient(circle at 12% -8%,rgba(32,227,162,.12),transparent 28%),
+    radial-gradient(circle at 110% 10%,rgba(98,168,255,.14),transparent 26%),
+    linear-gradient(180deg,#050607 0%,#080b0e 42%,#050607 100%);
+}
+#sr-appbar{
+  min-height:58px;
+  padding:8px 10px;
+  gap:8px;
+  background:rgba(5,6,7,.88);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(18px);
+  box-shadow:0 8px 28px rgba(0,0,0,.24);
+}
+#sr-hamb,#sr-real-back,#sr-refresh{
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.025));
+  color:var(--txt);
+  border-radius:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+#sr-real-back{color:var(--blue)}
+#sr-hamb{color:var(--gold)}
+#sr-refresh{color:var(--green)}
+#sr-brand{
+  color:var(--txt);
+  font-weight:1000;
+  letter-spacing:.8px;
+  position:relative;
+  padding-left:4px;
+}
+#sr-brand::after{
+  content:"Stock";
+  display:inline-flex;
+  margin-left:7px;
+  padding:3px 7px;
+  border-radius:999px;
+  border:1px solid rgba(32,227,162,.25);
+  color:var(--green);
+  background:rgba(32,227,162,.08);
+  font-size:9px;
+  letter-spacing:.5px;
+  vertical-align:middle;
+}
+#sr-top-admin,.sr-pill{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.045);
+  color:var(--ink2);
+  border-radius:999px;
+  box-shadow:none;
+}
+#sr-top-admin{
+  opacity:.24;
+  max-width:34px;
+  overflow:hidden;
+  color:transparent;
+  position:relative;
+}
+#sr-top-admin::after{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(255,209,102,.7);
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+}
+#sr-top-admin:hover,#sr-top-admin:focus,#sr-top-admin.on{
+  opacity:1;
+  max-width:92px;
+  color:inherit;
+}
+#sr-top-admin:hover::after,#sr-top-admin:focus::after,#sr-top-admin.on::after{display:none}
+#sr-top-admin.on,#admin-btn.on{
+  background:linear-gradient(135deg,var(--green),#8cf7d0);
+  border-color:transparent;
+  color:#03100b;
+}
+#sr-real-back{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:38px!important;
+  height:38px!important;
+  flex:0 0 38px!important;
+  border-radius:12px!important;
+  border-color:rgba(80,160,255,.55)!important;
+  color:#77b7ff!important;
+  font-size:21px!important;
+  font-weight:1000!important;
+}
+#sr-top-admin{
+  width:24px!important;
+  min-width:24px!important;
+  max-width:24px!important;
+  height:34px!important;
+  flex:0 0 24px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  color:transparent!important;
+  opacity:.2!important;
+}
+#sr-top-admin::before{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#f5c542;
+  box-shadow:0 0 12px rgba(245,197,66,.75);
+}
+#sr-top-admin.on,#sr-top-admin:focus{
+  width:64px!important;
+  min-width:64px!important;
+  max-width:64px!important;
+  color:#050505!important;
+  opacity:1!important;
+}
+#sr-drawer .sr-navbtn{min-height:54px}
+#sr-drawer .sr-navbtn small{display:none}
+#ctrl{
+  padding:9px 10px 7px;
+  gap:7px;
+  background:rgba(5,6,7,.72);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  backdrop-filter:blur(14px);
+}
+#search-row{gap:7px}
+#search{
+  height:44px;
+  border-radius:15px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.055);
+  color:var(--txt);
+  padding:0 14px;
+  font-size:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+#search:focus{
+  border-color:rgba(32,227,162,.55);
+  box-shadow:0 0 0 3px rgba(32,227,162,.10);
+}
+#scan-btn{
+  width:44px;height:44px;border-radius:15px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(145deg,rgba(98,168,255,.18),rgba(255,255,255,.04));
+  color:var(--blue);
+}
+#sort-row,#stock-row{gap:5px}
+.chip,.stock-chip{
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.045);
+  color:#aab4c2;
+  padding:5px 10px;
+  font-size:11px;
+  font-weight:800;
+}
+.chip.on,.stock-chip[data-stock="all"].on{
+  background:linear-gradient(135deg,var(--gold),#f6a82b);
+  border-color:transparent;
+  color:#100b00;
+}
+.stock-chip[data-stock="in"].on{
+  background:rgba(32,227,162,.16);
+  border-color:rgba(32,227,162,.42);
+  color:var(--green);
+}
+.stock-chip[data-stock="low"].on{
+  background:rgba(255,209,102,.16);
+  border-color:rgba(255,209,102,.42);
+  color:var(--gold);
+}
+.stock-chip[data-stock="out"].on{
+  background:rgba(255,107,130,.14);
+  border-color:rgba(255,107,130,.38);
+  color:var(--red);
+}
+#brand-btn,#grp-btn{
+  min-height:39px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.04);
+  color:#b8c3d0;
+  padding:8px 12px;
+  font-size:12px;
+}
+#brand-btn.active,#grp-btn.active{
+  border-color:rgba(98,168,255,.42);
+  color:#e9f2ff;
+  background:rgba(98,168,255,.10);
+}
+#pf{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) 44px 38px;
+  gap:5px;
+}
+#pf label{align-self:center;font-size:10px;color:#8e9bad}
+.pi{
+  width:100%;
+  height:32px;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.045);
+  color:var(--txt);
+}
+#pf-go{
+  border-radius:11px;
+  background:var(--green);
+  color:#03100b;
+}
+#pf-clr{
+  border-radius:11px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+}
+#status{padding:3px 12px 5px;color:#96a4b5;font-size:10px}
+#scroll{background:transparent}
+.c{
+  left:10px!important;
+  right:10px!important;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.09);
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025)),
+    rgba(12,17,22,.92);
+  box-shadow:var(--shadow);
+  padding:13px;
+  overflow:hidden;
+}
+.c::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--green),var(--blue));
+  opacity:.75;
+}
+.c.exp{border-color:rgba(32,227,162,.35);box-shadow:0 16px 40px rgba(0,0,0,.46)}
+.c-name{
+  font-size:16px;
+  font-weight:950;
+  color:var(--txt);
+  line-height:1.18;
+  padding-left:2px;
+}
+.c-alias{
+  color:#8f9bab!important;
+  font-size:10.5px!important;
+  margin-top:4px!important;
+}
+.sr-tag-badge{
+  background:rgba(255,209,102,.14);
+  border-color:rgba(255,209,102,.34);
+  color:var(--gold);
+  margin-top:5px;
+}
+.sr-card-upload{
+  height:34px;
+  border-radius:12px;
+  border:1px solid rgba(32,227,162,.34);
+  background:rgba(32,227,162,.10);
+  color:var(--green);
+  font-size:12px;
+  margin-top:7px;
+}
+.prices{
+  margin-top:9px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+}
+.pb{
+  border-radius:13px;
+  padding:7px 9px;
+  background:rgba(255,255,255,.04)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+}
+.pb.m{box-shadow:inset 0 -2px 0 rgba(255,209,102,.42)}
+.pb.s{box-shadow:inset 0 -2px 0 rgba(32,227,162,.45)}
+.pb.w{box-shadow:inset 0 -2px 0 rgba(98,168,255,.45)}
+.pb.k{box-shadow:inset 0 -2px 0 rgba(255,107,130,.40)}
+.pb.p{box-shadow:inset 0 -2px 0 rgba(185,135,255,.44)}
+.pl{
+  font-size:8px;
+  letter-spacing:.7px;
+  color:#8e9bad!important;
+}
+.pv{
+  font-size:15px;
+  color:var(--txt)!important;
+  font-weight:950;
+}
+.pb.s .pv{color:var(--green)!important}
+.pb.k .pv{color:var(--red)!important}
+.det{
+  margin-top:9px;
+  padding-top:8px;
+  border-top:1px dashed rgba(255,255,255,.12);
+}
+.drow{
+  padding:4px 0;
+  font-size:11px;
+  color:#c9d2df;
+}
+.act{gap:6px;margin-top:9px}
+.ab{
+  min-height:34px;
+  border-radius:12px;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  color:#dbe4ef!important;
+  font-weight:900;
+}
+.ab.ig{color:var(--purple)!important}
+#welcome{
+  min-height:52vh;
+  padding:42px 22px;
+}
+#welcome .w-logo{
+  width:78px;height:78px;border-radius:26px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,rgba(255,209,102,.18),rgba(32,227,162,.10));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:var(--shadow);
+  font-size:34px;
+  letter-spacing:1px;
+}
+#welcome .w-sub{
+  font-size:16px;
+  letter-spacing:2px;
+  color:#edf3fb;
+}
+#welcome .w-line{background:linear-gradient(90deg,var(--green),var(--blue));height:3px;width:54px}
+#welcome .w-hint{font-size:12px;color:#99a6b5;line-height:1.5}
+#sr-drawer{
+  width:min(88vw,360px);
+  background:
+    radial-gradient(circle at 20% -10%,rgba(32,227,162,.14),transparent 35%),
+    linear-gradient(180deg,#090d11,#050607);
+  border-right:1px solid rgba(255,255,255,.10);
+  box-shadow:24px 0 60px rgba(0,0,0,.62);
+}
+#sr-dhead{padding:17px 14px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sr-dlogo{color:#fff;font-size:20px;letter-spacing:1px}
+.sr-x{
+  border-radius:13px;
+  border-color:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.045);
+  color:var(--gold);
+}
+.sr-nav{padding:9px}
+.sr-navbtn{
+  min-height:52px;
+  margin:2px 0;
+  padding:10px 11px;
+  border-radius:15px;
+  color:#e7eef7;
+  gap:10px;
+  font-size:14px;
+}
+.sr-navbtn:hover,.sr-navbtn.active{
+  background:linear-gradient(135deg,rgba(32,227,162,.14),rgba(98,168,255,.10));
+  border-color:rgba(32,227,162,.34);
+  color:#fff;
+}
+.sr-ico{
+  width:32px;height:32px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.055);
+  font-size:15px;
+}
+.sr-navbtn small{font-size:10px;color:#94a2b1;margin-top:1px}
+#sr-ledger-box{
+  background:
+    radial-gradient(circle at 100% 0,rgba(98,168,255,.12),transparent 28%),
+    linear-gradient(180deg,#0b1015,#07090c);
+  border:1px solid rgba(255,255,255,.10);
+  color:var(--txt);
+}
+#sr-ledger-head{
+  background:rgba(7,9,12,.92);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  backdrop-filter:blur(14px);
+}
+#sr-ledger-head b{color:#fff}
+#sr-ledger-head small{color:#93a0b1}
+#sr-ledger-back,#sr-ledger-close{
+  border-color:rgba(255,255,255,.11);
+  background:rgba(255,255,255,.055);
+  color:#eaf1f8;
+}
+#sr-ledger-back{color:var(--blue)}
+.sr-ledger-kpi,.sr-report-item,.sr-ledger-row,.sr-ledger-note{
+  border-color:rgba(255,255,255,.09);
+  background:rgba(255,255,255,.045);
+}
+.sr-ledger-kpi b,.sr-report-item-top b,.sr-ledger-row-top b{color:#fff}
+.sr-ledger-kpi small,.sr-report-item small,.sr-ledger-row small{color:#94a2b1}
+.sr-ledger-kpi span{color:#8996a7}
+.sr-ledger-actions button,.sr-report-actions button{
+  border-color:rgba(255,255,255,.10);
+  background:rgba(255,255,255,.055);
+  color:#e7eef7;
+}
+.sr-ledger-actions .gold,.sr-report-actions .gold{
+  background:linear-gradient(135deg,var(--green),#7bf4cf);
+  color:#03100b;
+}
+#pim-box{
+  background:linear-gradient(180deg,#0c1117,#060809);
+  border-color:rgba(255,255,255,.10);
+}
+#pim-head,#pim-footer{border-color:rgba(255,255,255,.08)}
+#pim-title{color:#fff}
+#pim-upload-actions button,.pim-add-cell,.pim-cam-cell{
+  border-color:rgba(32,227,162,.28);
+  background:rgba(32,227,162,.08);
+  color:#dffdf2;
+}
+@media(max-width:760px){
+  #ctrl{padding-bottom:6px}
+  #search{height:42px}
+  #brand-btn,#grp-btn{min-height:35px;padding:7px 10px}
+  #pf{grid-template-columns:auto 1fr auto 1fr 40px 34px}
+  .c{padding:11px;border-radius:16px}
+  .prices{gap:5px}
+  .pb{padding:6px 8px}
+  .pv{font-size:14px}
+  .sr-ledger-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sr-ledger-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:390px){
+  #sr-brand{font-size:15px}
+  #sr-brand::after{display:none}
+  #pf{grid-template-columns:auto 1fr auto 1fr}
+  #pf-go,#pf-clr{grid-column:auto;height:31px}
+  .chip,.stock-chip{font-size:10px;padding:5px 8px}
+  .c-name{font-size:15px}
+  .pv{font-size:13px}
+  .sr-ledger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
 
+<style id="sr-full-redesign-v15">
+:root{
+  --sr-bg:#050608;
+  --sr-panel:#101318;
+  --sr-panel2:#151920;
+  --sr-line:#262d38;
+  --sr-text:#f7f7f3;
+  --sr-muted:#8f98a8;
+  --sr-gold:#f6c744;
+  --sr-green:#20e3a2;
+  --sr-blue:#6ca8ff;
+  --sr-red:#ff647d;
+  --sr-violet:#b88cff;
+}
+html,body{background:var(--sr-bg)!important;color:var(--sr-text)!important;overflow-x:hidden!important}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!important}
+#sr-appbar{
+  height:56px!important;
+  min-height:56px!important;
+  padding:7px 8px!important;
+  gap:7px!important;
+  background:rgba(4,5,7,.96)!important;
+  border-bottom:1px solid rgba(246,199,68,.24)!important;
+}
+#sr-hamb,#sr-refresh,#sr-real-back{
+  width:39px!important;
+  height:39px!important;
+  flex:0 0 39px!important;
+  border-radius:12px!important;
+  background:#101318!important;
+  border:1px solid var(--sr-line)!important;
+  box-shadow:none!important;
+}
+#sr-hamb{color:var(--sr-gold)!important;font-size:22px!important}
+#sr-real-back{color:var(--sr-blue)!important;font-size:20px!important}
+#sr-refresh{color:var(--sr-gold)!important;font-size:18px!important}
+#sr-brand{
+  font-size:17px!important;
+  font-weight:1000!important;
+  letter-spacing:.5px!important;
+  color:var(--sr-gold)!important;
+  white-space:nowrap!important;
+}
+#sr-brand::after{content:"";display:none!important}
+.sr-pill{
+  height:32px!important;
+  padding:0 8px!important;
+  border-radius:999px!important;
+  font-size:11px!important;
+  color:#d7deea!important;
+  border-color:#252b35!important;
+  background:#0c0e12!important;
+}
+#sr-top-admin{
+  width:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  height:34px!important;
+  flex:0 0 18px!important;
+  border:0!important;
+  background:transparent!important;
+  opacity:.18!important;
+}
+#sr-top-admin::after{display:none!important}
+#sr-top-admin::before{
+  content:"";
+  width:7px!important;
+  height:7px!important;
+  border-radius:50%!important;
+  background:var(--sr-gold)!important;
+  box-shadow:0 0 13px rgba(246,199,68,.7)!important;
+}
+#sr-top-admin.on,#sr-top-admin:focus{
+  width:58px!important;
+  min-width:58px!important;
+  max-width:58px!important;
+  color:#060606!important;
+  background:var(--sr-gold)!important;
+  opacity:1!important;
+  border-radius:999px!important;
+}
+#ctrl{
+  padding:8px!important;
+  background:linear-gradient(180deg,#07080b 0%,#050608 100%)!important;
+  border-bottom:1px solid #171b22!important;
+}
+#search-row{gap:7px!important}
+#search{
+  height:42px!important;
+  border-radius:13px!important;
+  background:#11141a!important;
+  border:1px solid #2a303a!important;
+  font-size:15px!important;
+  color:var(--sr-text)!important;
+}
+#scan-btn{
+  width:42px!important;
+  height:42px!important;
+  border-radius:13px!important;
+  background:#151920!important;
+  border:1px solid #2a303a!important;
+}
+#sort-row,#stock-row{
+  display:flex!important;
+  overflow-x:auto!important;
+  gap:6px!important;
+  padding:7px 0 0!important;
+  scrollbar-width:none!important;
+}
+#sort-row::-webkit-scrollbar,#stock-row::-webkit-scrollbar{display:none}
+.chip,.stock-chip{
+  height:30px!important;
+  flex:0 0 auto!important;
+  border-radius:999px!important;
+  padding:0 11px!important;
+  font-size:12px!important;
+  background:#101318!important;
+  border:1px solid #252b35!important;
+  color:#aeb7c7!important;
+}
+.chip.on,.stock-chip.on{
+  color:#060606!important;
+  background:linear-gradient(135deg,var(--sr-gold),#e59f24)!important;
+  border-color:transparent!important;
+}
+#brand-btn,#grp-btn,#pf{
+  height:36px!important;
+  margin-top:7px!important;
+  border-radius:12px!important;
+  background:#101318!important;
+  border:1px solid #252b35!important;
+  color:#dce3ef!important;
+}
+#pf{display:grid!important;grid-template-columns:auto 1fr auto 1fr auto auto!important;align-items:center!important;gap:6px!important;padding:4px 6px!important}
+#pf label{font-size:11px!important;color:#8f98a8!important}
+.pi{height:27px!important;min-width:0!important;border-radius:8px!important;background:#090b0f!important;border:1px solid #242a34!important;color:#fff!important}
+#pf-go,#pf-clr{height:28px!important;border-radius:9px!important}
+#status{padding:6px 10px!important;font-size:11px!important;color:#858e9c!important}
+#scroll{top:258px!important;background:var(--sr-bg)!important}
+.c{
+  left:8px!important;
+  right:8px!important;
+  border-radius:14px!important;
+  padding:11px!important;
+  background:linear-gradient(180deg,#15181f 0%,#101216 100%)!important;
+  border:1px solid #252b35!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.22)!important;
+}
+.c-name{
+  font-size:15.5px!important;
+  line-height:1.16!important;
+  letter-spacing:0!important;
+  margin-right:0!important;
+}
+.c-alias{
+  display:inline-flex!important;
+  margin:4px 7px 0 0!important;
+  font-size:11px!important;
+  color:#8d96a6!important;
+}
+.sr-tag-badge{
+  display:inline-flex!important;
+  margin:6px 0 0!important;
+  height:22px!important;
+  align-items:center!important;
+  border-radius:999px!important;
+  padding:0 8px!important;
+  background:rgba(246,199,68,.13)!important;
+  color:var(--sr-gold)!important;
+  border:1px solid rgba(246,199,68,.25)!important;
+  font-size:11px!important;
+}
+.prices{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+  margin-top:9px!important;
+}
+.pb{
+  min-height:46px!important;
+  padding:6px!important;
+  border-radius:11px!important;
+}
+.pl{font-size:8.5px!important;letter-spacing:.45px!important;white-space:nowrap!important}
+.pv{font-size:13.5px!important;line-height:1.1!important;white-space:nowrap!important}
+.pb.p{grid-column:span 2!important}
+.sr-card-upload{
+  height:34px!important;
+  margin-top:8px!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,rgba(32,227,162,.16),rgba(108,168,255,.10))!important;
+  border:1px solid rgba(32,227,162,.34)!important;
+  color:var(--sr-green)!important;
+}
+.det{margin-top:9px!important;padding-top:8px!important}
+.drow{font-size:12px!important;padding:4px 0!important}
+.act{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+.ab{
+  height:34px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+}
+.sr-tag-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin-top:8px!important}
+.sr-tag-row button{height:32px!important;border-radius:10px!important;font-size:12px!important}
+#sr-drawer{width:min(86vw,330px)!important;background:#07080a!important;border-right:1px solid rgba(246,199,68,.28)!important}
+#sr-dhead{height:62px!important}
+.sr-dlogo{color:var(--sr-gold)!important;font-size:20px!important;letter-spacing:1px!important}
+.sr-nav{padding:8px!important}
+.sr-navbtn{
+  min-height:48px!important;
+  border-radius:13px!important;
+  margin:0 0 5px!important;
+  background:transparent!important;
+  border:1px solid transparent!important;
+}
+.sr-navbtn.active,.sr-navbtn:hover{
+  background:#15160c!important;
+  border-color:rgba(246,199,68,.32)!important;
+  color:var(--sr-gold)!important;
+}
+.sr-navbtn small{display:none!important}
+.sr-ico{width:28px!important;color:inherit!important}
+.sr-drawer-tools{padding-top:5px!important;margin-top:5px!important}
+@media(max-width:520px){
+  #sr-appbar{height:52px!important;min-height:52px!important}
+  #sr-hamb,#sr-refresh,#sr-real-back{width:36px!important;height:36px!important;flex-basis:36px!important}
+  #sr-brand{font-size:16px!important}
+  .sr-pill{max-width:76px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #ctrl{padding:7px!important}
+  #search{height:40px!important;font-size:14px!important}
+  #scan-btn{width:40px!important;height:40px!important}
+  #scroll{top:246px!important}
+  .c{left:7px!important;right:7px!important;padding:10px!important}
+  .prices{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .pb.p{grid-column:span 1!important}
+}
+@media(min-width:860px){
+  #scroll{top:252px!important}
+  .c{left:14px!important;right:14px!important}
+  .prices{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+</style>
 </head>
 <body>
-<div id="sr-appbar"><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin">⚡ Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
+<div id="sr-appbar"><button id="sr-real-back" onclick="srGoPreviousPage()" title="Back" aria-label="Back">←</button><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin unlock" aria-label="Admin unlock">Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
 <div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
-<button class="sr-navbtn" data-view="missing-images"><span class="sr-ico">▧</span><span>Image Work<small>Missing product photos</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="ai-search"><span class="sr-ico">⌕</span><span>AI Search<small>Words like red suit under 500</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="photo-search"><span class="sr-ico">▧</span><span>Photo Search<small>Capture and match by hint</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="staff-tasks"><span class="sr-ico">☑</span><span>Staff Tasks<small>Photos, scan, price checks</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="staff-tasks"><span class="sr-ico">☑</span><span>Staff Tasks<small>Photos, stock checks, prices</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="voice-mode"><span class="sr-ico">◉</span><span>Voice Mode<small>Say search, ledger, image work</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="offline-center"><span class="sr-ico">▣</span><span>Offline Center<small>Saved stock and app health</small></span></button>
 <button class="sr-navbtn" data-view="share-catalog"><span class="sr-ico">↗</span><span>Share Catalog<small>Send current filtered link</small></span></button>
 <div class="sr-drawer-tools">
+<button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="owner-brief"><span class="sr-ico">◈</span><span>Owner Brief<small>Today stock decisions</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="festival"><span class="sr-ico">✺</span><span>Festival Planner<small>Eid, Diwali, wedding sets</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="reorder"><span class="sr-ico">🧺</span><span>Smart Reorder<small>Buy first from low stock</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="stock-ageing"><span class="sr-ico">◷</span><span>Stock Ageing<small>Fresh, ageing, old stock</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="complete-stock"><span class="sr-ico">▤</span><span>Complete Stock<small>All items compact list</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="complete-filters"><span class="sr-ico">☷</span><span>Complete Filters<small>Age, stock, price, group</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="dead-stock"><span class="sr-ico">⏳</span><span>Dead Stock<small>Old stock to clear</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="low-stock"><span class="sr-ico">⚠️</span><span>Low Stock<small>Items needing attention</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>All Missing Photos<small>Upload pending photos</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">🖼️</span><span>Image Work<small>Upload pending photos</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images-in"><span class="sr-ico">✅</span><span>In-Stock Photos<small>Available items without images</small></span></button>
 <button class="sr-navbtn sr-staff-tool" data-view="missing-images-out"><span class="sr-ico">×</span><span>Out-Stock Photos<small>Sold-out items without images</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="health"><span class="sr-ico">●</span><span>Health Check<small>APIs, images and live data</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="tag-offer"><span class="sr-ico">🏷</span><span>Offers<small>Filter tagged offer items</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="tag-new"><span class="sr-ico">✦</span><span>New Arrivals<small>Filter tagged new items</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="tag-clearance"><span class="sr-ico">%</span><span>Clearance<small>Filter clearance items</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="tag-offer"><span class="sr-ico">₹</span><span>Deal Rack<small>Best selling price picks</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="tag-new"><span class="sr-ico">✦</span><span>Fresh Drop<small>Newest counter arrivals</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="tag-clearance"><span class="sr-ico">%</span><span>Clear Rack<small>Move these first</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="tag-premium"><span class="sr-ico">◆</span><span>Showcase<small>Premium display stock</small></span></button>
 </div>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
@@ -688,7 +1452,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 
 <div id="ctrl">
   <div id="search-row">
-    <input id="search" type="search" placeholder="🔍  Name, alias, barcode…" autocomplete="off" spellcheck="false" inputmode="search">
+    <input id="search" type="search" placeholder="Search item, barcode, group..." autocomplete="off" spellcheck="false" inputmode="search">
     <button id="scan-btn" onclick="openScanner()" title="Scan barcode">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
         <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
@@ -699,17 +1463,17 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
     </button>
   </div>
   <div id="sort-row">
-    <div class="chip on" data-sort="df">Default</div>
-    <div class="chip" data-sort="grp">By Group</div>
-    <div class="chip" data-sort="na">A – Z</div>
-    <div class="chip" data-sort="sa">Price ↑</div>
-    <div class="chip" data-sort="sd">Price ↓</div>
+    <div class="chip on" data-sort="df">Counter</div>
+    <div class="chip" data-sort="grp">Group</div>
+    <div class="chip" data-sort="na">Name</div>
+    <div class="chip" data-sort="sa">Low ₹</div>
+    <div class="chip" data-sort="sd">High ₹</div>
   </div>
   <div id="stock-row">
-    <div class="stock-chip on" data-stock="all">📦 All Stock</div>
-    <div class="stock-chip" data-stock="in">✅ In Stock</div>
-    <div class="stock-chip" data-stock="low">⚠️ Low Stock (≤5)</div>
-    <div class="stock-chip" data-stock="out">❌ Out of Stock</div>
+    <div class="stock-chip on" data-stock="all">All</div>
+    <div class="stock-chip" data-stock="in">In</div>
+    <div class="stock-chip" data-stock="low">Low</div>
+    <div class="stock-chip" data-stock="out">Out</div>
   </div>
   <button id="brand-btn" onclick="openBrandModal()">
     <span>🏷️</span>
@@ -929,9 +1693,7 @@ body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 /* ═══════════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════════ */
-const PASS  = "7865";
-const STAFF_PASS = "777";
-const SHOP_NAME    = "SR FASHION";
+const SHOP_NAME    = "S R Fashion";
 const SHOP_ADDRESS = "GN Azad College Road, Vasant Nagar, Pusad – 445 204";
 const SHOP_PHONE   = "7588756668";
 
@@ -945,6 +1707,13 @@ const IMAGE_API_BASES = [
   'http://127.0.0.1:3031/image-api'
 ];
 const IMAGE_API_BASE = IMAGE_API_BASES[0];
+const AUTH_API_BASES = [
+  'https://live-stock.srfashionned.in',
+  'https://dashboard.srfashionned.in',
+  'https://srfashionned.in',
+  '',
+  'http://127.0.0.1:3031'
+];
 const LEGACY_IMAGE_OWNER = 'srfashoinned';
 const LEGACY_IMAGE_REPO = 'image-storage-psd';
 const LEGACY_IMAGE_BRANCH = 'main';
@@ -1050,7 +1819,7 @@ let pool     = [];
 let heights  = [];
 let offsets  = [];
 let isAdmin  = false;
-let isStaff  = false;
+let isStaff  = true;
 let activeGroup = '';
 let pMin     = null;
 let pMax     = null;
@@ -1082,6 +1851,11 @@ const LIVE_STOCK_API = "https://live-stock.srfashionned.in/api/items";
 const LOCAL_STOCK_API = "http://localhost:3030/api/items";
 const STOCK_CACHE_KEY = "sr_live_stock_cache_v1";
 const STOCK_CACHE_TIME_KEY = "sr_live_stock_cache_time_v1";
+
+function registerStockServiceWorker() {
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+}
 
 function setStockStatus(source, count, extra = "") {
   const text = source === "live"
@@ -1170,6 +1944,7 @@ async function refreshLiveStockInBackground() {
 }
 
 async function loadData(){
+  registerStockServiceWorker();
   let painted = false;
   try{
     const cached = getBrowserStockCache();
@@ -1188,6 +1963,7 @@ async function loadData(){
   if(!applyUrlFilters()) showWelcome();
   initBiometric();
   pimInitToken();
+  setAdminUi(false);
   refreshLiveStockInBackground();
 }
 
@@ -1461,10 +2237,10 @@ function srSetItemTag(ri,tag,e){
   if(tag)all[key]=tag; else delete all[key];
   localStorage.setItem(SR_TAG_KEY,JSON.stringify(all));
   measureCardHeight(); rebuildOffsets(); vsRender(true);
-  toast(tag?`Tagged ${tag}`:"Tag removed");
+  toast(tag?srTagLabel(tag):"Label removed");
 }
 function srTagLabel(tag){
-  return tag==="offer"?"Offer":tag==="new"?"New Arrival":tag==="clearance"?"Clearance":tag==="premium"?"Premium":"";
+  return tag==="offer"?"Deal Rack":tag==="new"?"Fresh Drop":tag==="clearance"?"Clear Rack":tag==="premium"?"Showcase":"";
 }
 
 function applyAll(){
@@ -1619,9 +2395,9 @@ function cardHTML(it, ri, topPx, q){
     ?`<div class="pb p"><div class="pl">Purchase</div><div class="pv">${fmt(it.purchase)}${marginStr(it)}</div></div>`:'';
   const tagTools = isAdmin ? `<div class="sr-tag-row">
     ${["offer","new","clearance","premium"].map(t=>`<button class="${tag===t?"on":""}" onclick="srSetItemTag(${ri},'${t}',event)">${srTagLabel(t)}</button>`).join("")}
-    <button onclick="srSetItemTag(${ri},'',event)">Clear Tag</button>
+    <button onclick="srSetItemTag(${ri},'',event)">No Label</button>
   </div>` : "";
-  const staffUpload = (isAdmin || isStaff) ? `<button class="sr-card-upload" onclick="openPim(${ri},event)">📷 Upload Photo / Images</button>` : "";
+  const staffUpload = (isAdmin || isStaff) ? `<button class="sr-card-upload" onclick="openPim(${ri},event)">Add / View Photos</button>` : "";
   const detHTML = exp?`
     <div class="det">
       ${it.barcode?`<div class="drow"><span>Barcode</span><span>${it.barcode}</span></div>`:''}
@@ -1632,8 +2408,8 @@ function cardHTML(it, ri, topPx, q){
       ${it.entryDate?`<div class="drow"><span>Entry Date</span><span>${it.entryDate}</span></div>`:''}
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
-        <button class="ab ig" onclick="openPim(${ri},event)">🖼️ Images</button>
-        <button class="ab ig sr-ledger-admin-only" onclick="openItemLedger(${ri},event)">📒 Ledger</button>
+        <button class="ab ig" onclick="openPim(${ri},event)">Photos</button>
+        <button class="ab ig sr-ledger-admin-only" onclick="openItemLedger(${ri},event)">Ledger</button>
       </div>
       ${tagTools}
     </div>`:'';
@@ -2119,12 +2895,12 @@ const BIO_KEY = 'sr_adm_bio_cred';
 function setAdminUi(on){
   document.body.classList.toggle('admin-on', !!on);
   document.body.classList.toggle('staff-on', !!isStaff);
-  const label = on ? '🔓 Logout' : isStaff ? '👤 Staff' : '⚡ Admin';
+  const label = on ? 'Logout' : 'Admin';
   ['admin-btn','sr-top-admin'].forEach(id=>{
     const btn = document.getElementById(id);
     if(!btn) return;
     btn.textContent = label;
-    btn.classList.toggle('on', !!on || !!isStaff);
+    btn.classList.toggle('on', !!on);
   });
 }
 
@@ -2140,7 +2916,7 @@ async function initBiometric(){
 }
 
 function openAdm(){
-  if(isAdmin || isStaff){ logout(); return; }
+  if(isAdmin){ logout(); return; }
   document.getElementById("adm-ov").classList.add("show");
   setTimeout(()=>document.getElementById("adm-pw").focus(), 150);
 }
@@ -2158,40 +2934,86 @@ function resetPw(){
 function onPwInput(el){
   const v=el.value;
   [0,1,2,3].forEach(i=>dot(i,i<v.length?'f':''));
-  if(v.length===4) setTimeout(doLogin,100);
+  if(v.length>=3) setTimeout(doLogin,100);
 }
 function dot(i,c){
   const d=document.getElementById("d"+i);
   d.className='dot';
   if(c) d.classList.add(c);
 }
-function doLogin(){
+async function srAuthLogin(pin){
+  let lastErr=null;
+  for(const base of AUTH_API_BASES){
+    for(const endpoint of ["/auth/login","/auth/login.php"]){
+      try{
+        const r=await fetch(base+endpoint,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({pin}),
+          cache:"no-store"
+        });
+        const data=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(data.error||("HTTP "+r.status));
+        if(data?.ok&&data?.role)return data;
+      }catch(e){lastErr=e}
+    }
+  }
+  throw lastErr||new Error("Login service not reachable");
+}
+let srStaffSessionLoading = false;
+async function srEnsureStaffImageToken(){
+  if(pimToken || srStaffSessionLoading) return !!pimToken;
+  srStaffSessionLoading = true;
+  try{
+    let lastErr=null;
+    for(const base of AUTH_API_BASES){
+      for(const endpoint of ["/auth/staff-session","/auth/staff-session.php"]){
+        try{
+          const r=await fetch(base+endpoint,{method:"POST",cache:"no-store"});
+          const data=await r.json().catch(()=>({}));
+          if(!r.ok)throw new Error(data.error||("HTTP "+r.status));
+          if(data?.ok && data?.imageKey){
+            pimSetToken(data.imageKey,false);
+            return true;
+          }
+        }catch(e){lastErr=e}
+      }
+    }
+    throw lastErr||new Error("Staff image session not reachable");
+  }catch(_){
+    return false;
+  }finally{
+    srStaffSessionLoading = false;
+  }
+}
+async function doLogin(){
   const pw=document.getElementById("adm-pw");
-  if(pw.value===PASS){
+  const pin=pw.value.trim();
+  const m=document.getElementById("adm-msg");
+  if(pin.length<3)return;
+  m.textContent='Checking...'; m.className='';
+  try{
+    const auth=await srAuthLogin(pin);
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
-    const m=document.getElementById("adm-msg"); m.textContent='✓ Granted'; m.className='g';
+    if(auth.imageKey)pimSetToken(auth.imageKey,false);
+    if(auth.role!=="admin") throw new Error("Admin PIN only");
+    m.textContent='✓ Granted'; m.className='g';
     isAdmin=true; isStaff=false;
-    setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("🔓 Admin on"); srOpenPendingLedger(); },550);
-  }else if(pw.value===STAFF_PASS){
-    [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
-    const m=document.getElementById("adm-msg"); m.textContent='✓ Staff'; m.className='g';
-    isAdmin=false; isStaff=true;
-    pimSetToken(STAFF_PASS, false);
-    setTimeout(()=>{ closeAdm(); setAdminUi(false); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("👤 Staff mode on"); },550);
-  }else{
+    setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("Admin on"); srOpenPendingLedger(); },550);
+  }catch(_){
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
-    const m=document.getElementById("adm-msg"); m.textContent='✗ Wrong PIN'; m.className='e';
+    m.textContent='✗ Wrong PIN'; m.className='e';
     setTimeout(()=>{ pw.value=''; pw.className=''; m.textContent=''; [0,1,2,3].forEach(i=>dot(i,'')); },900);
   }
 }
 function logout(){
   isAdmin=false;
-  isStaff=false;
+  isStaff=true;
   setAdminUi(false);
   measureCardHeight();
   rebuildOffsets();
   vsRender(true);
-  toast("🔒 Logged out");
+  toast("Staff mode");
 }
 
 async function doBiometric(){
@@ -2347,7 +3169,7 @@ function openPim(ri, e){
   if(e) e.stopPropagation();
   const it = raw[ri];
   if(!it){ toast('Product not found'); return; }
-  if(isStaff && !pimToken) pimSetToken(STAFF_PASS, false);
+  const wasOpen = document.getElementById('pim-ov').classList.contains('show');
   pimCurrentItem = it;
   pimImages = [];
 
@@ -2362,6 +3184,9 @@ function openPim(ri, e){
   bar.classList.toggle('hidden', !!pimToken);
 
   document.getElementById('pim-ov').classList.add('show');
+  if(!srNavRestoring && !wasOpen){
+    try{history.pushState({srPsd:true,view:srLastView||"home",payload:{},modal:"pim"},"",location.href)}catch(e){}
+  }
   pimLoad();
 }
 
@@ -2422,7 +3247,7 @@ function pimRenderGrid(){
     hint.textContent = '🔒 Open admin mode to upload or delete images.';
     hint.style.color = 'var(--muted)';
   } else if(!hasUploadKey){
-    hint.textContent = '🔐 Enter upload password to save images on website storage.';
+    hint.textContent = 'Photo saving needs one admin unlock on this device.';
     hint.style.color = 'var(--muted)';
   } else if(!isAdmin && !isStaff && count > 0){
     hint.textContent = '👀 View only. Only admins can delete images.';
@@ -2521,7 +3346,7 @@ function pimCompress(file){
 async function pimHandleFiles(files){
   if(!files || !files.length) return;
   if(!pimCurrentItem){ toast('No product selected'); return; }
-  if(!pimToken){ toast('🔐 Enter upload password first'); return; }
+  if(!pimToken){ openAdm(); toast('Admin unlock is needed once before saving photos.'); return; }
 
   const available = MAX_IMAGES - pimStorageCount;
   if(available <= 0){ toast('🚫 Max 10 images per product'); return; }
@@ -2592,7 +3417,7 @@ async function pimUploadOne(file){
 function pimConfirmDelete(idx, e){
   if(e) e.stopPropagation();
   if(!isAdmin && !isStaff){ toast('🔒 Admin/staff only'); return; }
-  if(!pimToken){ toast('🔐 Upload password required'); return; }
+  if(!pimToken){ openAdm(); toast('Admin unlock is needed once before saving photos.'); return; }
   const img = pimImages[idx];
   if(!img) return;
   if(img.legacy){ toast('Old GitHub image is read-only. New images save on Hostinger.'); return; }
@@ -2628,6 +3453,9 @@ function pimOpenFs(idx){
   pimFsIdx = idx;
   pimFsShow();
   document.getElementById('pim-fs-ov').classList.add('show');
+  if(!srNavRestoring){
+    try{history.pushState({srPsd:true,view:srLastView||"home",payload:{},modal:"pim-fs"},"",location.href)}catch(e){}
+  }
 }
 function closePimFs(){
   document.getElementById('pim-fs-ov').classList.remove('show');
@@ -2848,8 +3676,9 @@ loadData();
 <script>
 (function(){
 const $=id=>document.getElementById(id);
-let ac=null,quoteOpen=false,cart=[],quoteSearch="",scannerForQuote=false,qtyPick=null;
-const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1";
+let ac=null,quoteOpen=false,cart=[],quoteSearch="",scannerForQuote=false,scannerForImageWork=false,qtyPick=null;
+const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1";
+let srNavRestoring=false,srLastView="home",srLastPayload={},srNextNav=null,srLedgerRequestToken=0,srNavFromDrawer=false,srViewStack=[];
 
 function sound(kind="tap"){
  try{
@@ -2863,10 +3692,117 @@ window.srLongBeep=()=>{sound("scan");haptic([55,25,70])};
 document.addEventListener("pointerdown",e=>{if(e.target.closest("button,.chip,.stock-chip"))sound("tap")},{passive:true});
 
 function drawer(on){$("sr-drawer")?.classList.toggle("open",on);$("sr-overlay")?.classList.toggle("open",on)}
-$("sr-hamb").onclick=()=>drawer(true);$("sr-x").onclick=$("sr-overlay").onclick=()=>drawer(false);
+$("sr-hamb").onclick=()=>drawer(true);$("sr-real-back").onclick=()=>srGoPreviousPage();$("sr-x").onclick=$("sr-overlay").onclick=()=>drawer(false);
+document.addEventListener("click",e=>{if(e.target.closest("#sr-real-back")){e.preventDefault();e.stopImmediatePropagation();srGoPreviousPage()}},true);
 function setActive(v){document.querySelectorAll(".sr-navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===v))}
-window.home=function(){quoteOpen=false;$("sr-screen").className="";$("sr-screen").classList.remove("open","quote-pro");drawer(false);setActive("home");document.body.style.overflow="";window.scrollTo({top:0,behavior:"smooth"})}
+function srSaveNav(view,payload={}){
+  srLastView=view||"home";
+  srLastPayload=payload||{};
+  try{localStorage.setItem(SR_NAV_KEY,JSON.stringify({view:srLastView,payload,query,activeGroup,activeBrand,activeTag,activeStock,activeSort,pMin,pMax,savedAt:new Date().toISOString()}))}catch(e){}
+}
+function srStackLoad(){
+  try{srViewStack=JSON.parse(sessionStorage.getItem(SR_STACK_KEY)||"[]").filter(x=>x&&x.view).slice(-25)}catch(e){srViewStack=[]}
+}
+function srStackSave(){
+  try{sessionStorage.setItem(SR_STACK_KEY,JSON.stringify(srViewStack.slice(-25)))}catch(e){}
+}
+function srSameNav(a,b){
+  try{return a?.view===b?.view && JSON.stringify(a?.payload||{})===JSON.stringify(b?.payload||{})}catch(e){return a?.view===b?.view}
+}
+function srRememberPrevious(nextView,nextPayload={}){
+  if(srNavRestoring || nextView==="home"){srNavFromDrawer=false;return}
+  const fromMenu=srNavFromDrawer || $("sr-drawer")?.classList.contains("open");
+  const current=fromMenu
+    ? {view:"menu",payload:{returnView:srLastView||"home",returnPayload:srLastPayload||{}}}
+    : {view:srLastView||"home",payload:srLastPayload||{}};
+  srNavFromDrawer=false;
+  if(!current.view || (current.view==="home" && !fromMenu) || srSameNav(current,{view:nextView,payload:nextPayload}))return;
+  const last=srViewStack[srViewStack.length-1];
+  if(!srSameNav(last,current))srViewStack.push(current);
+  if(srViewStack.length>25)srViewStack=srViewStack.slice(-25);
+  srStackSave();
+}
+function srEnsureHistoryBase(){
+  try{
+    if(!history.state?.srPsd){
+      history.replaceState({srPsd:true,view:"home",payload:{},guard:true},"",location.href);
+      history.pushState({srPsd:true,view:"home",payload:{}},"",location.href);
+    }else if(history.state.guard){
+      history.pushState({srPsd:true,view:"home",payload:{}},"",location.href);
+    }
+  }catch(e){}
+}
+function srPushNav(view,payload={}){
+  if(srNavRestoring)return;
+  srRememberPrevious(view,payload);
+  srSaveNav(view,payload);
+  try{
+    srEnsureHistoryBase();
+    const state={srPsd:true,view,payload};
+    if(history.state?.view!==view || JSON.stringify(history.state?.payload||{})!==JSON.stringify(payload||{}))history.pushState(state,"",location.href);
+  }catch(e){}
+}
+function srNextView(view,payload={}){srNextNav={view,payload}}
+function srNavHome(push=true){
+  srLedgerRequestToken++;
+  quoteOpen=false;$("sr-screen").className="";$("sr-screen").classList.remove("open","quote-pro");$("sr-screen").innerHTML="";drawer(false);setActive("home");document.body.style.overflow="";window.scrollTo({top:0,behavior:"smooth"});
+  if(push)srPushNav("home"); else srSaveNav("home");
+}
+window.home=function(){srNavHome(!srNavRestoring)}
 $("sr-brand").onclick=()=>home();
+function srRestoreFilters(saved){
+  if(!saved)return;
+  query=saved.query||"";activeGroup=saved.activeGroup||"";activeBrand=saved.activeBrand||"";activeTag=saved.activeTag||"";activeStock=saved.activeStock||"all";activeSort=saved.activeSort||"df";pMin=saved.pMin??null;pMax=saved.pMax??null;
+  const s=document.getElementById("search"); if(s)s.value=query;
+  const pmin=document.getElementById("pmin"),pmax=document.getElementById("pmax"); if(pmin)pmin.value=pMin??""; if(pmax)pmax.value=pMax??"";
+  document.querySelectorAll("#sort-row .chip").forEach(c=>c.classList.toggle("on",c.dataset.sort===activeSort));
+  document.querySelectorAll("#stock-row .stock-chip").forEach(c=>c.classList.toggle("on",c.dataset.stock===activeStock));
+  const gl=document.getElementById("grp-btn-label"),gb=document.getElementById("grp-btn"); if(gl)gl.textContent=activeGroup||"All Groups"; if(gb)gb.classList.toggle("active",!!activeGroup);
+  const bl=document.getElementById("brand-btn-label"),bb=document.getElementById("brand-btn"); if(bl)bl.textContent=activeBrand||"All Brands"; if(bb)bb.classList.toggle("active",!!activeBrand);
+  if(query||activeGroup||activeBrand||activeTag||activeStock!=="all"||activeSort!=="df"||pMin!==null||pMax!==null)applyAll();
+}
+function srRestoreNav(state){
+  const view=state?.view||"home",payload=state?.payload||{};
+  srNavRestoring=true;
+  try{
+    if(view==="menu"){const rv=payload.returnView||"home";if(rv==="home")srNavHome(false);else srRestoreNav({view:rv,payload:payload.returnPayload||{}});drawer(true);return}
+    else if(view==="quote")renderQuoteScreen();
+    else if(view==="ledger")openItemLedgerSearch();
+    else if(view==="missing-images")srOpenMissingImagesReport(payload.mode||"all");
+    else if(view==="stock-ageing")srOpenStockAgeingReport();
+    else if(view==="complete-stock")srOpenCompleteStockReport();
+    else if(view==="complete-filters")srOpenCompleteFilters();
+    else if(view==="dead-stock")srOpenDeadStockReport();
+    else if(view==="low-stock")srOpenLowStockReport();
+    else if(view==="staff-tasks")srOpenStaffTasks();
+    else if(view==="ai-search")srOpenAiShopAssistant();
+    else if(view==="photo-search")srOpenPhotoSearch();
+    else if(view==="voice-mode")srOpenVoiceMode();
+    else if(view==="offline-center")srOpenOfflineCenter();
+    else if(view==="reorder")srOpenSmartReorderReport();
+    else if(view==="price-changes")srOpenPriceChangesReport();
+    else if(view==="health")srOpenHealthCheck();
+    else if(view==="control-center")srOpenControlCenter();
+    else if(view==="home"){srNavHome(false);const saved=JSON.parse(localStorage.getItem(SR_NAV_KEY)||"null");srRestoreFilters(saved);}
+    else srNavHome(false);
+  }catch(e){srNavHome(false)}
+  finally{srNavRestoring=false;if(view!=="menu")srSaveNav(view,payload)}
+}
+window.addEventListener("popstate",e=>{
+  if(srGoBackInternal()){
+    setTimeout(()=>{try{history.pushState({srPsd:true,view:srLastView||"home",payload:srLastPayload||{}},"",location.href)}catch(_){}},0);
+    return;
+  }
+  if(e.state?.srPsd){
+    srRestoreNav(e.state);
+    if(e.state.guard){
+      setTimeout(()=>{try{history.pushState({srPsd:true,view:"home",payload:{}},"",location.href)}catch(_){}},0);
+    }
+    return
+  }
+  if(srLastView!=="home" || $("sr-screen")?.classList.contains("open")){try{history.pushState({srPsd:true,view:"home",payload:{}},"",location.href)}catch(_){}srRestoreNav({view:"home"});}
+});
+setTimeout(()=>{try{srStackLoad();srEnsureHistoryBase();const saved=JSON.parse(localStorage.getItem(SR_NAV_KEY)||"null");if(saved?.view&&saved.view!=="home"){srRestoreNav(saved);setTimeout(()=>srPushNav(saved.view,saved.payload||{}),60)}else srRestoreFilters(saved)}catch(e){}},900);
 
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
@@ -2874,6 +3810,32 @@ const ITEM_LEDGER_API_BASES=["https://receivables.srfashionned.in","https://dash
 let srCurrentLedgerBill=null;
 let srPendingLedgerRi=null;
 let srPendingLedgerSearch=false;
+const SR_LEDGER_CACHE_KEY="srItemLedgerCacheV1";
+function srGoPreviousPage(){
+  if(srGoBackInternal())return;
+  try{
+    if(srLastView && srLastView!=="home"){srNavHome(true);return}
+    if(history.state?.srPsd){srNavHome(false);return}
+    if(history.length>1){history.back();return}
+  }catch(e){}
+  home();
+}
+function srGoBackInternal(){
+  if($("sr-drawer")?.classList.contains("open")){drawer(false);return true}
+  if($("pim-ov")?.classList.contains("show")){closePim();return true}
+  if($("pim-fs-ov")?.classList.contains("show")){closePimFs();return true}
+  if($("scan-ov")?.classList.contains("show")){closeScanner();return true}
+  const prev=srViewStack.pop();
+  srStackSave();
+  if(prev?.view==="menu"){
+    const rv=prev.payload?.returnView||"home";
+    if(rv==="home")srNavHome(false);else srRestoreNav({view:rv,payload:prev.payload?.returnPayload||{}});
+    drawer(true);
+    return true;
+  }
+  if(prev?.view){srRestoreNav(prev);return true}
+  return false;
+}
 function srDate(v){
   if(!v)return "-";
   const m=String(v).match(/\/Date\((-?\d+)\)\//);
@@ -2896,12 +3858,14 @@ function srLedgerEnsure(){
   if(ov)return ov;
   ov=document.createElement("div");
   ov.id="sr-ledger-ov";
-  ov.innerHTML=`<div id="sr-ledger-box"><div id="sr-ledger-head"><div><b id="sr-ledger-title">Item Ledger</b><small id="sr-ledger-sub">Live item history</small></div><button id="sr-ledger-close" onclick="srLedgerClose()">×</button></div><div id="sr-ledger-body"></div></div>`;
+  ov.innerHTML=`<div id="sr-ledger-box"><div id="sr-ledger-head"><div><b id="sr-ledger-title">Item Ledger</b><small id="sr-ledger-sub">Live item history</small></div><div id="sr-ledger-actions-head"><button id="sr-ledger-back" onclick="srGoPreviousPage()">Back</button><button id="sr-ledger-close" onclick="srLedgerClose()">×</button></div></div><div id="sr-ledger-body"></div></div>`;
   document.body.appendChild(ov);
   ov.addEventListener("click",e=>{if(e.target===ov)srLedgerClose()});
   return ov;
 }
-function srLedgerClose(){ home(); }
+function srLedgerClose(){
+  srNavHome(true);
+}
 function srLedgerShow(title,sub,html){
   drawer(false);
   quoteOpen=false;
@@ -2909,11 +3873,52 @@ function srLedgerShow(title,sub,html){
   document.body.style.overflow="hidden";
   const screen=$("sr-screen");
   screen.className="open ledger-pro";
-  screen.innerHTML=`<div id="sr-ledger-box"><div id="sr-ledger-head"><div><b id="sr-ledger-title">${title}</b><small id="sr-ledger-sub">${escq(sub||"")}</small></div><button id="sr-ledger-close" onclick="srLedgerClose()">×</button></div><div id="sr-ledger-body">${html}</div></div>`;
+  screen.innerHTML=`<div id="sr-ledger-box"><div id="sr-ledger-head"><div><b id="sr-ledger-title">${title}</b><small id="sr-ledger-sub">${escq(sub||"")}</small></div><div id="sr-ledger-actions-head"><button id="sr-ledger-back" onclick="srGoPreviousPage()">Back</button><button id="sr-ledger-close" onclick="srLedgerClose()">×</button></div></div><div id="sr-ledger-body">${html}</div></div>`;
   screen.scrollTop=0;
+  const nav=srNextNav||{view:"ledger",payload:{}};
+  srNextNav=null;
+  srPushNav(nav.view,nav.payload);
 }
 function srLedgerKpis(cells){
   return `<div class="sr-ledger-grid">${cells.map(([l,v])=>`<div class="sr-ledger-kpi"><small>${escq(l)}</small><b>${escq(v)}</b></div>`).join("")}</div>`;
+}
+function srLedgerCacheRead(){
+  try{return JSON.parse(localStorage.getItem(SR_LEDGER_CACHE_KEY)||"{}")}catch(_){return{}}
+}
+function srLedgerCacheKey(it){
+  return String(it?.ProductID||it?.barcode||it?.alias||it?.name||"").trim().toLowerCase();
+}
+function srLedgerCacheWrite(it,payload){
+  const key=srLedgerCacheKey(it);
+  if(!key)return;
+  const cache=srLedgerCacheRead();
+  cache[key]={savedAt:new Date().toISOString(),payload};
+  const entries=Object.entries(cache).sort((a,b)=>String(b[1].savedAt).localeCompare(String(a[1].savedAt))).slice(0,80);
+  localStorage.setItem(SR_LEDGER_CACHE_KEY,JSON.stringify(Object.fromEntries(entries)));
+}
+function srLedgerCacheGet(it){
+  return srLedgerCacheRead()[srLedgerCacheKey(it)]||null;
+}
+function srRenderItemLedger(it,payload,fromCache=false){
+  const [items=[],summaryRows=[],sales=[],purchases=[]]=payload;
+  const db=items[0]||{};
+  const sum=summaryRows[0]||{};
+  const title=escq(db.ProductName||it.name||"Item Ledger");
+  const code=[db.ProductCode||it.alias,db.ProductBarcode||it.barcode].filter(Boolean).join(" / ");
+  const rows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Rate<b>${money(r.Rate)}</b></span><span>MRP<b>${money(r.MRP)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
+  const purchaseRows=purchases.map(r=>{const body=`<span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.MovementType||"Purchase")}</b><strong>+${escq(r.Qty||0)}</strong></span><small>${srDate(r.Date)} · ${escq(r.PartyName||r.SupplierInvoiceNo||r.Barcode||code||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(r.PurchasePrice)}</b></span><span>Sale<b>${money(r.SalePrice)}</b></span><span>Wholesale<b>${money(r.WholesalePrice)}</b></span><span>MRP<b>${money(r.MRP)}</b></span></span>`;return +r.CanOpen?`<button class="sr-ledger-row" onclick="srLedgerOpenPurchase('${escq(r.RowCode)}')">${body}</button>`:`<div class="sr-ledger-row">${body}</div>`}).join("");
+  srLedgerShow(title,code||"SR item ledger",`
+    ${fromCache?`<div class="sr-ledger-note">Showing saved item ledger from ${srDate(srLedgerCacheGet(it)?.savedAt)}. Live Retail Daddy connection was not reachable.</div>`:""}
+    ${srLedgerKpis([
+      ["MRP",money(db.MRP||it.mrp)],["Sale",money(db.SalePrice||it.sale)],["Wholesale",money(db.WholesalePrice||it.wholesale)],
+      ["Purchase",money(db.PurchasePrice||it.purchase)],["Stock",String(db.CurrentStock??it.stock??"-")],["Invoices",String(sum.invoiceCount||0)],
+      ["Sold Qty",String(sum.soldQty||0)],["Sales",money(sum.saleAmount)],["Profit",money(sum.profitAmount)]
+    ])}
+    <div class="sr-ledger-note">Purchase/opening shows stock coming in. Sale entries show where it went out, to whom, and in which invoice.</div>
+    <div><b style="display:block;color:#ffd35c;margin:3px 0 8px">Purchase / opening entries</b>${purchaseRows||"<div class='sr-ledger-note'>No purchase/opening row found for this item.</div>"}</div>
+    <div><b style="display:block;color:#ffd35c;margin:8px 0">Sale invoice entries</b></div>
+    <div>${rows||"<div class='sr-ledger-note'>No sale invoice found for this item yet.</div>"}</div>
+  `);
 }
 function srOpenPendingLedger(){
   if(srPendingLedgerRi !== null){
@@ -2937,6 +3942,8 @@ async function openItemLedger(ri,e){
   }
   const it=raw[ri];
   if(!it){toast("Item not found");return}
+  const token=++srLedgerRequestToken;
+  srNextView("ledger",{ri});
   drawer(false);
   srLedgerShow(escq(it.name||"Item Ledger"),"Loading sale history...","<div class='sr-ledger-note'>Checking live item records...</div>");
   try{
@@ -2944,26 +3951,15 @@ async function openItemLedger(ri,e){
     if(it.ProductID)q.set("productId",it.ProductID);
     if(it.barcode)q.set("barcode",it.barcode);
     if(it.name)q.set("name",it.name);
-    const [items=[],summaryRows=[],sales=[],purchases=[]]=await srLedgerApi("/api/item-history?"+q.toString());
-    const db=items[0]||{};
-    const sum=summaryRows[0]||{};
-    const title=escq(db.ProductName||it.name||"Item Ledger");
-    const code=[db.ProductCode||it.alias,db.ProductBarcode||it.barcode].filter(Boolean).join(" / ");
-    const rows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Rate<b>${money(r.Rate)}</b></span><span>MRP<b>${money(r.MRP)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
-    const purchaseRows=purchases.map(r=>{const body=`<span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.MovementType||"Purchase")}</b><strong>+${escq(r.Qty||0)}</strong></span><small>${srDate(r.Date)} · ${escq(r.PartyName||r.SupplierInvoiceNo||r.Barcode||code||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(r.PurchasePrice)}</b></span><span>Sale<b>${money(r.SalePrice)}</b></span><span>Wholesale<b>${money(r.WholesalePrice)}</b></span><span>MRP<b>${money(r.MRP)}</b></span></span>`;return +r.CanOpen?`<button class="sr-ledger-row" onclick="srLedgerOpenPurchase('${escq(r.RowCode)}')">${body}</button>`:`<div class="sr-ledger-row">${body}</div>`}).join("");
-    srLedgerShow(title,code||"SR item ledger",`
-      ${srLedgerKpis([
-        ["MRP",money(db.MRP||it.mrp)],["Sale",money(db.SalePrice||it.sale)],["Wholesale",money(db.WholesalePrice||it.wholesale)],
-        ["Purchase",money(db.PurchasePrice||it.purchase)],["Stock",String(db.CurrentStock??it.stock??"-")],["Invoices",String(sum.invoiceCount||0)],
-        ["Sold Qty",String(sum.soldQty||0)],["Sales",money(sum.saleAmount)],["Profit",money(sum.profitAmount)]
-      ])}
-      <div class="sr-ledger-note">This works like an item ledger: purchase/opening entries show stock coming in, and sale entries show where it went out, to whom, and in which invoice.</div>
-      <div><b style="display:block;color:#ffd35c;margin:3px 0 8px">Purchase / opening entries</b>${purchaseRows||"<div class='sr-ledger-note'>No purchase/opening row found for this item.</div>"}</div>
-      <div><b style="display:block;color:#ffd35c;margin:8px 0">Sale invoice entries</b></div>
-      <div>${rows||"<div class='sr-ledger-note'>No sale invoice found for this item yet.</div>"}</div>
-    `);
+    const payload=await srLedgerApi("/api/item-history?"+q.toString());
+    if(token!==srLedgerRequestToken)return;
+    srLedgerCacheWrite(it,payload);
+    srRenderItemLedger(it,payload,false);
   }catch(err){
-    srLedgerShow(escq(it.name||"Item Ledger"),"Could not load live item history",`<div class="sr-ledger-note">Live item history is not reachable right now. The stock card still shows saved prices and stock. Try again when the dashboard connection is online.</div>`);
+    if(token!==srLedgerRequestToken)return;
+    const cached=srLedgerCacheGet(it);
+    if(cached?.payload)return srRenderItemLedger(it,cached.payload,true);
+    srLedgerShow(escq(it.name||"Item Ledger"),"Could not load live item history",`<div class="sr-ledger-note">Live item history is not reachable right now. The stock card still shows saved prices and stock. Open this ledger once while the dashboard connection is online and it will be saved here for later.</div>`);
   }
 }
 function openItemLedgerSearch(){
@@ -2973,6 +3969,8 @@ function openItemLedgerSearch(){
     toast("Unlock admin to search item ledger");
     return;
   }
+  srLedgerRequestToken++;
+  srNextView("ledger");
   drawer(false);
   srLedgerShow("Item Ledger","Search by barcode, code, or item name",`<div style="display:flex;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / item name"><button id="sr-ledger-search-go" onclick="srLedgerSearchGo()">Search</button></div><div id="sr-ledger-suggestions"></div><div class="sr-ledger-note">Type to see matching products. Tap any result to open its complete sale and purchase ledger.</div>`);
   setTimeout(()=>{const x=$("sr-ledger-search"); if(x){x.focus(); x.oninput=()=>srLedgerSuggest(x.value,"openItemLedger")}},80);
@@ -3015,7 +4013,7 @@ function srOpenCardFromReport(ri){
 function srReportItem(it,ri,opts={}){
   const purchaseCell = isAdmin ? `<span>Purchase<b>${money(it.purchase||0)}</b></span>` : `<span>Images<b>Open</b></span>`;
   const actions = opts.upload ? `<span class="sr-report-actions">
-      <button type="button" onclick="srQueueImages(${ri},event)">Images</button>
+      <button type="button" onclick="srQueueImages(${ri},event)">View</button>
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'gallery',event)">Upload</button>
       <button class="gold" type="button" onclick="srQueueUpload(${ri},'camera',event)">Camera</button>
       <button type="button" onclick="srQueueDone(${ri},event)">Done</button>
@@ -3036,10 +4034,9 @@ function srReportItem(it,ri,opts={}){
 function srQueueUpload(ri,source,e){
   if(e)e.stopPropagation();
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to upload photos"); return; }
-  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
   const it=raw[ri];
   if(!it){toast("Product not found");return}
-  if(!pimToken){ openPim(ri,e); toast("Enter upload password first"); return; }
+  if(!pimToken){ openAdm(); toast("Admin unlock is needed once before saving photos."); return; }
   pimCurrentItem=it;
   pimImages=[];
   pimStorageCount=0;
@@ -3051,7 +4048,6 @@ function srQueueUpload(ri,source,e){
 function srQueueImages(ri,e){
   if(e)e.stopPropagation();
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to view and upload photos"); return; }
-  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
   pimQueueMode=false;
   pimQueueRow=null;
   openPim(ri,e);
@@ -3089,6 +4085,7 @@ function srShowReport(title,sub,rows,empty,opts={}){
     : `<div class="sr-ledger-note">${escq(empty||"No item found.")}</div>`;
   window.srLastReportRows = rows;
   window.srLastReportTitle = title;
+  if(opts.navView)srNextView(opts.navView,opts.navPayload||{});
   srLedgerShow(title,sub,html);
 }
 function srItemAgeDays(it){
@@ -3105,7 +4102,7 @@ function srOpenLowStockReport(){
     .filter(([it])=>Number(it.stock||0)>0 && Number(it.stock||0)<=5)
     .sort((a,b)=>Number(a[0].stock||0)-Number(b[0].stock||0) || String(a[0].name||"").localeCompare(String(b[0].name||"")))
     .slice(0,250);
-  srShowReport("Low Stock",`${rows.length} items with stock 1 to 5`,rows,"No low-stock items found.");
+  srShowReport("Low Stock",`${rows.length} items with stock 1 to 5`,rows,"No low-stock items found.",{navView:"low-stock"});
 }
 function srOpenSmartReorderReport(){
   const rows=raw.map((it,ri)=>[it,ri])
@@ -3115,14 +4112,14 @@ function srOpenSmartReorderReport(){
       return Number(a[0].stock||0)-Number(b[0].stock||0) || mb-ma || String(a[0].name||"").localeCompare(String(b[0].name||""));
     })
     .slice(0,250);
-  srShowReport("Smart Reorder",`${rows.length} low-stock items sorted by urgency and margin`,rows,"Nothing urgent to reorder from the loaded stock.");
+  srShowReport("Smart Reorder",`${rows.length} low-stock items sorted by urgency and margin`,rows,"Nothing urgent to reorder from the loaded stock.",{navView:"reorder"});
 }
 function srOpenDeadStockReport(){
   const rows=raw.map((it,ri)=>[it,ri])
     .filter(([it])=>Number(it.stock||0)>0 && srItemAgeDays(it)>=60)
     .sort((a,b)=>srItemAgeDays(b[0])-srItemAgeDays(a[0]) || Number(b[0].stock||0)-Number(a[0].stock||0))
     .slice(0,250);
-  srShowReport("Dead Stock",`${rows.length} items older than 60 days with stock still available`,rows,"No old-stock candidates found from the loaded stock.");
+  srShowReport("Dead Stock",`${rows.length} items older than 60 days with stock still available`,rows,"No old-stock candidates found from the loaded stock.",{navView:"dead-stock"});
 }
 function srAgeBucket(it){
   const d=srItemAgeDays(it);
@@ -3135,6 +4132,7 @@ function srAgeBucket(it){
 }
 function srOpenStockAgeingReport(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for stock ageing"); return; }
+  srNextView("stock-ageing");
   const inRows=raw.map((it,ri)=>[it,ri]).filter(([it])=>Number(it.stock||0)>0);
   const buckets=["180+ days","90-179 days","60-89 days","30-59 days","1-29 days","No date"];
   const cards=buckets.map(label=>{
@@ -3155,11 +4153,13 @@ function srOpenAgeBucket(label){
   srShowReport("Stock Ageing: "+label,`${rows.length} items in this age bucket`,rows,"No stock found in this age bucket.");
 }
 function srOpenCompleteStockReport(){
+  srNextView("complete-stock");
   const rows=raw.map((it,ri)=>[it,ri]).sort((a,b)=>String(a[0].group||"").localeCompare(String(b[0].group||"")) || String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,800);
-  srShowReport("Complete Stock",`${raw.length} total items. Showing first ${rows.length} compact rows.`,rows,"No stock loaded.");
+  srShowReport("Complete Stock",`${raw.length} total items. Showing first ${rows.length} compact rows.`,rows,"No stock loaded.",{navView:"complete-stock"});
 }
 function srOpenCompleteFilters(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for stock filters"); return; }
+  srNextView("complete-filters");
   drawer(false);
   const groups=[...new Set(raw.map(it=>it.group||it.PartGroup).filter(Boolean))].sort().slice(0,120);
   srLedgerShow("Complete Filters","Filter stock by age, availability, group and price",`<div style="display:grid;gap:8px"><input id="sr-filter-q" placeholder="Name, barcode, group"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input id="sr-filter-min" type="number" placeholder="Min sale"><input id="sr-filter-max" type="number" placeholder="Max sale"></div><select id="sr-filter-stock"><option value="all">All stock</option><option value="in">In stock</option><option value="out">Out of stock</option><option value="low">Low stock</option><option value="dead">Dead stock 60+ days</option></select><select id="sr-filter-age"><option value="">Any age</option><option value="180+ days">180+ days</option><option value="90-179 days">90-179 days</option><option value="60-89 days">60-89 days</option><option value="30-59 days">30-59 days</option><option value="1-29 days">1-29 days</option><option value="No date">No date</option></select><select id="sr-filter-group"><option value="">All groups</option>${groups.map(g=>`<option>${escq(g)}</option>`).join("")}</select></div><div class="sr-ledger-actions"><button class="gold" onclick="srRunCompleteFilters()">Show Stock</button><button onclick="srOpenCompleteStockReport()">Complete Stock</button><button onclick="srOpenStockAgeingReport()">Ageing</button></div><div id="sr-filter-result" class="sr-ledger-note">Choose filters and tap Show Stock.</div>`);
@@ -3201,7 +4201,6 @@ function srOpenStockIssuesReport(){
   srShowReport("Stock Issues",`${rows.length} items to review`,rows,"No obvious stock issues found.");
 }
 function srOpenTagFilter(tag){
-  if(!isAdmin){ openAdm(); toast("Unlock admin to filter tags"); return; }
   activeTag=tag; activeStock="all"; query="";
   const s=document.getElementById("search"); if(s)s.value="";
   drawer(false);
@@ -3215,22 +4214,11 @@ function srOpenPriceChangesReport(){
     if(!old)return false;
     return ["mrp","sale","wholesale","purchase","stock"].some(k=>Number(it[k]||0)!==Number(old[k]||0));
   }).sort((a,b)=>String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,250);
-  srShowReport("Price Changes",`${rows.length} items changed since the previous saved stock`,rows,"No recent browser-saved price change found yet.");
+  srShowReport("Price Changes",`${rows.length} items changed since the previous saved stock`,rows,"No recent browser-saved price change found yet.",{navView:"price-changes"});
 }
-function srOpenFastScan(){
-  drawer(false);
-  srLedgerShow("Fast Scan","Scan or type barcode for one clean item screen",`<div style="display:grid;grid-template-columns:1fr auto;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / code / item name"><button id="sr-ledger-search-go" onclick="srFastScanGo()">Open</button></div><div class="sr-ledger-actions"><button class="gold" onclick="srQuoteScan()">Camera Scan</button><button onclick="home()">Home</button></div><div id="sr-ledger-suggestions"></div>`);
-  setTimeout(()=>{const x=$("sr-ledger-search"); if(x){x.focus(); x.oninput=()=>srLedgerSuggest(x.value,"srFastScanOpen")}},80);
-}
-function srFastScanGo(){
-  const term=($("sr-ledger-search")?.value||"").trim().toLowerCase();
-  const idx=srFindItemIndex(term);
-  if(idx>=0)return srOpenCardFromReport(idx);
-  toast("Item not found");
-}
-function srFastScanOpen(ri){srOpenCardFromReport(ri)}
 function srOpenBarcodeSheet(){
   if(!isAdmin){ openAdm(); toast("Unlock admin to print labels"); return; }
+  srSaveNav("barcode-sheet");
   const rows=(pool&&pool.length?pool:raw.map((_,i)=>i)).slice(0,60).map(i=>raw[i]);
   const html=`<div id="sr-print-area"><style>@media print{body>*{display:none!important}#sr-print-area{display:grid!important;grid-template-columns:repeat(3,1fr);gap:4mm;position:absolute;inset:0;background:#fff;color:#000;padding:6mm;font-family:Arial,sans-serif}@page{size:A4;margin:5mm}}.sr-label{border:1px solid #111;padding:4mm;min-height:28mm;text-align:center;break-inside:avoid}.sr-label b{display:block;font-size:11px}.sr-label strong{font-size:18px;letter-spacing:2px}.sr-label span{display:block;font-size:10px;margin-top:2px}</style>${rows.map(it=>`<div class="sr-label"><b>${escq((it.name||"").slice(0,34))}</b><strong>${escq(it.barcode||it.alias||"")}</strong><span>MRP ${money(it.mrp)} · Sale ${money(it.sale)}</span></div>`).join("")}</div>`;
   $("sr-print-area")?.remove();
@@ -3238,6 +4226,7 @@ function srOpenBarcodeSheet(){
 }
 async function srOpenHealthCheck(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for health check"); return; }
+  srNextView("health");
   drawer(false);
   srLedgerShow("Health Check","Testing live services...","<div class='sr-ledger-note'>Checking stock, receivables, and image upload path.</div>");
   const checks=[
@@ -3279,7 +4268,7 @@ function srMissingImageTitle(mode){
 }
 async function srOpenMissingImagesReport(mode="all"){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
-  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
+  srNextView("missing-images",{mode});
   drawer(false);
   const [title,desc]=srMissingImageTitle(mode);
   const filter=srMissingImageFilter(mode);
@@ -3291,7 +4280,7 @@ async function srOpenMissingImagesReport(mode="all"){
   srShowReport(title,`${rows.length} instant ${desc}. Uploading removes the product from this list.`,rows,`No ${desc} in the instant queue.`,{upload:true});
   const body=document.getElementById("sr-ledger-body");
   if(body){
-    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Search a product, then tap Upload or Camera in that same row. Staff PIN is enough; no second image password.</div><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px"><input id="sr-missing-image-search" placeholder="Search product, barcode, group..." oninput="srFilterMissingImageQueue(this.value)"></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
+    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Search or scan a product, then tap Upload or Camera in that same row. Staff PIN is enough; no second image password.</div><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px"><input id="sr-missing-image-search" placeholder="Search product, barcode, group..." oninput="srFilterMissingImageQueue(this.value)"></div><div class="sr-ledger-actions"><button class="gold" onclick="srImageWorkScan()">Scan Barcode</button><button onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
   }
 }
 function srFilterMissingImageQueue(term=""){
@@ -3305,9 +4294,31 @@ function srFilterMissingImageQueue(term=""){
     ? filtered.slice(0,400).map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")
     : `<div class="sr-ledger-note">No missing-photo product matched this search.</div>`;
 }
+function srImageWorkScan(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for image scan"); return; }
+  scannerForImageWork=true;
+  try{ if(typeof stopScanner==="function") stopScanner(); }catch(e){}
+  try{ if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; } }catch(e){}
+  try{ closeScanner(); }catch(e){}
+  setTimeout(()=>{
+    try{openScanner();toast("Scan item barcode for Image Work")}catch(e){scannerForImageWork=false;toast("Camera scanner could not open")}
+  },120);
+}
+function srImageWorkFound(code){
+  const idx=srFindItemIndex(code);
+  if(idx<0){toast("No product found for "+code);return}
+  const it=raw[idx];
+  if(!document.getElementById("sr-ledger-body"))srOpenMissingImagesReport("all");
+  const input=$("sr-missing-image-search");
+  if(input)input.value=it.barcode||it.alias||it.name||code;
+  window.srMissingImageRows=[[it,idx]];
+  window.srLastReportRows=[[it,idx]];
+  const list=document.querySelector("#sr-ledger-body .sr-report-list");
+  if(list)list.innerHTML=srReportItem(it,idx,{upload:true});
+  toast("Ready for photo upload · "+(it.name||code));
+}
 async function srDeepCheckMissingImages(mode="all"){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff to check images"); return; }
-  if(isStaff && !pimToken)pimSetToken(STAFF_PASS,false);
   drawer(false);
   const [title,desc]=srMissingImageTitle(mode);
   srLedgerShow(title,"Deep checking image storage...","<div class='sr-ledger-note'>Checking Hostinger image storage. You can use Instant Queue next time.</div>");
@@ -3362,6 +4373,7 @@ function srSmartRows(term,limit=250){
 }
 function srOpenAiShopAssistant(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for AI search"); return; }
+  srNextView("ai-search");
   drawer(false);
   srLedgerShow("AI Shop Search","Type normal shop language",`<div class="sr-ledger-note">Try: red cotton dupatta under 500, party wear suit low stock, pashmina in stock.</div><div style="display:grid;grid-template-columns:1fr auto;gap:8px"><input id="sr-ai-term" placeholder="Search in simple words"><button class="gold" onclick="srAiShopSearchGo()">Search</button></div><div class="sr-ledger-actions"><button onclick="srAiQuick('suit low stock')">Low suit</button><button onclick="srAiQuick('dupatta under 500 in stock')">Dupatta under 500</button><button onclick="srAiQuick('pashmina in stock')">Pashmina</button></div><div id="sr-ai-results"></div>`);
   setTimeout(()=>{const x=$("sr-ai-term"); if(x){x.focus(); x.oninput=()=>srAiPreview(x.value)}},80);
@@ -3388,6 +4400,7 @@ function srOpenSmartSearchReport(term,title){
 }
 function srOpenPhotoSearch(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for photo search"); return; }
+  srNextView("photo-search");
   drawer(false);
   srLedgerShow("Photo Search","Capture a sample, then add a hint",`<div class="sr-ledger-note">This helper keeps the camera workflow ready now. Type one or two words from the item, color, barcode, or group after taking the photo. Full visual matching can be connected later with an AI image service.</div><input id="sr-photo-file" type="file" accept="image/*" capture="environment"><div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px"><input id="sr-photo-hint" placeholder="Example: black suit 800"><button class="gold" onclick="srPhotoSearchGo()">Find</button></div><div id="sr-photo-preview" class="sr-ledger-note" style="margin-top:10px">No photo selected yet.</div>`);
   setTimeout(()=>{
@@ -3401,19 +4414,70 @@ function srPhotoSearchGo(){
   const rows=srSmartRows(term);
   srShowReport("Photo Search",`${rows.length} matches for "${term}"`,rows,"No matching product found from this hint.");
 }
+function srSpeak(text){
+  try{const u=new SpeechSynthesisUtterance(text);u.lang="en-IN";speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
+}
+function srOpenVoiceMode(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock staff/admin tools"); return; }
+  srNextView("voice-mode");
+  srLedgerShow("Voice Mode","Say: search pashmina, image work, scan image, ledger pashmina, receivables",`<div class="sr-ledger-grid"><button class="sr-ledger-kpi" onclick="srStartVoiceCommand()"><small>Listen</small><b>Start</b><span>voice command</span></button><button class="sr-ledger-kpi" onclick="srRunVoiceCommand('image work')"><small>Image</small><b>Work</b><span>missing photos</span></button><button class="sr-ledger-kpi" onclick="srRunVoiceCommand('scan image')"><small>Barcode</small><b>Scan</b><span>for photos</span></button><button class="sr-ledger-kpi" onclick="srRunVoiceCommand('search pashmina')"><small>Example</small><b>Pashmina</b><span>stock search</span></button></div><div id="sr-voice-result" class="sr-ledger-note">Tap Listen and speak clearly. If microphone is blocked, use the buttons above.</div>`);
+}
+function srStartVoiceCommand(){
+  const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const out=$("sr-voice-result");
+  if(!Rec){if(out)out.textContent="Voice recognition is not available in this browser. Use Chrome on Android or type in AI Search.";return}
+  const rec=new Rec();
+  rec.lang="en-IN";rec.interimResults=false;rec.maxAlternatives=1;
+  if(out)out.textContent="Listening...";
+  rec.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||"";if(out)out.textContent="Heard: "+text;srRunVoiceCommand(text)};
+  rec.onerror=()=>{if(out)out.textContent="Could not hear clearly. Try again near the phone mic."};
+  rec.start();
+}
+function srRunVoiceCommand(text){
+  const t=String(text||"").toLowerCase().trim();
+  if(!t)return;
+  if(t.includes("image") && t.includes("scan")){srSpeak("Opening barcode scan for image work");return srImageWorkScan()}
+  if(t.includes("image") || t.includes("photo")){srSpeak("Opening image work");return srOpenMissingImagesReport("in")}
+  if(t.includes("ledger")){
+    const term=t.replace(/.*ledger/,"").trim();
+    srSpeak("Opening item ledger");
+    if(term){const idx=srFindItemIndex(term);if(idx>=0)return openItemLedger(idx)}
+    return openItemLedgerSearch();
+  }
+  if(t.includes("receivable") || t.includes("retail daddy")){srSpeak("Opening receivables");return srOpenReceivables()}
+  if(t.includes("quote")){srSpeak("Opening quotation");return renderQuoteScreen()}
+  if(t.includes("offline")){srSpeak("Opening offline center");return srOpenOfflineCenter()}
+  const term=t.replace(/^(search|find|show|open)\s+/,"").trim();
+  if(term){
+    home();
+    query=term;
+    const s=document.getElementById("search"); if(s)s.value=term;
+    applyAll();
+    srSpeak("Showing "+term);
+  }
+}
+function srOpenOfflineCenter(){
+  srNextView("offline-center");
+  const stockCount=raw.length;
+  const stockTime=localStorage.getItem(STOCK_CACHE_TIME_KEY)||"";
+  const ledgerCount=Object.keys(srLedgerCacheRead()).length;
+  const online=navigator.onLine?"Online":"Offline";
+  const savedAge=stockTime?srDate(stockTime):"Not saved yet";
+  srLedgerShow("Offline Center","Saved data for laptop-off and weak-network use",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>Network</small><b>${online}</b><span>${navigator.onLine?"live can update":"saved mode"}</span></div><div class="sr-ledger-kpi"><small>Saved stock</small><b>${stockCount.toLocaleString("en-IN")}</b><span>${savedAge}</span></div><div class="sr-ledger-kpi"><small>Saved ledgers</small><b>${ledgerCount}</b><span>opened item histories</span></div><div class="sr-ledger-kpi"><small>Install</small><b>PWA</b><span>home screen app</span></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srTrueRefresh()">Refresh Live</button><button onclick="srOpenStaffTasks()">Staff Queue</button><button onclick="srOpenHealthCheck()">Health Check</button></div><div class="sr-ledger-note">Stock search, filters, quotation draft, saved item ledgers, and cached app files can keep opening from this device. Live Retail Daddy history still needs the dashboard connection unless that ledger was opened once and saved.</div>`);
+}
 function srOpenStaffTasks(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock staff/admin tools"); return; }
+  srNextView("staff-tasks");
   drawer(false);
   const low=raw.filter(it=>Number(it.stock||0)>0 && Number(it.stock||0)<=LOW_STOCK_THRESHOLD).length;
-  const negative=raw.filter(it=>Number(it.stock||0)<0).length;
-  const noCode=raw.filter(it=>!String(it.barcode||it.alias||"").trim()).length;
-  const noPrice=raw.filter(it=>pn(it.sale)<=0 || pn(it.mrp)<=0).length;
   const inStock=raw.filter(it=>Number(it.stock||0)>0).length;
   const outStock=raw.filter(it=>Number(it.stock||0)<=0).length;
-  srLedgerShow("Staff Tasks","Small jobs that improve the shop data",`<div class="sr-ledger-grid"><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Photo work</small><b>${inStock}</b><span>check in-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('out')"><small>Old photo work</small><b>${outStock}</b><span>check out-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low}</b><span>needs reorder attention</span></button><button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative+noCode+noPrice}</b><span>${negative} negative, ${noCode} no code, ${noPrice} no price</span></button></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('all')">Image Work</button><button onclick="srOpenAiShopAssistant()">AI Search</button><button onclick="srOpenHealthCheck()">Health</button></div>`);
+  const missing=raw.filter(it=>Number(it.stock||0)>0 && srImageAlias(it) && !srKnownHasImage(it)).length;
+  srLedgerShow("Staff Tasks","Mobile work queue for daily shop updates",`<div class="sr-ledger-grid"><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Photo work</small><b>${missing}</b><span>missing in-stock photos</span></button><button class="sr-ledger-kpi" onclick="srImageWorkScan()"><small>Scan photo</small><b>Barcode</b><span>open upload row</span></button><button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('out')"><small>Old photo work</small><b>${outStock}</b><span>out-stock images</span></button><button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low}</b><span>tell admin</span></button><button class="sr-ledger-kpi" onclick="srOpenCompleteFilters()"><small>Stock filter</small><b>${raw.length}</b><span>find anything</span></button><button class="sr-ledger-kpi" onclick="srOpenVoiceMode()"><small>Voice</small><b>Speak</b><span>hands-free search</span></button></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenMissingImagesReport('all')">Image Work</button><button onclick="srOpenAiShopAssistant()">AI Search</button><button onclick="srOpenOfflineCenter()">Offline Center</button></div>`);
 }
 function srOpenOwnerBrief(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner brief"); return; }
+  srNextView("owner-brief");
   drawer(false);
   const inRows=raw.filter(it=>Number(it.stock||0)>0);
   const outRows=raw.filter(it=>Number(it.stock||0)<=0);
@@ -3424,8 +4488,39 @@ function srOpenOwnerBrief(){
   const topGroups=Array.from(inRows.reduce((m,it)=>{const k=it.group||it.PartGroup||"General";m.set(k,(m.get(k)||0)+Number(it.stock||0));return m},new Map()).entries()).sort((a,b)=>b[1]-a[1]).slice(0,6);
   srLedgerShow("Owner Brief","Compact stock command center",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>In stock</small><b>${inRows.length}</b></div><div class="sr-ledger-kpi"><small>Out stock</small><b>${outRows.length}</b></div><div class="sr-ledger-kpi"><small>Sale value</small><b>${money(saleValue)}</b></div><div class="sr-ledger-kpi"><small>Est. margin</small><b>${money(margin)}</b></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srOpenSmartReorderReport()">Reorder</button><button onclick="srOpenDeadStockReport()">Clear Dead Stock</button><button onclick="srOpenLowStockReport()">Low Stock (${low.length})</button></div><div class="sr-report-list">${topGroups.map(([g,n])=>`<button class="sr-report-item" onclick="srOpenSmartSearchReport('${String(g).replace(/'/g,"\\'")} in stock','${String(g).replace(/'/g,"\\'")}')"><span class="sr-report-item-top"><b>${escq(g)}</b><strong>${n}</strong></span><small>Tap to view this group</small></button>`).join("")}</div>`);
 }
+function srOpenControlCenter(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin for control center"); return; }
+  srNextView("control-center");
+  drawer(false);
+  const inRows=raw.filter(it=>Number(it.stock||0)>0);
+  const outRows=raw.filter(it=>Number(it.stock||0)<=0);
+  const low=inRows.filter(it=>Number(it.stock||0)<=LOW_STOCK_THRESHOLD);
+  const dead=inRows.filter(it=>srItemAgeDays(it)>=60);
+  const negative=raw.filter(it=>Number(it.stock||0)<0);
+  const noCode=raw.filter(it=>!String(it.barcode||it.alias||"").trim());
+  const noPrice=raw.filter(it=>pn(it.sale)<=0 || pn(it.mrp)<=0);
+  const missingGuess=raw.filter(it=>Number(it.stock||0)>0 && !(it.images&&it.images.length)).length;
+  const ledgerCached=Object.keys(srLedgerCacheRead()).length;
+  const saleValue=inRows.reduce((s,it)=>s+pn(it.sale)*Number(it.stock||0),0);
+  const purchaseValue=inRows.reduce((s,it)=>s+pn(it.purchase)*Number(it.stock||0),0);
+  srLedgerShow("Control Center","Owner command screen for the full stock website",`
+    <div class="sr-ledger-grid">
+      <button class="sr-ledger-kpi" onclick="srOpenCompleteStockReport()"><small>Total items</small><b>${raw.length}</b><span>open full list</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenCompleteFilters()"><small>In stock</small><b>${inRows.length}</b><span>${money(saleValue)}</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenDeadStockReport()"><small>Dead stock</small><b>${dead.length}</b><span>60+ days</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low.length}</b><span>needs buying</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Missing photos</small><b>${missingGuess}</b><span>in stock queue</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative.length+noCode.length+noPrice.length}</b><span>fix codes/prices</span></button>
+      <button class="sr-ledger-kpi" onclick="openItemLedgerSearch()"><small>Item ledger</small><b>${ledgerCached}</b><span>saved ledgers</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenReceivables()"><small>Receivables</small><b>Admin</b><span>open dashboard</span></button>
+    </div>
+    <div class="sr-ledger-actions"><button class="gold" onclick="srOpenHealthCheck()">Health Check</button><button onclick="srOpenStockAgeingReport()">Stock Ageing</button><button onclick="srOpenSmartReorderReport()">Reorder</button><button onclick="srOpenPriceChangesReport()">Price Changes</button></div>
+    <div class="sr-ledger-note">Estimated margin from loaded stock: ${money(saleValue-purchaseValue)}. Use this screen first when checking the shop from mobile.</div>
+  `);
+}
 function srOpenFestivalPlanner(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for festival planner"); return; }
+  srNextView("festival");
   drawer(false);
   srLedgerShow("Festival Planner","Ready-made selling collections",`<div class="sr-ledger-actions"><button class="gold" onclick="srFestivalRun('eid suit dupatta')">Eid</button><button onclick="srFestivalRun('wedding suit premium')">Wedding</button><button onclick="srFestivalRun('diwali suit dress')">Diwali</button><button onclick="srFestivalRun('clearance in stock')">Clearance</button></div><div class="sr-ledger-note">After opening any collection, use Share Catalog to send that filtered product list.</div>`);
 }
@@ -3530,12 +4625,10 @@ Object.assign(window,{
   srShareCatalog,
   srOpenTagFilter,
   srOpenPriceChangesReport,
-  srOpenFastScan,
   srOpenReceivables,
-  srFastScanGo,
-  srFastScanOpen,
   srOpenBarcodeSheet,
   srOpenHealthCheck,
+  srOpenControlCenter,
   srOpenSmartReorderReport,
   srOpenDeadStockReport,
   srOpenStockAgeingReport,
@@ -3558,6 +4651,12 @@ Object.assign(window,{
   srOpenSmartSearchReport,
   srOpenPhotoSearch,
   srPhotoSearchGo,
+  srOpenVoiceMode,
+  srStartVoiceCommand,
+  srRunVoiceCommand,
+  srOpenOfflineCenter,
+  srImageWorkScan,
+  srImageWorkFound,
   srOpenStaffTasks,
   srOpenOwnerBrief,
   srOpenFestivalPlanner,
@@ -3565,6 +4664,7 @@ Object.assign(window,{
   srOpenCardFromReport,
   srDownloadReportCsv,
   srLedgerClose,
+  srGoPreviousPage,
   srLedgerSearchGo,
   srLedgerOpenBill,
   srLedgerOpenPurchase,
@@ -3595,6 +4695,7 @@ function cartHTML(){
  return cart.map((x,i)=>`<div class="srq-line"><div class="srq-line-top"><div class="srq-line-name">${i+1}. ${escq(x.name)}<div class="srq-line-meta">Code: ${escq(x.alias||x.barcode||"—")} · MRP ${money(x.mrp)} · Sale ${money(x.sale)}</div></div><button class="srq-x" onclick="srQDel(${i})">×</button></div><div class="srq-grid"><div class="srq-field"><label>Price</label><select class="srq-select" onchange="srQType(${i},this.value)"><option value="mrp" ${x.type==="mrp"?"selected":""}>MRP · ${money(x.mrp)}</option><option value="sale" ${x.type==="sale"?"selected":""}>Sale · ${money(x.sale)}</option><option value="wholesale" ${x.type==="wholesale"?"selected":""}>Wholesale · ${money(x.wholesale)}</option><option value="manual" ${x.type==="manual"?"selected":""}>Manual · ${money(x.rate)}</option></select></div><div class="srq-field"><label>Qty</label><input class="srq-input" type="number" min=".001" value="${x.qty}" onchange="srQEdit(${i},'qty',this.value)"></div></div><div class="srq-subgrid"><div class="srq-field"><label>Unit price</label><input class="srq-input" type="number" min="0" value="${x.rate}" onchange="srQEdit(${i},'rate',this.value)"></div><div class="srq-field"><label>Stock</label><div class="srq-input" style="display:flex;align-items:center">${escq(x.stock??0)}</div></div></div><div class="srq-line-total"><span>${x.qty} × ${money(x.rate)}</span><b>${money((+x.qty||0)*(+x.rate||0))}</b></div></div>`).join("");
 }
 window.renderQuoteScreen=function(){
+ if(!srNavRestoring)srPushNav("quote");
  quoteOpen=true;drawer(false);setActive("quote");document.body.style.overflow="hidden";let t=totals(),p=party();
  $("sr-screen").className="open quote-pro";
  $("sr-screen").innerHTML=`<div class="srq-shell"><div class="srq-head"><div class="srq-head-main"><h2>Quotation Studio</h2><small>Auto-saved · switch to Home anytime without losing data</small></div><button class="srq-toolbtn" onclick="srOpenHeld()" title="Hold / Unhold">⏸</button><button class="srq-toolbtn" onclick="srOpenSaved()" title="Saved quotations">☷</button><div class="srq-head-total"><small>Total</small><strong id="srq-head-total">${money(t.total)}</strong></div></div>
@@ -3806,7 +4907,7 @@ const observer=new MutationObserver(()=>document.querySelectorAll(".c").forEach(
 
 async function srTrueRefresh(){const btn=$("sr-refresh");if(btn)btn.disabled=true;try{localStorage.removeItem(STATE_KEY2);if(typeof goHome==="function")goHome();const payload=await getStockData(true);raw=payload.items;setStockStatus("live",raw.length);buildGroupChips();buildBrandChips();showWelcome();sound("refresh");toast("Live stock loaded")}catch(e){sound("error");toast("Live refresh failed · using saved stock if available · "+e.message);try{const payload=await getStockData(false);raw=payload.items;setStockStatus("cache",raw.length,"live offline");buildGroupChips();buildBrandChips();showWelcome()}catch(err){}}finally{btn&&(btn.disabled=false)}}
 $("sr-refresh").onclick=srTrueRefresh;
-document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{let v=b.dataset.view;if(v==="home")return home();if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="fast-scan")return srOpenFastScan();if(v==="ai-search")return srOpenAiShopAssistant();if(v==="photo-search")return srOpenPhotoSearch();if(v==="staff-tasks")return srOpenStaffTasks();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="owner-brief")return srOpenOwnerBrief();if(v==="festival")return srOpenFestivalPlanner();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="stock-ageing")return srOpenStockAgeingReport();if(v==="complete-stock")return srOpenCompleteStockReport();if(v==="complete-filters")return srOpenCompleteFilters();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance")});
+document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{srNavFromDrawer=$("sr-drawer")?.classList.contains("open");let v=b.dataset.view;if(v==="home"){srNavFromDrawer=false;return home()}if(v==="quote")return renderQuoteScreen();if(v==="receivables")return srOpenReceivables();if(v==="ai-search")return srOpenAiShopAssistant();if(v==="photo-search")return srOpenPhotoSearch();if(v==="voice-mode")return srOpenVoiceMode();if(v==="offline-center")return srOpenOfflineCenter();if(v==="staff-tasks")return srOpenStaffTasks();if(v==="share-catalog"){drawer(false);return srShareCatalog()}if(v==="control-center")return srOpenControlCenter();if(v==="owner-brief")return srOpenOwnerBrief();if(v==="festival")return srOpenFestivalPlanner();if(v==="ledger")return openItemLedgerSearch();if(v==="reorder")return srOpenSmartReorderReport();if(v==="stock-ageing")return srOpenStockAgeingReport();if(v==="complete-filters")return srOpenCompleteFilters();if(v==="dead-stock")return srOpenDeadStockReport();if(v==="low-stock")return srOpenLowStockReport();if(v==="missing-images")return srOpenMissingImagesReport("all");if(v==="missing-images-in")return srOpenMissingImagesReport("in");if(v==="missing-images-out")return srOpenMissingImagesReport("out");if(v==="stock-issues")return srOpenStockIssuesReport();if(v==="price-changes")return srOpenPriceChangesReport();if(v==="barcode-sheet")return srOpenBarcodeSheet();if(v==="health")return srOpenHealthCheck();if(v==="tag-offer")return srOpenTagFilter("offer");if(v==="tag-new")return srOpenTagFilter("new");if(v==="tag-clearance")return srOpenTagFilter("clearance");if(v==="tag-premium")return srOpenTagFilter("premium")});
 
 let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){
@@ -3817,12 +4918,15 @@ window.onScanResult=function(code){
  srScanBusy=true; srLastScanCode=code; srLastScanAt=now;
  srLongBeep();
  try{$("scan-code").textContent="✓ "+code}catch(e){}
- const wasQuote=!!scannerForQuote; scannerForQuote=false;
+ const wasQuote=!!scannerForQuote, wasImageWork=!!scannerForImageWork; scannerForQuote=false; scannerForImageWork=false;
  try{closeScanner()}catch(e){}
  try{if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null}}catch(e){}
  setTimeout(()=>{
   try{
-   if(wasQuote){
+   if(wasImageWork){
+    if(!document.getElementById("sr-ledger-body"))srOpenMissingImagesReport("all");
+    srImageWorkFound(code);
+   }else if(wasQuote){
     quoteSearch=code;
     if(!quoteOpen)renderQuoteScreen();
     const qs=$("srq-search"), qr=$("srq-results");

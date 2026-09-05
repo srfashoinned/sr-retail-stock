@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v22">
+<meta name="sr-build" content="main-mobile-v23">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -2385,15 +2385,25 @@ function srSetItemTag(ri,tag,e){
 function srTagLabel(tag){
   return "";
 }
+function srSearchText(v){
+  return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+}
 
 function applyAll(){
-  let q = query.trim().toLowerCase();
+  const liveSearch = document.getElementById("search");
+  if(liveSearch && liveSearch.value !== query) query = liveSearch.value;
+  let q = srSearchText(query);
   let smartMax = null, smartMin = null, smartLow = false, smartIn = false;
   q = q.replace(/\b(under|below|less than)\s*(rs\.?|₹)?\s*(\d+)/g,(_,a,b,n)=>{smartMax=Number(n);return " "});
   q = q.replace(/\b(above|over|more than)\s*(rs\.?|₹)?\s*(\d+)/g,(_,a,b,n)=>{smartMin=Number(n);return " "});
   q = q.replace(/\blow stock\b/g,()=>{smartLow=true;return " "});
   q = q.replace(/\bin stock\b/g,()=>{smartIn=true;return " "});
   q = q.replace(/\s+/g," ").trim();
+  if(q){
+    activeGroup = "";
+    activeBrand = "";
+    activeTag = "";
+  }
   const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='' || activeTag;
   if(!hasFilter){ showWelcome(); return; }
   expanded.clear();
@@ -2415,13 +2425,9 @@ function applyAll(){
     }
     if(activeTag && srItemTag(it)!==activeTag) continue;
     if(q){
-      const n=(it.name||'').toLowerCase();
-      const a=(it.alias||'').toLowerCase();
-      const b=(it.barcode||'').toLowerCase();
-      const g=(it.group||'').toLowerCase();
-      const sz=String(it.size||it.Size||'').toLowerCase();
-      const col=String(it.colour||it.color||it.Colour||it.Color||'').toLowerCase();
-      if(!n.includes(q)&&!a.includes(q)&&!b.includes(q)&&!g.includes(q)&&!sz.includes(q)&&!col.includes(q)) continue;
+      const hay=srSearchText([it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory,it.size,it.Size,it.colour,it.color,it.Colour,it.Color].join(" "));
+      const words=q.split(/\s+/).filter(Boolean);
+      if(!words.every(w=>hay.includes(w))) continue;
     }
     out.push(i);
   }

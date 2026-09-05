@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v21">
+<meta name="sr-build" content="main-mobile-v22">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1237,6 +1237,20 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
   opacity:1!important;
   border-radius:999px!important;
 }
+.sr-card-facts{display:flex!important;gap:5px!important;flex-wrap:wrap!important;margin-top:5px!important}
+.sr-fact{
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:21px!important;
+  padding:2px 8px!important;
+  border-radius:999px!important;
+  background:linear-gradient(135deg,rgba(246,199,68,.16),rgba(34,211,238,.08))!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  color:#f8d66d!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  text-transform:uppercase!important;
+}
 #sr-top-admin{
   width:auto!important;
   min-width:64px!important;
@@ -1519,6 +1533,26 @@ body{
   background:linear-gradient(160deg,rgba(18,20,27,.88),rgba(7,8,11,.80))!important;
   border-color:rgba(255,255,255,.14)!important;
   box-shadow:0 -18px 60px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.c{
+  clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px))!important;
+  position:absolute!important;
+}
+.c::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,.08) 42%,transparent 58%)!important;
+  transform:translateX(-120%)!important;
+  transition:transform .55s ease!important;
+}
+.c.exp::before,.c:active::before{transform:translateX(120%)!important}
+.c-name{
+  background:linear-gradient(90deg,#fff 0%,#f8d66d 48%,#93c5fd 100%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  color:transparent!important;
 }
 </style>
 </head>
@@ -1906,7 +1940,7 @@ const LOW_STOCK_THRESHOLD = 5;
 function measureCardHeight(){
   const probe = document.createElement('div');
   probe.style.cssText = 'position:fixed;top:-9999px;left:14px;right:14px;visibility:hidden;pointer-events:none;z-index:-1';
-  probe.innerHTML = cardHTML({name:'Probe Item',alias:'PRB001',mrp:999,sale:799,wholesale:699,stock:10}, -1, 0, '');
+  probe.innerHTML = cardHTML({name:'Probe Item',alias:'PRB001',group:'SUIT',size:'XL',colour:'BLACK',mrp:999,sale:799,wholesale:699,stock:10}, -1, 0, '');
   const inner = probe.firstElementChild;
   if(inner){ inner.style.position='relative'; inner.style.top='auto'; inner.style.left='auto'; inner.style.right='auto'; }
   document.body.appendChild(probe);
@@ -2385,7 +2419,9 @@ function applyAll(){
       const a=(it.alias||'').toLowerCase();
       const b=(it.barcode||'').toLowerCase();
       const g=(it.group||'').toLowerCase();
-      if(!n.includes(q)&&!a.includes(q)&&!b.includes(q)&&!g.includes(q)) continue;
+      const sz=String(it.size||it.Size||'').toLowerCase();
+      const col=String(it.colour||it.color||it.Colour||it.Color||'').toLowerCase();
+      if(!n.includes(q)&&!a.includes(q)&&!b.includes(q)&&!g.includes(q)&&!sz.includes(q)&&!col.includes(q)) continue;
     }
     out.push(i);
   }
@@ -2498,6 +2534,11 @@ function marginStr(it){
 
 function cardHTML(it, ri, topPx, q){
   const exp = expanded.has(ri);
+  const facts = [
+    it.size ? `Size ${it.size}` : '',
+    it.colour || it.color ? `Colour ${it.colour || it.color}` : ''
+  ].filter(Boolean);
+  const factHTML = facts.length ? `<div class="sr-card-facts">${facts.map(v=>`<span class="sr-fact">${escq(v)}</span>`).join("")}</div>` : "";
   const purchBlock = isAdmin
     ?`<div class="pb p"><div class="pl">Purchase</div><div class="pv">${fmt(it.purchase)}${marginStr(it)}</div></div>`:'';
   const detHTML = exp?`
@@ -2507,6 +2548,8 @@ function cardHTML(it, ri, topPx, q){
       ${it.Category?`<div class="drow"><span>Category</span><span>${it.Category}</span></div>`:''}
       ${it.SubCategory?`<div class="drow"><span>Sub Category</span><span>${it.SubCategory}</span></div>`:''}
       ${it.PartGroup?`<div class="drow"><span>Part Group</span><span>${it.PartGroup}</span></div>`:''}
+      ${it.size?`<div class="drow"><span>Size</span><span>${it.size}</span></div>`:''}
+      ${it.colour||it.color?`<div class="drow"><span>Colour</span><span>${it.colour||it.color}</span></div>`:''}
       ${it.entryDate?`<div class="drow"><span>Entry Date</span><span>${it.entryDate}</span></div>`:''}
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
@@ -2519,6 +2562,7 @@ function cardHTML(it, ri, topPx, q){
     <div class="c-name">${hl(it.name||'',q)}</div>
     ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
     ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
+    ${factHTML}
     <div class="prices">
       <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
       <div class="pb s shareable" onclick="openExp(${ri},'sale',event)" title="Tap to share Sale price image">
@@ -2975,7 +3019,7 @@ function closeScanner(){
 function copyItem(ri,e){
   e&&e.stopPropagation();
   const it=raw[ri];
-  const t=[`📦 ${it.name} (${it.alias})`,`MRP: ${fmt(it.mrp)}`,`Sale: ${fmt(it.sale)}`,`Wholesale: ${fmt(it.wholesale)}`,`Stock: ${it.stock??'–'}`,isAdmin&&it.purchase?`Purchase: ${fmt(it.purchase)}`:''  ].filter(Boolean).join('\n');
+  const t=[`📦 ${it.name} (${it.alias})`,it.size?`Size: ${it.size}`:'',it.colour||it.color?`Colour: ${it.colour||it.color}`:'',`MRP: ${fmt(it.mrp)}`,`Sale: ${fmt(it.sale)}`,`Wholesale: ${fmt(it.wholesale)}`,`Stock: ${it.stock??'–'}`,isAdmin&&it.purchase?`Purchase: ${fmt(it.purchase)}`:''  ].filter(Boolean).join('\n');
   navigator.clipboard.writeText(t).then(()=>toast("📋 Copied"));
 }
 function shareItem(ri,e){
@@ -4301,7 +4345,7 @@ function srRunCompleteFilters(){
   const age=$("sr-filter-age")?.value||"";
   const group=$("sr-filter-group")?.value||"";
   const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>{
-    const hay=[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory].join(" ").toLowerCase();
+    const hay=[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory,it.size,it.colour,it.color].join(" ").toLowerCase();
     if(q && !hay.includes(q))return false;
     if(min!=="" && pn(it.sale)<Number(min))return false;
     if(max!=="" && pn(it.sale)>Number(max))return false;
@@ -4485,7 +4529,7 @@ function srSmartTermParts(text){
   return {words,max,min,low,inStock,outStock};
 }
 function srSmartMatchItem(it,parts){
-  const hay=[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory].join(" ").toLowerCase();
+  const hay=[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory,it.size,it.colour,it.color].join(" ").toLowerCase();
   if(parts.max!==null && pn(it.sale)>parts.max)return false;
   if(parts.min!==null && pn(it.sale)<parts.min)return false;
   if(parts.low && !(Number(it.stock||0)>0 && Number(it.stock||0)<=LOW_STOCK_THRESHOLD))return false;
@@ -4660,7 +4704,7 @@ function srFestivalRun(term){
 function srDownloadReportCsv(){
   const rows=window.srLastReportRows||[];
   if(!rows.length)return toast("No report rows");
-  const csv=[["Name","Alias","Barcode","Group","MRP","Sale","Wholesale","Purchase","Stock","Entry Date"],...rows.map(([it])=>[it.name||"",it.alias||"",it.barcode||"",it.group||it.PartGroup||"",it.mrp||"",it.sale||"",it.wholesale||"",it.purchase||"",it.stock??"",it.entryDate||""])]
+  const csv=[["Name","Alias","Barcode","Group","Size","Colour","MRP","Sale","Wholesale","Purchase","Stock","Entry Date"],...rows.map(([it])=>[it.name||"",it.alias||"",it.barcode||"",it.group||it.PartGroup||"",it.size||"",it.colour||it.color||"",it.mrp||"",it.sale||"",it.wholesale||"",it.purchase||"",it.stock??"",it.entryDate||""])]
     .map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
@@ -4815,9 +4859,9 @@ function renderQuoteCounters(){let t=totals(),c=cart.length+" item"+(cart.length
 function quoteResultsHTML(q){
  q=(q||"").trim().toLowerCase();if(!q)return `<div class="srq-empty"><div class="ico">⌕</div><b>Search or scan a product</b><br><small>Name, alias or barcode. Draft is auto-saved.</small></div>`;
  const exact=raw.findIndex(it=>String(it.barcode||"").trim().toLowerCase()===q);
- let ids=exact>=0?[exact]:raw.map((_,i)=>i).filter(i=>[raw[i].name,raw[i].alias,raw[i].barcode,raw[i].group,raw[i].PartGroup].some(v=>String(v||"").toLowerCase().includes(q))).slice(0,70);
+ let ids=exact>=0?[exact]:raw.map((_,i)=>i).filter(i=>[raw[i].name,raw[i].alias,raw[i].barcode,raw[i].group,raw[i].PartGroup,raw[i].size,raw[i].colour,raw[i].color].some(v=>String(v||"").toLowerCase().includes(q))).slice(0,70);
  if(!ids.length)return `<div class="srq-empty"><b>No product found</b></div>`;
- return `<div class="srq-results-title">${ids.length}${exact>=0?" exact":""} result${ids.length===1?"":"s"} · tap a price to add quantity</div>`+ids.map(i=>{let it=raw[i];return `<div class="srq-product"><div class="srq-product-info"><div class="srq-product-name">${escq(it.name)}</div><div class="srq-product-meta">${escq(it.alias||"")}${it.barcode?" · "+escq(it.barcode):""} · Stock ${escq(it.stock??0)}</div><div class="srq-product-prices"><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'mrp')">MRP <b>${money(it.mrp)}</b></span><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'sale')">Sale <b>${money(it.sale)}</b></span><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'wholesale')">Wholesale <b>${money(it.wholesale)}</b></span></div></div><button class="srq-add" onclick="srPickQty(${i},'sale')">＋</button></div>`}).join("");
+ return `<div class="srq-results-title">${ids.length}${exact>=0?" exact":""} result${ids.length===1?"":"s"} · tap a price to add quantity</div>`+ids.map(i=>{let it=raw[i];let meta=[it.alias,it.barcode,it.size?`Size ${it.size}`:"",it.colour||it.color?`Colour ${it.colour||it.color}`:"",`Stock ${it.stock??0}`].filter(Boolean).join(" · ");return `<div class="srq-product"><div class="srq-product-info"><div class="srq-product-name">${escq(it.name)}</div><div class="srq-product-meta">${escq(meta)}</div><div class="srq-product-prices"><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'mrp')">MRP <b>${money(it.mrp)}</b></span><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'sale')">Sale <b>${money(it.sale)}</b></span><span class="srq-p srq-pricepick" onclick="srPickQty(${i},'wholesale')">Wholesale <b>${money(it.wholesale)}</b></span></div></div><button class="srq-add" onclick="srPickQty(${i},'sale')">＋</button></div>`}).join("");
 }
 function cartHTML(){
  if(!cart.length)return `<div class="srq-empty"><div class="ico">🧾</div><b>Quotation is empty</b><br><small>Search a product and tap its price.</small></div>`;
@@ -4837,7 +4881,7 @@ window.srQuoteSearch=v=>{quoteSearch=v;$("srq-results")&&($("srq-results").inner
 window.srPickQty=(i,type)=>{let it=raw[i];if(!it)return;qtyPick={i,type};document.getElementById("srq-qpop")?.remove();let d=document.createElement("div");d.id="srq-qpop";d.className="srq-qpop-bg";d.innerHTML=`<div class="srq-qpop"><h3>${escq(it.name)}</h3><small>${type.toUpperCase()} · ${money(it[type])}</small><input id="srq-qval" type="number" min=".001" step="1" value="1" inputmode="decimal"><div class="srq-qpop-actions"><button onclick="srCloseQty()">Cancel</button><button class="gold" onclick="srConfirmQty()">Add Quantity</button></div></div>`;document.body.appendChild(d);setTimeout(()=>{$("srq-qval")?.select()},30)};
 window.srCloseQty=()=>{document.getElementById("srq-qpop")?.remove();qtyPick=null};
 window.srConfirmQty=()=>{if(!qtyPick)return;let q=Math.max(.001,+$("srq-qval").value||1),{i,type}=qtyPick;srAddWithQty(i,type,q);srCloseQty()};
-function srAddWithQty(i,type,qty){let it=raw[i],key=String(it.barcode||it.alias||i),x=cart.find(r=>r.key===key&&r.type===type);let rate=+(type==="mrp"?it.mrp:type==="sale"?it.sale:it.wholesale)||0;if(x)x.qty=(+x.qty||0)+qty;else cart.push({key,ri:i,name:it.name||"",alias:it.alias||"",barcode:it.barcode||"",stock:it.stock??0,mrp:+it.mrp||0,sale:+it.sale||0,wholesale:+it.wholesale||0,type,rate,qty});saveCart();$("srq-lines")&&($("srq-lines").innerHTML=cartHTML());renderQuoteCounters();sound("add");haptic();toast("Added · "+it.name)}
+function srAddWithQty(i,type,qty){let it=raw[i],key=String(it.barcode||it.alias||i),x=cart.find(r=>r.key===key&&r.type===type);let rate=+(type==="mrp"?it.mrp:type==="sale"?it.sale:it.wholesale)||0;if(x)x.qty=(+x.qty||0)+qty;else cart.push({key,ri:i,name:it.name||"",alias:it.alias||"",barcode:it.barcode||"",size:it.size||"",colour:it.colour||it.color||"",stock:it.stock??0,mrp:+it.mrp||0,sale:+it.sale||0,wholesale:+it.wholesale||0,type,rate,qty});saveCart();$("srq-lines")&&($("srq-lines").innerHTML=cartHTML());renderQuoteCounters();sound("add");haptic();toast("Added · "+it.name)}
 window.srQuoteAdd=i=>srPickQty(i,"sale");
 window.srQType=(i,type)=>{let x=cart[i];if(!x)return;x.type=type;if(type!=="manual")x.rate=+x[type]||0;saveCart();$("srq-lines").innerHTML=cartHTML();renderQuoteCounters()};
 window.srQEdit=(i,k,v)=>{if(!cart[i])return;cart[i][k]=k==="qty"?Math.max(.001,+v||1):Math.max(0,+v||0);if(k==="rate")cart[i].type="manual";saveCart();$("srq-lines").innerHTML=cartHTML();renderQuoteCounters()};

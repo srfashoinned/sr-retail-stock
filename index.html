@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v24">
+<meta name="sr-build" content="main-mobile-v26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -2099,17 +2099,23 @@ async function loadData(){
   registerStockServiceWorker();
   let painted = false;
   try{
-    const cached = getBrowserStockCache();
-    if (cached) {
-      applyStockPayload(cached, "cache");
-      painted = true;
-    } else {
-      const filePayload = await fetchStockJson("items.json");
-      applyStockPayload({ source: "file-cache", items: filePayload.items || filePayload || [] }, "cache");
+    const filePayload = await fetchStockJson("items.json");
+    const fileItems = filePayload.items || filePayload || [];
+    if(Array.isArray(fileItems) && fileItems.length){
+      applyStockPayload({ source: "file-cache", items: fileItems }, "cache");
+      localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(fileItems));
+      localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
       painted = true;
     }
   }catch(e){
-    toast("Stock load failed: "+e.message);
+    try{
+      const cached = getBrowserStockCache();
+      if (cached) {
+        applyStockPayload(cached, "cache");
+        painted = true;
+      }
+    }catch(err){}
+    if(!painted) toast("Stock load failed: "+e.message);
   }
   if (!painted) setStockStatus("cache", 0, "loading");
   if(!applyUrlFilters()) showWelcome();
@@ -2570,6 +2576,9 @@ function bsearchLast(targetBottom){
 }
 
 /* ═══ CARD HTML ═══ */
+function escq(v){
+  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
 function fmt(v){
   if(v==null||v==='') return '–';
   const n=parseFloat(String(v).replace(/[^0-9.]/g,''));

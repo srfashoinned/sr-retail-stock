@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v27">
+<meta name="sr-build" content="main-mobile-v28">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1281,10 +1281,9 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
 .sr-card-thumb img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
 .sr-card-thumb span{position:absolute;left:5px;right:5px;bottom:5px;border-radius:999px;background:rgba(0,0,0,.62);color:#ffd35c;font-size:9px;font-weight:900;text-align:center;padding:2px 4px}
 .sr-card-main{min-width:0!important}
-.sr-ai-prompt-box{margin:0 12px 10px;border:1px solid rgba(34,211,238,.24);background:linear-gradient(145deg,rgba(34,211,238,.08),rgba(255,211,92,.06));border-radius:13px;padding:10px;display:grid;gap:7px}
-.sr-ai-prompt-box b{font-size:12px;color:#a7f3d0}
-.sr-ai-prompt-box textarea{width:100%;min-height:86px;resize:vertical;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#09090b;color:#f8fafc;padding:9px;font:inherit;font-size:12px;line-height:1.35}
-.sr-ai-prompt-box button{height:34px;border:0;border-radius:9px;background:#ffd35c;color:#111;font-weight:1000}
+.sr-ai-prompt-box{margin:0 12px 10px;display:none}
+.sr-ai-prompt-box textarea{display:none!important}
+.sr-ai-prompt-box button{width:100%;min-height:44px;border:0;border-radius:13px;background:linear-gradient(135deg,#22d3ee,#ffd35c);color:#061016;font-weight:1000;font-size:13px;box-shadow:0 14px 30px rgba(34,211,238,.12)}
 @media(max-width:520px){
   .sr-card-visual{gap:7px!important}
   .sr-card-visual.has-photo{grid-template-columns:58px minmax(0,1fr)!important}
@@ -1838,10 +1837,9 @@ body{
       </div>
     </div>
 
-    <div id="pim-ai-prompt" class="sr-ai-prompt-box" style="display:none">
-      <b>Model wearing prompt</b>
+    <div id="pim-ai-prompt" class="sr-ai-prompt-box">
       <textarea id="pim-ai-text" readonly></textarea>
-      <button type="button" onclick="pimCopyAiPrompt()">Copy Prompt</button>
+      <button id="pim-gpt-btn" type="button" onclick="pimSendModelToGpt()">Create Model Image in GPT</button>
     </div>
 
     <!-- Upload progress bar -->
@@ -3865,7 +3863,7 @@ function pimRenderAiPrompt(){
   const box = document.getElementById('pim-ai-prompt');
   const text = document.getElementById('pim-ai-text');
   if(!box || !text) return;
-  box.style.display = pimCurrentItem ? 'grid' : 'none';
+  box.style.display = pimCurrentItem && pimImages.length ? 'block' : 'none';
   text.value = pimBuildAiPrompt();
 }
 async function pimCopyAiPrompt(){
@@ -3879,6 +3877,48 @@ async function pimCopyAiPrompt(){
     text.select();
     toast('Prompt selected');
   }
+}
+async function pimImageFilesForShare(){
+  const files = [];
+  const sample = pimImages.slice(0, 5);
+  for(let i = 0; i < sample.length; i++){
+    const img = sample[i];
+    try{
+      const resp = await fetch(img.url, { cache:'force-cache' });
+      if(!resp.ok) continue;
+      const blob = await resp.blob();
+      const ext = (blob.type && blob.type.split('/')[1]) || 'jpg';
+      files.push(new File([blob], `SR-Fashion-${i + 1}.${ext.replace('jpeg','jpg')}`, { type: blob.type || 'image/jpeg' }));
+    }catch(e){}
+  }
+  return files;
+}
+async function pimSendModelToGpt(){
+  if(!pimCurrentItem){ toast('Open a product first'); return; }
+  if(!pimImages.length){ toast('Add or open product photos first'); return; }
+  const prompt = pimBuildAiPrompt();
+  try{ await navigator.clipboard.writeText(prompt); }catch(e){}
+  const btn = document.getElementById('pim-gpt-btn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Preparing photos...'; }
+  try{
+    const files = await pimImageFilesForShare();
+    if(files.length && navigator.share && (!navigator.canShare || navigator.canShare({ files }))){
+      await navigator.share({
+        title: 'SR Fashion model image',
+        text: prompt,
+        files
+      });
+      toast('Sent to share sheet');
+      return;
+    }
+  }catch(err){
+    if(err && err.name === 'AbortError') return;
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Create Model Image in GPT'; }
+  }
+  const url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+  window.open(url, '_blank', 'noopener');
+  toast('Prompt copied. Upload the product photos in GPT if asked.');
 }
 
 function pimFsNav(dir){

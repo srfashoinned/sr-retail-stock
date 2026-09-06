@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v31">
+<meta name="sr-build" content="main-mobile-v32">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -229,9 +229,9 @@ body.admin-on .sr-card-upload,body.staff-on .sr-card-upload{display:block}
 #img-info{width:100%;padding:10px 18px 0;font-size:12px;color:var(--muted);text-align:center}
 
 /* ── EXPORT IMAGE MODAL ── */
-#exp-ov{position:fixed;inset:0;z-index:170;background:rgba(0,0,0,0.92);display:none;align-items:flex-end;justify-content:center}
+#exp-ov{position:fixed;inset:0;z-index:21000;background:rgba(0,0,0,0.92);display:none;align-items:flex-end;justify-content:center}
 #exp-ov.show{display:flex}
-#exp-box{background:var(--card);border:1px solid var(--bord);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:18px 18px 30px;display:flex;flex-direction:column;gap:12px}
+#exp-box{background:var(--card);border:1px solid var(--bord);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:calc(100dvh - env(safe-area-inset-top));padding:18px 18px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;overflow:auto}
 #exp-title{font-size:15px;font-weight:800;color:#25d366;display:flex;align-items:center;gap:8px}
 #exp-preview-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--bord);background:#000;display:flex;justify-content:center}
 #exp-canvas{max-width:100%;display:block}
@@ -4716,7 +4716,7 @@ function srShareCatalog(){
 function srOpenReceivables(){
   if(!isAdmin){ openAdm(); toast("Receivables is admin only"); return; }
   drawer(false);
-  window.location.href = "https://receivables.srfashionned.in/";
+  window.location.href = "https://receivables.srfashionned.in/?home=1";
 }
 function srMissingImageFilter(mode){
   if(mode==="in")return it=>Number(it.stock||0)>0;

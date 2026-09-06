@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v30">
+<meta name="sr-build" content="main-mobile-v31">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -4199,7 +4199,16 @@ function srPushNav(view,payload={}){
 function srNextView(view,payload={}){srNextNav={view,payload}}
 function srNavHome(push=true){
   srLedgerRequestToken++;
-  quoteOpen=false;$("sr-screen").className="";$("sr-screen").classList.remove("open","quote-pro");$("sr-screen").innerHTML="";drawer(false);setActive("home");document.body.style.overflow="";window.scrollTo({top:0,behavior:"smooth"});
+  quoteOpen=false;$("sr-screen").className="";$("sr-screen").classList.remove("open","quote-pro");$("sr-screen").innerHTML="";drawer(false);setActive("home");document.body.style.overflow="";
+  try{
+    const clean = new URL(location.href);
+    ["q","group","brand","tag"].forEach(k=>clean.searchParams.delete(k));
+    history.replaceState({srPsd:true,view:"home",payload:{}},"",clean.pathname + clean.search + clean.hash);
+    sessionStorage.removeItem(SR_STACK_KEY);
+    srViewStack=[];
+  }catch(e){}
+  if(typeof goHome==="function") goHome(); else showWelcome();
+  window.scrollTo({top:0,behavior:"smooth"});
   if(push)srPushNav("home"); else srSaveNav("home");
 }
 window.home=function(){srNavHome(!srNavRestoring)}

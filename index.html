@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-showroom-v1">
+<meta name="sr-build" content="main-mobile-v29">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1594,211 +1594,9 @@ body{
   color:transparent!important;
 }
 </style>
-<style id="sr-showroom-ui-v1">
-:root{
-  --show-bg:#070a08;
-  --show-panel:#111713;
-  --show-panel2:#171c18;
-  --show-line:rgba(224,255,126,.12);
-  --show-lime:#d8ff63;
-  --show-green:#83f7a0;
-  --show-muted:#86938a;
-  --show-ink:#f7fff8;
-}
-body{
-  background:
-    radial-gradient(circle at 20% -10%,rgba(216,255,99,.11),transparent 34%),
-    linear-gradient(180deg,#070a08 0%,#050605 55%,#070707 100%)!important;
-  color:var(--show-ink)!important;
-}
-#sr-appbar{
-  position:sticky!important;top:0!important;z-index:8000!important;
-  height:68px!important;min-height:68px!important;
-  padding:10px 16px!important;gap:10px!important;
-  background:rgba(8,10,8,.86)!important;
-  border-bottom:1px solid rgba(216,255,99,.12)!important;
-  box-shadow:none!important;
-}
-#sr-brand{
-  font-size:0!important;letter-spacing:0!important;display:flex!important;align-items:center!important;gap:9px!important;
-  color:#fff!important;max-width:none!important;
-}
-#sr-brand::before{
-  content:"SR";width:35px;height:35px;border-radius:11px;display:grid;place-items:center;
-  background:linear-gradient(135deg,#e2ff6b,#9ddc4d);color:#071006;font-size:13px;font-weight:1000;
-}
-#sr-brand::after{
-  content:"S R Fashion\a Pusad · retail suite";white-space:pre;line-height:1.1;font-size:13px;font-weight:950;color:#f7fff8;
-}
-#sr-brand::first-line{font-size:15px}
-#sr-hamb,#sr-real-back,#sr-refresh,#scan-btn,#sr-filter-btn{
-  border:1px solid rgba(255,255,255,.11)!important;
-  background:rgba(255,255,255,.04)!important;
-  color:#e7f5e8!important;
-  border-radius:13px!important;
-  box-shadow:none!important;
-}
-#sr-top-admin,.sr-pill{
-  height:36px!important;border-radius:12px!important;
-  background:rgba(255,255,255,.045)!important;
-  border:1px solid rgba(255,255,255,.12)!important;
-  color:#f7fff8!important;
-  font-size:11px!important;font-weight:900!important;
-  box-shadow:none!important;
-}
-#sr-top-admin.on{background:linear-gradient(135deg,var(--show-lime),#92df58)!important;color:#071006!important}
-#sr-hero{
-  padding:42px 16px 18px;
-  min-height:230px;
-  background:
-    linear-gradient(105deg,rgba(18,31,22,.96),rgba(8,11,9,.88) 58%,rgba(8,8,8,.96)),
-    radial-gradient(circle at 75% 20%,rgba(216,255,99,.18),transparent 28%);
-  border-bottom:1px solid rgba(255,255,255,.08);
-  display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:14px;align-items:end;
-}
-.sr-hero-kicker{font-size:10px;letter-spacing:2.8px;color:#b7c4bb;text-transform:uppercase;font-weight:900}
-.sr-hero-title{margin-top:13px;font-size:clamp(44px,9vw,82px);line-height:.86;font-weight:1000;color:#fff}
-.sr-hero-title span{display:block;color:var(--show-lime)}
-.sr-hero-count{margin-top:16px;color:#aab7ad;font-size:13px}
-.sr-hero-art{
-  height:150px;border-radius:18px;overflow:hidden;
-  background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
-  border:1px solid rgba(255,255,255,.10);position:relative;
-}
-.sr-hero-art::before{
-  content:"";position:absolute;inset:0;
-  background:
-    linear-gradient(130deg,transparent 0 38%,rgba(216,255,99,.13) 38% 42%,transparent 42%),
-    radial-gradient(circle at 36% 32%,rgba(255,255,255,.50) 0 3px,transparent 4px),
-    radial-gradient(circle at 62% 28%,rgba(255,255,255,.32) 0 3px,transparent 4px),
-    linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.0));
-}
-.sr-hero-art::after{
-  content:"";position:absolute;left:36px;right:24px;bottom:20px;height:75px;
-  border:1px solid rgba(255,255,255,.24);border-top:0;border-radius:0 0 60px 60px;
-  transform:skewX(-8deg);
-}
-#ctrl{
-  padding:14px 16px 11px!important;
-  background:#070a08!important;
-  border-bottom:1px solid rgba(216,255,99,.10)!important;
-  gap:10px!important;
-}
-#search-row{gap:9px!important}
-#search{
-  height:50px!important;border-radius:13px!important;padding:0 15px 0 42px!important;
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.035))!important;
-  border:1px solid rgba(255,255,255,.10)!important;
-  color:#fff!important;font-size:14px!important;box-shadow:none!important;
-}
-#search-row::before{
-  content:"⌕";position:absolute;left:29px;margin-top:14px;color:#96a19a;z-index:2;font-size:18px;
-}
-#sort-row,#brand-btn,#grp-btn,#pf{display:none!important}
-#stock-row{gap:8px!important;overflow-x:auto!important;scrollbar-width:none!important}
-.stock-chip{
-  min-height:32px!important;padding:0 13px!important;border-radius:12px!important;
-  background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.10)!important;
-  color:#c9d2cb!important;font-size:12px!important;font-weight:900!important;
-}
-.stock-chip.on{background:var(--show-lime)!important;color:#091009!important;border-color:transparent!important}
-#status{padding:6px 16px!important;background:#08100d!important;color:#7f8a82!important;border-bottom:1px solid rgba(255,255,255,.05)!important}
-#scroll{background:#060806!important;padding-bottom:92px!important}
-body.sr-searching #sr-hero{
-  display:none!important;
-}
-body.sr-searching #ctrl{
-  position:sticky!important;
-  top:62px!important;
-  z-index:7600!important;
-  background:rgba(7,10,8,.94)!important;
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-}
-body.sr-searching #scroll{
-  min-height:calc(100vh - 174px)!important;
-}
-.c{
-  left:16px!important;right:16px!important;
-  border-radius:14px!important;clip-path:none!important;
-  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.032))!important;
-  border:1px solid rgba(255,255,255,.095)!important;
-  box-shadow:none!important;padding:10px!important;
-}
-.c::before{display:none!important}
-.c.exp{border-color:rgba(216,255,99,.32)!important}
-.c-name{font-size:14px!important;color:#f7fff8!important;background:none!important;-webkit-text-fill-color:#f7fff8!important}
-.c-alias{font-size:10px!important;color:#8d998f!important}
-.sr-card-visual.has-photo{grid-template-columns:68px minmax(0,1fr)!important;gap:10px!important}
-.sr-card-thumb{width:68px!important;height:82px!important;border-radius:10px!important;border:0!important;background:#141a16!important}
-.prices{margin-top:8px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
-.pb{border-radius:10px!important;padding:6px 8px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.075)!important}
-.pl{font-size:8px!important;letter-spacing:.5px!important}.pv{font-size:13px!important}
-.pb.m .pv,.pb.m .pl{color:#f1ff92!important}.pb.s .pv,.pb.s .pl{color:#88f0a1!important}.pb.w .pv,.pb.w .pl{color:#9fd0ff!important}.pb.k .pv,.pb.k .pl{color:#ff8da1!important}
-body:not(.admin-on) .pb.w{display:none!important}
-.det{border-top:1px solid rgba(255,255,255,.08)!important}
-.act{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important}
-.ab{height:36px!important;border-radius:10px!important}
-.sr-showroom-home{padding:12px 16px 110px!important;text-align:left!important;display:block!important}
-.sr-shelf-head{display:flex;align-items:center;justify-content:space-between;margin:3px 0 12px}
-.sr-shelf-head small{display:block;color:#8f9a92;font-size:10px;letter-spacing:2px;font-weight:900;text-transform:uppercase}
-.sr-shelf-head b{display:block;margin-top:5px;color:#fff;font-size:20px}
-.sr-shelf-head button{height:36px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#f7fff8;font-weight:900;padding:0 12px}
-.sr-show-card{position:relative!important;margin:0 0 9px!important;padding:10px!important;border-radius:14px!important;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.032))!important;border:1px solid rgba(255,255,255,.095)!important;cursor:pointer}
-.sr-show-card .prices{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-#sr-bottom-nav{
-  position:fixed;left:0;right:0;bottom:0;z-index:7990;
-  height:74px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;
-  background:rgba(8,10,8,.92);border-top:1px solid rgba(255,255,255,.09);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-}
-#sr-bottom-nav .sr-navbtn{
-  min-width:0;height:50px;border:0;border-radius:13px;background:transparent;color:#79857d;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  font-size:10px;font-weight:850;padding:0;
-}
-#sr-bottom-nav .sr-navbtn .sr-ico{font-size:19px;line-height:1;color:inherit}
-#sr-bottom-nav .sr-navbtn.active,#sr-bottom-nav .sr-navbtn:active{color:var(--show-lime);background:rgba(216,255,99,.08)}
-#sr-bottom-nav .sr-navbtn small{display:none}
-@media(max-width:760px){
-  #sr-appbar{height:62px!important;min-height:62px!important;padding:8px!important}
-  #sr-brand::before{width:32px;height:32px;border-radius:10px}
-  #sr-brand::after{font-size:11px}
-  #sr-top-admin{min-width:58px!important;max-width:68px!important}
-  .sr-pill{display:none!important}
-  #sr-hero{grid-template-columns:minmax(0,1fr) 110px;min-height:205px;padding:34px 16px 17px}
-  .sr-hero-title{font-size:51px}
-  .sr-hero-art{height:124px}
-  #search{height:48px!important}
-  .prices{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-  .pb.p{display:none!important}
-}
-@media(max-width:420px){
-  #sr-hero{grid-template-columns:1fr 86px;min-height:188px;padding-top:25px}
-  .sr-hero-title{font-size:43px}
-  .sr-hero-art{height:100px;border-radius:14px}
-  #ctrl{padding:11px 10px 9px!important}
-  #search-row::before{left:23px}
-  .c{left:10px!important;right:10px!important}
-  .sr-showroom-home{padding-left:10px!important;padding-right:10px!important}
-}
-@media(min-width:900px){
-  #sr-hero,#ctrl,#status,#scroll{max-width:1180px;margin-left:auto!important;margin-right:auto!important;width:100%}
-  #sr-bottom-nav{left:50%;transform:translateX(-50%);max-width:720px;border-radius:20px 20px 0 0}
-}
-</style>
 </head>
 <body>
 <div id="sr-appbar"><button id="sr-real-back" onclick="srGoPreviousPage()" title="Back" aria-label="Back">←</button><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin unlock" aria-label="Admin unlock">Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
-<section id="sr-hero" aria-label="SR Fashion stock desk">
-  <div>
-    <div class="sr-hero-kicker">Live Stock Desk</div>
-    <div class="sr-hero-title">Find it.<span>Sell it.</span></div>
-    <div class="sr-hero-count" id="sr-hero-count">Stock loading...</div>
-  </div>
-  <div class="sr-hero-art" aria-hidden="true"></div>
-</section>
 <div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
@@ -1817,12 +1615,6 @@ body:not(.admin-on) .pb.w{display:none!important}
 </div>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
-<nav id="sr-bottom-nav" aria-label="Main mobile navigation">
-  <button class="sr-navbtn active" data-view="home"><span class="sr-ico">▧</span><span>Stock<small>Search</small></span></button>
-  <button class="sr-navbtn" data-view="quote"><span class="sr-ico">▤</span><span>Quote<small>Bill</small></span></button>
-  <button class="sr-navbtn" data-view="missing-images"><span class="sr-ico">◫</span><span>Images<small>Work</small></span></button>
-  <button class="sr-navbtn" data-view="complete-filters"><span class="sr-ico">⚙</span><span>Reports<small>Filters</small></span></button>
-</nav>
 
 
 <div id="hdr">
@@ -2258,8 +2050,6 @@ function setStockStatus(source, count, extra = "") {
   if (badge) badge.textContent = count.toLocaleString("en-IN") + " items";
   const srCount = document.getElementById("sr-count");
   if (srCount) srCount.textContent = count.toLocaleString("en-IN") + " items";
-  const heroCount = document.getElementById("sr-hero-count");
-  if (heroCount) heroCount.textContent = count.toLocaleString("en-IN") + " items · " + (source === "live" ? "updated just now" : "saved stock ready");
   const status = document.getElementById("status");
   if (status) status.textContent = text;
 }
@@ -2398,52 +2188,16 @@ async function refreshData(){
   }
 }
 
-function srShelfRows(){
-  const source = raw.map((it,ri)=>[it,ri]).filter(([it])=>Number(it.stock||0)>0);
-  return (source.length ? source : raw.map((it,ri)=>[it,ri])).slice(0,12);
-}
-function srShelfCardHTML(it, ri){
-  return `<div class="sr-show-card" data-ri="${ri}" onclick="srOpenShelfItem(${ri})">
-    <div class="sr-card-visual${srKnownHasImage(it)?' has-photo':''}">
-      ${srFirstPhotoHtml(it,ri)}
-      <div class="sr-card-main">
-        <div class="c-name">${escq(it.name||'Unnamed item')}</div>
-        <div class="c-alias">${escq([it.alias||it.barcode||'', it.group||it.PartGroup||'', it.size?`Size ${it.size}`:'', it.colour||it.color||''].filter(Boolean).join(' · '))}</div>
-        <div class="prices">
-          <div class="pb s"><div class="pl">Sale</div><div class="pv">${fmt(it.sale)}</div></div>
-          <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
-          <div class="pb k"><div class="pl">Stock</div><div class="pv">${it.stock??'-'}</div></div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-function srOpenShelfItem(ri){
-  const it = raw[ri];
-  if(!it) return;
-  const term = it.alias || it.barcode || it.name || "";
-  const s = document.getElementById("search");
-  if(s) s.value = term;
-  query = term;
-  applyAll();
-  expanded.add(ri);
-  rebuildOffsets();
-  vsRender(true);
-}
 function showWelcome(){
-  document.body.classList.remove("sr-searching");
   spacer.style.height = '0px';
-  const rows = srShelfRows();
   stage.innerHTML = `
-    <div id="welcome" class="sr-showroom-home">
-      <div class="sr-shelf-head">
-        <div><small>Catalogue</small><b>Today’s shelf</b></div>
-        <button type="button" onclick="srShareCatalog()">Share</button>
-      </div>
-      ${rows.length ? rows.map(([it,ri])=>srShelfCardHTML(it,ri)).join("") : `<div class="sr-no-results"><div class="sr-no-logo">SR</div><b>Stock loading</b><small>Use refresh if the list does not appear.</small></div>`}
+    <div id="welcome">
+      <div class="w-logo">SR</div>
+      <div class="w-sub">FASHION PUSAD</div>
+      <div class="w-line"></div>
+      <div class="w-hint">Search or scan a product above to find items instantly</div>
     </div>`;
   document.getElementById("status").textContent = '';
-  setTimeout(srHydrateVisibleThumbs, 30);
 }
 
 function goHome(){
@@ -2733,7 +2487,6 @@ function applyAll(){
   }
   const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='' || activeTag;
   if(!hasFilter){ showWelcome(); return; }
-  document.body.classList.add("sr-searching");
   expanded.clear();
   expandedHeights = {};
   let out = [];

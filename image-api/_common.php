@@ -21,10 +21,20 @@ function sr_key(): string {
   return is_file($file) ? trim((string)file_get_contents($file)) : '';
 }
 
+function sr_valid_session_key(string $given): bool {
+  if ($given === '') return false;
+  $file = dirname(__DIR__) . '/private/upload-sessions.json';
+  if (!is_file($file)) return false;
+  $data = json_decode((string)file_get_contents($file), true);
+  if (!is_array($data) || empty($data[$given]) || !is_array($data[$given])) return false;
+  return (int)($data[$given]['expiresAt'] ?? 0) > time();
+}
+
 function sr_require_key(): void {
   $given = $_SERVER['HTTP_X_SR_IMAGE_KEY'] ?? '';
   $key = sr_key();
-  if ($key === '' || !hash_equals($key, $given)) {
+  $hasStaticKey = $key !== '' && hash_equals($key, $given);
+  if (!$hasStaticKey && !sr_valid_session_key($given)) {
     sr_json(403, ['ok' => false, 'error' => 'Image upload password required']);
   }
 }

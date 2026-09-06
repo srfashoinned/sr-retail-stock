@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v29">
+<meta name="sr-build" content="main-mobile-v30">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1939,9 +1939,9 @@ function getImageUrls(it){
 }
 
 async function loadLegacyImages(alias){
-  const apiUrl = `https://api.github.com/repos/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/contents/products/${encodeURIComponent(alias)}?ref=${LEGACY_IMAGE_BRANCH}&t=${Date.now()}`;
+  const apiUrl = `https://api.github.com/repos/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/contents/products/${encodeURIComponent(alias)}?ref=${LEGACY_IMAGE_BRANCH}`;
   try{
-    const r = await fetch(apiUrl, { cache:'no-store', headers:{ 'Accept':'application/vnd.github+json' } });
+    const r = await fetch(apiUrl, { cache:'force-cache', headers:{ 'Accept':'application/vnd.github+json' } });
     if(!r.ok) return [];
     const files = await r.json();
     return files
@@ -3231,7 +3231,7 @@ function resetPw(){
 function onPwInput(el){
   const v=el.value;
   [0,1,2,3].forEach(i=>dot(i,i<v.length?'f':''));
-  if(v.length>=3) setTimeout(doLogin,100);
+  if(v.length>=4) setTimeout(doLogin,100);
 }
 function dot(i,c){
   const d=document.getElementById("d"+i);
@@ -3414,7 +3414,7 @@ let pimCurrentItem = null;
 let pimImages = [];    /* [{name, url}] loaded from website image storage */
 let pimStorageCount = 0;
 const pimImageListCache = new Map();
-const PIM_CACHE_MS = 5 * 60 * 1000;
+const PIM_CACHE_MS = 60 * 60 * 1000;
 let pimFsIdx  = 0;
 let pimQueueMode = false;
 let pimQueueRow = null;
@@ -3436,8 +3436,16 @@ function pimSetToken(token, announce = true){
 function pimSaveToken(){
   const t = document.getElementById('pim-token-input').value.trim();
   if(!t){ toast('⚠️ Upload password is empty'); return; }
-  pimSetToken(t);
-  if(pimCurrentItem) pimLoad();
+  srAuthLogin(t).then(auth=>{
+    if(auth.role !== 'staff' && auth.role !== 'admin') throw new Error('Wrong image password');
+    if(auth.imageKey) pimSetToken(auth.imageKey);
+    isStaff = auth.role === 'staff';
+    isAdmin = auth.role === 'admin';
+    setAdminUi(isAdmin);
+    if(pimCurrentItem) pimLoad();
+  }).catch(()=>{
+    toast('Wrong image password');
+  });
 }
 function pimClearToken(){
   pimToken = '';
@@ -3486,8 +3494,8 @@ function openPim(ri, e){
   const alias = srImageAlias(it);
   const cached = alias ? pimImageListCache.get(alias) : null;
   pimCurrentItem = it;
-  pimImages = cached && Date.now() - cached.at < PIM_CACHE_MS ? (cached.images || []) : [];
-  pimStorageCount = cached && Date.now() - cached.at < PIM_CACHE_MS ? (cached.storageCount || 0) : 0;
+  pimImages = cached ? (cached.images || []) : [];
+  pimStorageCount = cached ? (cached.storageCount || 0) : 0;
 
   document.getElementById('pim-title').textContent = it.name || 'Product Images';
   document.getElementById('pim-alias').textContent  = it.alias ? '📦 ' + it.alias : '';
@@ -3525,7 +3533,7 @@ async function pimLoad(){
   if(!alias){ pimShowArea('empty'); return; }
 
   const cached = pimImageListCache.get(alias);
-  if(cached && Date.now() - cached.at < PIM_CACHE_MS){
+  if(cached){
     pimStorageCount = cached.storageCount || 0;
     pimImages = cached.images || [];
     srSetImageSeen(alias, pimImages.length > 0);

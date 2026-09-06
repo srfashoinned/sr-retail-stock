@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="sr-build" content="main-mobile-v26">
+<meta name="sr-build" content="main-mobile-v27">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#09090b">
 <meta name="application-name" content="SR Fashion">
@@ -1260,6 +1260,36 @@ body{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif!importa
   font-weight:900!important;
   text-transform:uppercase!important;
 }
+.sr-card-visual{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:9px!important;
+  align-items:start!important;
+}
+.sr-card-visual.has-photo{grid-template-columns:70px minmax(0,1fr)!important}
+.sr-card-thumb{
+  width:70px!important;
+  height:92px!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,211,92,.24)!important;
+  background:linear-gradient(145deg,rgba(255,211,92,.10),rgba(34,197,94,.08))!important;
+  display:none!important;
+  position:relative!important;
+}
+.sr-card-thumb.show{display:block!important}
+.sr-card-thumb img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+.sr-card-thumb span{position:absolute;left:5px;right:5px;bottom:5px;border-radius:999px;background:rgba(0,0,0,.62);color:#ffd35c;font-size:9px;font-weight:900;text-align:center;padding:2px 4px}
+.sr-card-main{min-width:0!important}
+.sr-ai-prompt-box{margin:0 12px 10px;border:1px solid rgba(34,211,238,.24);background:linear-gradient(145deg,rgba(34,211,238,.08),rgba(255,211,92,.06));border-radius:13px;padding:10px;display:grid;gap:7px}
+.sr-ai-prompt-box b{font-size:12px;color:#a7f3d0}
+.sr-ai-prompt-box textarea{width:100%;min-height:86px;resize:vertical;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#09090b;color:#f8fafc;padding:9px;font:inherit;font-size:12px;line-height:1.35}
+.sr-ai-prompt-box button{height:34px;border:0;border-radius:9px;background:#ffd35c;color:#111;font-weight:1000}
+@media(max-width:520px){
+  .sr-card-visual{gap:7px!important}
+  .sr-card-visual.has-photo{grid-template-columns:58px minmax(0,1fr)!important}
+  .sr-card-thumb{width:58px!important;height:76px!important;border-radius:10px!important}
+}
 #sr-top-admin{
   width:auto!important;
   min-width:64px!important;
@@ -1786,8 +1816,8 @@ body{
     </div>
 
     <div id="pim-upload-actions">
-      <button id="pim-gallery-btn" type="button" onclick="document.getElementById('pim-file-input').click()">📁 Upload Gallery</button>
-      <button id="pim-camera-btn" type="button" onclick="document.getElementById('pim-cam-input').click()">📷 Capture Camera</button>
+      <button id="pim-gallery-btn" type="button" onclick="pimPickFiles('gallery')">📁 Upload Gallery</button>
+      <button id="pim-camera-btn" type="button" onclick="pimPickFiles('camera')">📷 Capture Camera</button>
     </div>
 
     <!-- Scrollable content -->
@@ -1806,6 +1836,12 @@ body{
         <div class="pim-empty-icon">🖼️</div>
         <div class="pim-empty-txt">No images yet for this product.<br>Open admin mode and enter upload password to add photos.</div>
       </div>
+    </div>
+
+    <div id="pim-ai-prompt" class="sr-ai-prompt-box" style="display:none">
+      <b>Model wearing prompt</b>
+      <textarea id="pim-ai-text" readonly></textarea>
+      <button type="button" onclick="pimCopyAiPrompt()">Copy Prompt</button>
     </div>
 
     <!-- Upload progress bar -->
@@ -2556,6 +2592,7 @@ function vsRender(force){
     html += cardHTML(raw[pool[vi]], pool[vi], offsets[vi], q);
   }
   stage.innerHTML = html;
+  srHydrateVisibleThumbs();
 }
 
 function bsearchFirst(targetTop){
@@ -2595,6 +2632,46 @@ function marginStr(it){
   if(!s||!p) return '';
   return ' <span style="font-size:10px;color:var(--green);font-weight:600">('+Math.round((s-p)/s*100)+'%)</span>';
 }
+function srFirstPhotoHtml(it,ri){
+  const known = srKnownHasImage(it);
+  return `<button type="button" class="sr-card-thumb${known?' show':''}" data-thumb-ri="${ri}" onclick="openPim(${ri},event)" aria-label="Open product photos">${known?'<span>Photo</span>':''}</button>`;
+}
+async function srFirstImageForItem(it){
+  const alias = srImageAlias(it);
+  if(!alias) return "";
+  const cached = pimImageListCache.get(alias);
+  if(cached && Date.now() - cached.at < PIM_CACHE_MS && cached.images && cached.images.length){
+    return cached.images[0].url || "";
+  }
+  try{
+    const data = await imageApiFetch(`/list?alias=${encodeURIComponent(alias)}`, { cache:'default' });
+    const siteImages = (data.images || [])
+      .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
+      .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
+    if(siteImages.length){
+      pimImageListCache.set(alias, { at:Date.now(), storageCount:siteImages.length, images:siteImages });
+      srSetImageSeen(alias, true);
+      return siteImages[0].url || "";
+    }
+  }catch(e){}
+  if(it && it.images && it.images.length) return it.images[0];
+  return "";
+}
+function srHydrateVisibleThumbs(){
+  const slots = Array.from(document.querySelectorAll('.sr-card-thumb[data-thumb-ri]:not([data-thumb-done])')).slice(0,12);
+  slots.forEach(slot=>{
+    slot.dataset.thumbDone = "1";
+    const it = raw[Number(slot.dataset.thumbRi)];
+    if(!it) return;
+    srFirstImageForItem(it).then(url=>{
+      if(!url || !slot.isConnected) return;
+      slot.innerHTML = `<img src="${escq(url)}" alt="" loading="eager" decoding="async"><span>Photo</span>`;
+      slot.classList.add("show");
+      const visual = slot.closest(".sr-card-visual");
+      if(visual) visual.classList.add("has-photo");
+    }).catch(()=>{});
+  });
+}
 
 function cardHTML(it, ri, topPx, q){
   const exp = expanded.has(ri);
@@ -2623,24 +2700,29 @@ function cardHTML(it, ri, topPx, q){
     </div>`:'';
 
   return `<div class="c${exp?' exp':''}" style="top:${topPx}px" data-ri="${ri}" onclick="toggleCard(${ri})">
-    <div class="c-name">${hl(it.name||'',q)}</div>
-    ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
-    ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
-    ${factHTML}
-    <div class="prices">
-      <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
-      <div class="pb s shareable" onclick="openExp(${ri},'sale',event)" title="Tap to share Sale price image">
-        <span class="share-badge">📤</span>
-        <div class="pl">Sale Price</div>
-        <div class="pv">${fmt(it.sale)}</div>
+    <div class="sr-card-visual${srKnownHasImage(it)?' has-photo':''}">
+      ${srFirstPhotoHtml(it,ri)}
+      <div class="sr-card-main">
+        <div class="c-name">${hl(it.name||'',q)}</div>
+        ${it.alias?`<div class="c-alias" style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">${hl(it.alias||'',q)}</div>`:''}
+        ${it.group?`<div class="c-alias">🗂 ${hl(it.group||'',q)}</div>`:''}
+        ${factHTML}
+        <div class="prices">
+          <div class="pb m"><div class="pl">MRP</div><div class="pv">${fmt(it.mrp)}</div></div>
+          <div class="pb s shareable" onclick="openExp(${ri},'sale',event)" title="Tap to share Sale price image">
+            <span class="share-badge">📤</span>
+            <div class="pl">Sale Price</div>
+            <div class="pv">${fmt(it.sale)}</div>
+          </div>
+          <div class="pb w shareable" onclick="openExp(${ri},'wholesale',event)" title="Tap to share Wholesale price image">
+            <span class="share-badge">📤</span>
+            <div class="pl">Wholesale</div>
+            <div class="pv">${fmt(it.wholesale)}</div>
+          </div>
+          <div class="pb k"><div class="pl">Stock</div><div class="pv">${it.stock??'–'}</div></div>
+          ${purchBlock}
+        </div>
       </div>
-      <div class="pb w shareable" onclick="openExp(${ri},'wholesale',event)" title="Tap to share Wholesale price image">
-        <span class="share-badge">📤</span>
-        <div class="pl">Wholesale</div>
-        <div class="pv">${fmt(it.wholesale)}</div>
-      </div>
-      <div class="pb k"><div class="pl">Stock</div><div class="pv">${it.stock??'–'}</div></div>
-      ${purchBlock}
     </div>
     ${detHTML}
   </div>`;
@@ -3391,19 +3473,29 @@ function pimRenderUploadActions(){
   });
 }
 
+function pimPickFiles(source){
+  const input = document.getElementById(source === 'camera' ? 'pim-cam-input' : 'pim-file-input');
+  if(!input) return;
+  input.value = '';
+  input.click();
+}
+
 /* ─── Open modal ─── */
 function openPim(ri, e){
   if(e) e.stopPropagation();
   const it = raw[ri];
   if(!it){ toast('Product not found'); return; }
   const wasOpen = document.getElementById('pim-ov').classList.contains('show');
+  const alias = srImageAlias(it);
+  const cached = alias ? pimImageListCache.get(alias) : null;
   pimCurrentItem = it;
-  pimImages = [];
+  pimImages = cached && Date.now() - cached.at < PIM_CACHE_MS ? (cached.images || []) : [];
+  pimStorageCount = cached && Date.now() - cached.at < PIM_CACHE_MS ? (cached.storageCount || 0) : 0;
 
   document.getElementById('pim-title').textContent = it.name || 'Product Images';
   document.getElementById('pim-alias').textContent  = it.alias ? '📦 ' + it.alias : '';
-  document.getElementById('pim-count-badge').textContent = '0 / ' + MAX_IMAGES;
-  pimShowArea('loading');
+  document.getElementById('pim-count-badge').textContent = pimImages.length + ' / ' + MAX_IMAGES;
+  if(pimImages.length) pimRenderGrid(); else pimShowArea('loading');
   document.getElementById('pim-progress').classList.remove('show');
   document.getElementById('pim-footer-hint').textContent = '';
 
@@ -3419,6 +3511,8 @@ function openPim(ri, e){
 
 function closePim(){
   document.getElementById('pim-ov').classList.remove('show');
+  const prompt = document.getElementById('pim-ai-prompt');
+  if(prompt) prompt.style.display = 'none';
   pimCurrentItem = null;
   pimImages = [];
 }
@@ -3546,12 +3640,12 @@ function pimRenderGrid(){
 
   /* Upload from gallery */
   if(canUpload){
-    html += `<div class="pim-add-cell" onclick="document.getElementById('pim-file-input').click()" title="Upload from gallery">
+    html += `<div class="pim-add-cell" onclick="pimPickFiles('gallery')" title="Upload from gallery">
       <div class="pim-add-icon">📁</div>
       <div class="pim-add-txt">Gallery</div>
     </div>`;
     /* Camera capture */
-    html += `<div class="pim-cam-cell" onclick="document.getElementById('pim-cam-input').click()" title="Take a photo">
+    html += `<div class="pim-cam-cell" onclick="pimPickFiles('camera')" title="Take a photo">
       <div class="pim-add-icon">📷</div>
       <div class="pim-add-txt">Camera</div>
     </div>`;
@@ -3572,6 +3666,8 @@ function pimRenderGrid(){
   }
 
   grid.innerHTML = html;
+  pimRenderAiPrompt();
+  pimPreloadAround(0);
 
   if(count === 0){
     /* show grid area but with empty message inside */
@@ -3615,7 +3711,8 @@ async function pimHandleFiles(files){
   const available = MAX_IMAGES - pimStorageCount;
   if(available <= 0){ toast('🚫 Max 10 images per product'); return; }
 
-  const toUpload = Array.from(files).slice(0, available);
+  const toUpload = Array.from(files).filter(file => file && /^image\//i.test(file.type || '')).slice(0, available);
+  if(!toUpload.length){ toast('No image selected'); return; }
   const prog = document.getElementById('pim-progress');
   const bar  = document.getElementById('pim-prog-bar');
   const txt  = document.getElementById('pim-prog-txt');
@@ -3654,8 +3751,6 @@ async function pimHandleFiles(files){
   if(pimQueueMode){
     pimQueueMode=false;
     pimQueueRow=null;
-    pimCurrentItem=null;
-    pimImages=[];
   }
 }
 
@@ -3730,9 +3825,8 @@ function pimFsShow(){
   const img = pimImages[pimFsIdx];
   if(!img) return;
   const fsImg = document.getElementById('pim-fs-img');
-  fsImg.removeAttribute('src');
   fsImg.decoding = 'async';
-  fsImg.src = img.url;
+  if(fsImg.getAttribute('src') !== img.url) fsImg.src = img.url;
   document.getElementById('pim-fs-counter').textContent = (pimFsIdx+1) + ' / ' + pimImages.length;
   const single = pimImages.length <= 1;
   document.getElementById('pim-fs-prev').style.display = single ? 'none' : '';
@@ -3741,6 +3835,50 @@ function pimFsShow(){
   /* show hint briefly */
   const hint = document.getElementById('pim-fs-zoom-hint');
   if(hint){ hint.style.opacity='1'; clearTimeout(hint._tm); hint._tm=setTimeout(()=>hint.style.opacity='0',2000); }
+  pimPreloadAround(pimFsIdx);
+}
+
+function pimPreloadAround(idx){
+  [idx, idx + 1, idx - 1].forEach(i=>{
+    const img = pimImages[(i + pimImages.length) % pimImages.length];
+    if(img && img.url){
+      const pre = new Image();
+      pre.decoding = 'async';
+      pre.src = img.url;
+    }
+  });
+}
+
+function pimBuildAiPrompt(){
+  const it = pimCurrentItem || {};
+  const parts = [
+    it.name || 'this garment',
+    it.alias ? 'code ' + it.alias : '',
+    it.group || '',
+    it.size ? 'size ' + it.size : '',
+    (it.colour || it.color) ? 'colour ' + (it.colour || it.color) : ''
+  ].filter(Boolean).join(', ');
+  const multi = pimImages.length > 1;
+  return `Use the uploaded product photo${multi ? 's as exact references from multiple views' : ' as the exact reference'} for ${parts}. Create a premium photorealistic catalog image of a young adult female model wearing the same garment. The model must hide her face with a mobile phone held in front of her face. Preserve the exact fabric, colour, print, embroidery, neckline, sleeve length, border, dupatta/trouser details, fit and proportions. Do not change the product design. Use clean boutique lighting, full body framing, sharp fabric detail, natural pose, no extra text, no watermark, no logo. ${multi ? 'Combine all uploaded views consistently: front photo controls front design, back or side photos control those parts, close-up photos control texture and embroidery.' : ''}`;
+}
+function pimRenderAiPrompt(){
+  const box = document.getElementById('pim-ai-prompt');
+  const text = document.getElementById('pim-ai-text');
+  if(!box || !text) return;
+  box.style.display = pimCurrentItem ? 'grid' : 'none';
+  text.value = pimBuildAiPrompt();
+}
+async function pimCopyAiPrompt(){
+  const text = document.getElementById('pim-ai-text');
+  if(!text) return;
+  try{
+    await navigator.clipboard.writeText(text.value);
+    toast('Prompt copied');
+  }catch(e){
+    text.focus();
+    text.select();
+    toast('Prompt selected');
+  }
 }
 
 function pimFsNav(dir){
@@ -4311,8 +4449,7 @@ function srQueueUpload(ri,source,e){
   pimStorageCount=0;
   pimQueueMode=true;
   pimQueueRow=e?.target?.closest(".sr-report-item")||null;
-  const input=document.getElementById(source==="camera"?"pim-cam-input":"pim-file-input");
-  if(input)input.click();
+  pimPickFiles(source);
 }
 function srQueueImages(ri,e){
   if(e)e.stopPropagation();

@@ -64,6 +64,7 @@ function Send-FtpFile {
 
 $requiredFiles = @(
   "index.html",
+  "sw.js",
   "items.json",
   "CNAME"
 )

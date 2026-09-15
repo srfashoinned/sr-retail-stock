@@ -1,5 +1,167 @@
 [
   {
+    "ProductID": 33693,
+    "name": "KF GUNJAN",
+    "alias": "P-33693",
+    "barcode": "5794",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 667.5,
+    "sale": 580,
+    "wholesale": 485,
+    "purchase": 445,
+    "size": "",
+    "colour": "",
+    "stock": 7,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33692,
+    "name": "RED AND BLACK",
+    "alias": "P-33692",
+    "barcode": "5793",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 772.5,
+    "sale": 650,
+    "wholesale": 545,
+    "purchase": 515,
+    "size": "",
+    "colour": "",
+    "stock": 2,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33691,
+    "name": "KKC DIL SE",
+    "alias": "P-33691",
+    "barcode": "5792",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 345,
+    "sale": 300,
+    "wholesale": 255,
+    "purchase": 230,
+    "size": "",
+    "colour": "",
+    "stock": 7,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33690,
+    "name": "PC GOLD ROSE",
+    "alias": "P-33690",
+    "barcode": "5791",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 540,
+    "sale": 480,
+    "wholesale": 395,
+    "purchase": 360,
+    "size": "",
+    "colour": "",
+    "stock": 4,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33689,
+    "name": "PC SENORITA",
+    "alias": "P-33689",
+    "barcode": "5790",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 720,
+    "sale": 620,
+    "wholesale": 510,
+    "purchase": 480,
+    "size": "",
+    "colour": "",
+    "stock": 8,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33688,
+    "name": "PC KAVA",
+    "alias": "P-33688",
+    "barcode": "5789",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 675,
+    "sale": 600,
+    "wholesale": 485,
+    "purchase": 450,
+    "size": "",
+    "colour": "",
+    "stock": 8,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33687,
+    "name": "OM STAR WORLD",
+    "alias": "P-33687",
+    "barcode": "5788",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 772.5,
+    "sale": 650,
+    "wholesale": 545,
+    "purchase": 515,
+    "size": "",
+    "colour": "",
+    "stock": 7,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33686,
+    "name": "AHD DAMAN DIL",
+    "alias": "P-33686",
+    "barcode": "5787",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 675,
+    "sale": 570,
+    "wholesale": 480,
+    "purchase": 450,
+    "size": "",
+    "colour": "",
+    "stock": 12,
+    "entryDate": "2026-09-09"
+  },
+  {
+    "ProductID": 33685,
+    "name": "JT BATIQ SPECIAL",
+    "alias": "P-33685",
+    "barcode": "5786",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "GENERAL",
+    "PartGroup": "0",
+    "mrp": 502.5,
+    "sale": 400,
+    "wholesale": 350,
+    "purchase": 335,
+    "size": "",
+    "colour": "",
+    "stock": 14,
+    "entryDate": "2026-09-09"
+  },
+  {
     "ProductID": 33684,
     "name": "MASTI ANARKALI",
     "alias": "P-33684",
@@ -14,7 +176,7 @@
     "purchase": 560,
     "size": "3XL",
     "colour": "",
-    "stock": 8,
+    "stock": 1,
     "entryDate": "2026-09-05"
   },
   {
@@ -32,7 +194,7 @@
     "purchase": 560,
     "size": "XL",
     "colour": "",
-    "stock": 8,
+    "stock": 0,
     "entryDate": "2026-09-05"
   },
   {
@@ -50,7 +212,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": 29,
+    "stock": 7,
     "entryDate": "2026-09-05"
   },
   {
@@ -63,12 +225,12 @@
     "SubCategory": "TROUSER",
     "PartGroup": "TROUSER",
     "mrp": 728,
-    "sale": 649.99,
+    "sale": 650,
     "wholesale": 600,
     "purchase": 560,
     "size": "2XL",
     "colour": "",
-    "stock": 32,
+    "stock": 24,
     "entryDate": "2026-09-05"
   },
   {
@@ -86,7 +248,7 @@
     "purchase": 386,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-09-01"
   },
   {
@@ -104,7 +266,7 @@
     "purchase": 697,
     "size": "",
     "colour": "",
-    "stock": 8,
+    "stock": 5,
     "entryDate": "2026-09-01"
   },
   {
@@ -176,7 +338,7 @@
     "purchase": 349,
     "size": "",
     "colour": "",
-    "stock": 8,
+    "stock": 5,
     "entryDate": "2026-09-01"
   },
   {
@@ -212,7 +374,7 @@
     "purchase": 375,
     "size": "",
     "colour": "",
-    "stock": 32,
+    "stock": 26,
     "entryDate": "2026-09-01"
   },
   {
@@ -248,7 +410,7 @@
     "purchase": 858,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-09-01"
   },
   {
@@ -284,7 +446,7 @@
     "purchase": 670,
     "size": "",
     "colour": "",
-    "stock": 8,
+    "stock": 7,
     "entryDate": "2026-09-01"
   },
   {
@@ -320,7 +482,7 @@
     "purchase": 370,
     "size": "",
     "colour": "",
-    "stock": 28,
+    "stock": 17,
     "entryDate": "2026-09-01"
   },
   {
@@ -338,7 +500,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 20,
+    "stock": 23,
     "entryDate": "2026-09-01"
   },
   {
@@ -374,7 +536,7 @@
     "purchase": 525,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 0,
     "entryDate": "2026-09-01"
   },
   {
@@ -389,7 +551,7 @@
     "mrp": 787.5,
     "sale": 640,
     "wholesale": 555,
-    "purchase": 535,
+    "purchase": 525,
     "size": "",
     "colour": "",
     "stock": 0,
@@ -410,7 +572,7 @@
     "purchase": 490,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 2,
     "entryDate": "2026-08-28"
   },
   {
@@ -424,11 +586,11 @@
     "PartGroup": "0",
     "mrp": 577.5,
     "sale": 500,
-    "wholesale": 0,
+    "wholesale": 415,
     "purchase": 385,
     "size": "",
     "colour": "",
-    "stock": -6,
+    "stock": 10,
     "entryDate": "2026-08-28"
   },
   {
@@ -446,7 +608,7 @@
     "purchase": 345,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 16,
     "entryDate": "2026-08-28"
   },
   {
@@ -464,7 +626,7 @@
     "purchase": 62,
     "size": "",
     "colour": "",
-    "stock": 994,
+    "stock": 962,
     "entryDate": "2026-08-28"
   },
   {
@@ -518,7 +680,7 @@
     "purchase": 250,
     "size": "",
     "colour": "",
-    "stock": 50,
+    "stock": 49,
     "entryDate": "2026-08-22"
   },
   {
@@ -536,7 +698,7 @@
     "purchase": 505,
     "size": "",
     "colour": "",
-    "stock": 7,
+    "stock": 6,
     "entryDate": "2026-08-18"
   },
   {
@@ -806,7 +968,7 @@
     "purchase": 385,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-08-18"
   },
   {
@@ -896,7 +1058,7 @@
     "purchase": 1165,
     "size": "",
     "colour": "",
-    "stock": 47,
+    "stock": 39,
     "entryDate": "2026-08-18"
   },
   {
@@ -914,7 +1076,7 @@
     "purchase": 196,
     "size": "",
     "colour": "",
-    "stock": 39,
+    "stock": 19,
     "entryDate": "2026-08-17"
   },
   {
@@ -932,7 +1094,7 @@
     "purchase": 405,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-08-09"
   },
   {
@@ -950,7 +1112,7 @@
     "purchase": 525,
     "size": "",
     "colour": "",
-    "stock": 7,
+    "stock": 15,
     "entryDate": "2026-08-09"
   },
   {
@@ -986,7 +1148,7 @@
     "purchase": 525,
     "size": "",
     "colour": "",
-    "stock": 6,
+    "stock": 1,
     "entryDate": "2026-08-09"
   },
   {
@@ -1022,7 +1184,7 @@
     "purchase": 465,
     "size": "",
     "colour": "",
-    "stock": 9,
+    "stock": 6,
     "entryDate": "2026-08-09"
   },
   {
@@ -1040,7 +1202,7 @@
     "purchase": 495,
     "size": "",
     "colour": "",
-    "stock": 5,
+    "stock": 4,
     "entryDate": "2026-08-09"
   },
   {
@@ -1076,7 +1238,7 @@
     "purchase": 525,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-08-09"
   },
   {
@@ -1094,7 +1256,7 @@
     "purchase": 425,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 2,
     "entryDate": "2026-08-02"
   },
   {
@@ -1112,7 +1274,7 @@
     "purchase": 355,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-08-02"
   },
   {
@@ -1238,7 +1400,7 @@
     "purchase": 485,
     "size": "",
     "colour": "",
-    "stock": 3,
+    "stock": -7,
     "entryDate": "2026-07-27"
   },
   {
@@ -1328,7 +1490,7 @@
     "purchase": 492,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-07-27"
   },
   {
@@ -1454,7 +1616,7 @@
     "purchase": 471,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 0,
     "entryDate": "2026-07-27"
   },
   {
@@ -1472,7 +1634,7 @@
     "purchase": 1100,
     "size": "",
     "colour": "",
-    "stock": 18,
+    "stock": 16,
     "entryDate": "2026-07-27"
   },
   {
@@ -1562,7 +1724,7 @@
     "purchase": 510,
     "size": "",
     "colour": "",
-    "stock": 29,
+    "stock": 21,
     "entryDate": "2026-07-27"
   },
   {
@@ -1580,7 +1742,7 @@
     "purchase": 325,
     "size": "",
     "colour": "",
-    "stock": 60,
+    "stock": 58,
     "entryDate": "2026-07-27"
   },
   {
@@ -1598,7 +1760,7 @@
     "purchase": 435,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": -6,
     "entryDate": "2026-07-26"
   },
   {
@@ -1796,7 +1958,7 @@
     "purchase": 1355,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-21"
   },
   {
@@ -1868,7 +2030,7 @@
     "purchase": 490,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 2,
     "entryDate": "2026-07-21"
   },
   {
@@ -2012,7 +2174,7 @@
     "purchase": 405,
     "size": "",
     "colour": "",
-    "stock": 38,
+    "stock": 37,
     "entryDate": "2026-07-21"
   },
   {
@@ -2098,11 +2260,11 @@
     "PartGroup": "COTTON SUIT",
     "mrp": 705,
     "sale": 550,
-    "wholesale": 525,
-    "purchase": 470,
+    "wholesale": 480,
+    "purchase": 450,
     "size": "",
     "colour": "",
-    "stock": 20,
+    "stock": 25,
     "entryDate": "2026-07-19"
   },
   {
@@ -2174,7 +2336,7 @@
     "purchase": 1100,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 0,
     "entryDate": "2026-07-19"
   },
   {
@@ -2192,7 +2354,7 @@
     "purchase": 1425,
     "size": "",
     "colour": "",
-    "stock": 3,
+    "stock": 2,
     "entryDate": "2026-07-18"
   },
   {
@@ -2210,7 +2372,7 @@
     "purchase": 1425,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-18"
   },
   {
@@ -2480,7 +2642,7 @@
     "purchase": 325,
     "size": "",
     "colour": "",
-    "stock": -13,
+    "stock": -24,
     "entryDate": "2026-07-15"
   },
   {
@@ -2498,7 +2660,7 @@
     "purchase": 345,
     "size": "",
     "colour": "",
-    "stock": -39,
+    "stock": -41,
     "entryDate": "2026-07-15"
   },
   {
@@ -2516,7 +2678,7 @@
     "purchase": 345,
     "size": "",
     "colour": "",
-    "stock": -76,
+    "stock": -77,
     "entryDate": "2026-07-15"
   },
   {
@@ -2750,7 +2912,7 @@
     "purchase": 3800,
     "size": "",
     "colour": "",
-    "stock": -2,
+    "stock": -3,
     "entryDate": "2026-07-13"
   },
   {
@@ -2804,7 +2966,7 @@
     "purchase": 540,
     "size": "",
     "colour": "",
-    "stock": 39,
+    "stock": 29,
     "entryDate": "2026-07-12"
   },
   {
@@ -2822,7 +2984,7 @@
     "purchase": 485,
     "size": "",
     "colour": "",
-    "stock": 7,
+    "stock": 4,
     "entryDate": "2026-07-12"
   },
   {
@@ -2912,7 +3074,7 @@
     "purchase": 425,
     "size": "",
     "colour": "",
-    "stock": 8,
+    "stock": 7,
     "entryDate": "2026-07-12"
   },
   {
@@ -2930,7 +3092,7 @@
     "purchase": 505,
     "size": "",
     "colour": "",
-    "stock": 3,
+    "stock": 2,
     "entryDate": "2026-07-12"
   },
   {
@@ -2984,7 +3146,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": 24,
+    "stock": 11,
     "entryDate": "2026-07-12"
   },
   {
@@ -3200,7 +3362,7 @@
     "purchase": 755,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -3326,7 +3488,7 @@
     "purchase": 240,
     "size": "",
     "colour": "",
-    "stock": 7,
+    "stock": -1,
     "entryDate": "2026-07-12"
   },
   {
@@ -3380,7 +3542,7 @@
     "purchase": 540,
     "size": "",
     "colour": "",
-    "stock": 47,
+    "stock": 44,
     "entryDate": "2026-07-12"
   },
   {
@@ -3434,7 +3596,7 @@
     "purchase": 1890,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -3524,7 +3686,7 @@
     "purchase": 1570,
     "size": "",
     "colour": "",
-    "stock": 7,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -3668,7 +3830,7 @@
     "purchase": 445,
     "size": "",
     "colour": "",
-    "stock": 104,
+    "stock": 94,
     "entryDate": "2026-07-12"
   },
   {
@@ -3722,7 +3884,7 @@
     "purchase": 7.75,
     "size": "",
     "colour": "",
-    "stock": 158,
+    "stock": 153,
     "entryDate": "2026-07-12"
   },
   {
@@ -3776,7 +3938,7 @@
     "purchase": 675,
     "size": "",
     "colour": "",
-    "stock": 15,
+    "stock": 13,
     "entryDate": "2026-07-12"
   },
   {
@@ -4154,7 +4316,7 @@
     "purchase": 550,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -4370,7 +4532,7 @@
     "purchase": 600,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -4622,7 +4784,7 @@
     "purchase": 231,
     "size": "",
     "colour": "",
-    "stock": 18,
+    "stock": 17,
     "entryDate": "2026-07-12"
   },
   {
@@ -4640,7 +4802,7 @@
     "purchase": 226,
     "size": "",
     "colour": "",
-    "stock": 11,
+    "stock": 10,
     "entryDate": "2026-07-12"
   },
   {
@@ -4820,7 +4982,7 @@
     "purchase": 1355,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -5558,7 +5720,7 @@
     "purchase": 465,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -5612,7 +5774,7 @@
     "purchase": 380,
     "size": "",
     "colour": "",
-    "stock": 8,
+    "stock": 5,
     "entryDate": "2026-07-12"
   },
   {
@@ -5720,7 +5882,7 @@
     "purchase": 520,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -6602,7 +6764,7 @@
     "purchase": 1420,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -6764,7 +6926,7 @@
     "purchase": 1455,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": -2,
     "entryDate": "2026-07-12"
   },
   {
@@ -7016,7 +7178,7 @@
     "purchase": 935,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -8834,7 +8996,7 @@
     "purchase": 385,
     "size": "",
     "colour": "",
-    "stock": 24,
+    "stock": 16,
     "entryDate": "2026-07-12"
   },
   {
@@ -9248,7 +9410,7 @@
     "purchase": 1485,
     "size": "",
     "colour": "",
-    "stock": 3,
+    "stock": -1,
     "entryDate": "2026-07-12"
   },
   {
@@ -9536,7 +9698,7 @@
     "purchase": 900,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": -3,
     "entryDate": "2026-07-12"
   },
   {
@@ -9590,7 +9752,7 @@
     "purchase": 475,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -9986,7 +10148,7 @@
     "purchase": 1265,
     "size": "",
     "colour": "",
-    "stock": 10,
+    "stock": 7,
     "entryDate": "2026-07-12"
   },
   {
@@ -10364,7 +10526,7 @@
     "purchase": 1515,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -11426,7 +11588,7 @@
     "purchase": 1250,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": -4,
     "entryDate": "2026-07-12"
   },
   {
@@ -11714,7 +11876,7 @@
     "purchase": 405,
     "size": "",
     "colour": "",
-    "stock": 40,
+    "stock": 39,
     "entryDate": "2026-07-12"
   },
   {
@@ -12326,7 +12488,7 @@
     "purchase": 1485,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": -1,
     "entryDate": "2026-07-12"
   },
   {
@@ -13820,7 +13982,7 @@
     "purchase": 1790,
     "size": "",
     "colour": "",
-    "stock": 6,
+    "stock": 2,
     "entryDate": "2026-07-12"
   },
   {
@@ -13838,7 +14000,7 @@
     "purchase": 1790,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -13982,7 +14144,7 @@
     "purchase": 900,
     "size": "",
     "colour": "",
-    "stock": 31,
+    "stock": 30,
     "entryDate": "2026-07-12"
   },
   {
@@ -14594,7 +14756,7 @@
     "purchase": 545,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -14774,7 +14936,7 @@
     "purchase": 1425,
     "size": "",
     "colour": "",
-    "stock": -5,
+    "stock": -6,
     "entryDate": "2026-07-12"
   },
   {
@@ -15350,7 +15512,7 @@
     "purchase": 450,
     "size": "",
     "colour": "",
-    "stock": 5,
+    "stock": 4,
     "entryDate": "2026-07-12"
   },
   {
@@ -15494,7 +15656,7 @@
     "purchase": 462,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": -1,
     "entryDate": "2026-07-12"
   },
   {
@@ -15602,7 +15764,7 @@
     "purchase": 430,
     "size": "",
     "colour": "",
-    "stock": 15,
+    "stock": 14,
     "entryDate": "2026-07-12"
   },
   {
@@ -16124,7 +16286,7 @@
     "purchase": 2650,
     "size": "",
     "colour": "",
-    "stock": 3,
+    "stock": 2,
     "entryDate": "2026-07-12"
   },
   {
@@ -16700,7 +16862,7 @@
     "purchase": 205,
     "size": "",
     "colour": "",
-    "stock": 24,
+    "stock": 14,
     "entryDate": "2026-07-12"
   },
   {
@@ -16916,7 +17078,7 @@
     "purchase": 313,
     "size": "",
     "colour": "",
-    "stock": 74,
+    "stock": 70,
     "entryDate": "2026-07-12"
   },
   {
@@ -16952,7 +17114,7 @@
     "purchase": 139,
     "size": "",
     "colour": "",
-    "stock": 22,
+    "stock": 19,
     "entryDate": "2026-07-12"
   },
   {
@@ -16970,7 +17132,7 @@
     "purchase": 1200,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -17996,7 +18158,7 @@
     "purchase": 1485,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -18446,7 +18608,7 @@
     "purchase": 375,
     "size": "",
     "colour": "",
-    "stock": 14,
+    "stock": 13,
     "entryDate": "2026-07-12"
   },
   {
@@ -18500,7 +18662,7 @@
     "purchase": 438,
     "size": "",
     "colour": "",
-    "stock": 16,
+    "stock": 14,
     "entryDate": "2026-07-12"
   },
   {
@@ -19022,7 +19184,7 @@
     "purchase": 1390,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -19598,7 +19760,7 @@
     "purchase": 650,
     "size": "",
     "colour": "",
-    "stock": 15,
+    "stock": 11,
     "entryDate": "2026-07-12"
   },
   {
@@ -20624,7 +20786,7 @@
     "purchase": 630,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 3,
     "entryDate": "2026-07-12"
   },
   {
@@ -21025,7 +21187,7 @@
   },
   {
     "ProductID": 2620,
-    "name": "LC KAVYA",
+    "name": "PC KAVYA",
     "alias": "0002620",
     "barcode": "0002620",
     "group": "SUIT",
@@ -22100,7 +22262,7 @@
     "purchase": 710,
     "size": "",
     "colour": "",
-    "stock": -1,
+    "stock": -4,
     "entryDate": "2026-07-12"
   },
   {
@@ -22190,7 +22352,7 @@
     "purchase": 1145,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -25916,7 +26078,7 @@
     "purchase": 25,
     "size": "",
     "colour": "",
-    "stock": 186,
+    "stock": 162,
     "entryDate": "2026-07-12"
   },
   {
@@ -25952,7 +26114,7 @@
     "purchase": 154,
     "size": "",
     "colour": "",
-    "stock": -55,
+    "stock": -56,
     "entryDate": "2026-07-12"
   },
   {
@@ -26834,7 +26996,7 @@
     "purchase": 50,
     "size": "",
     "colour": "",
-    "stock": 311,
+    "stock": 299,
     "entryDate": "2026-07-12"
   },
   {
@@ -26960,7 +27122,7 @@
     "purchase": 48,
     "size": "",
     "colour": "",
-    "stock": 452,
+    "stock": 446,
     "entryDate": "2026-07-12"
   },
   {
@@ -27482,7 +27644,7 @@
     "purchase": 380,
     "size": "",
     "colour": "",
-    "stock": 13,
+    "stock": 12,
     "entryDate": "2026-07-12"
   },
   {
@@ -28634,7 +28796,7 @@
     "purchase": 350,
     "size": "",
     "colour": "",
-    "stock": 11,
+    "stock": 10,
     "entryDate": "2026-07-12"
   },
   {
@@ -29030,7 +29192,7 @@
     "purchase": 585,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -29210,7 +29372,7 @@
     "purchase": 63,
     "size": "",
     "colour": "",
-    "stock": 798,
+    "stock": 797,
     "entryDate": "2026-07-12"
   },
   {
@@ -30304,11 +30466,11 @@
     "PartGroup": "SUIT",
     "mrp": 645,
     "sale": 580,
-    "wholesale": 596.25,
-    "purchase": 530,
+    "wholesale": 460,
+    "purchase": 430,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 8,
     "entryDate": "2026-07-12"
   },
   {
@@ -32234,7 +32396,7 @@
     "purchase": 485,
     "size": "",
     "colour": "",
-    "stock": -14,
+    "stock": -25,
     "entryDate": "2026-07-12"
   },
   {
@@ -33350,7 +33512,7 @@
     "purchase": 335,
     "size": "",
     "colour": "",
-    "stock": 54,
+    "stock": 48,
     "entryDate": "2026-07-12"
   },
   {
@@ -33800,7 +33962,7 @@
     "purchase": 455,
     "size": "",
     "colour": "",
-    "stock": -2,
+    "stock": -3,
     "entryDate": "2026-07-12"
   },
   {
@@ -35438,7 +35600,7 @@
     "purchase": 575,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -37004,7 +37166,7 @@
     "purchase": 265,
     "size": "",
     "colour": "",
-    "stock": -57,
+    "stock": -74,
     "entryDate": "2026-07-12"
   },
   {
@@ -38930,7 +39092,7 @@
     "purchase": 175,
     "size": "",
     "colour": "",
-    "stock": 228,
+    "stock": 222,
     "entryDate": "2026-07-12"
   },
   {
@@ -42638,7 +42800,7 @@
     "purchase": 200,
     "size": "",
     "colour": "",
-    "stock": -231,
+    "stock": -232,
     "entryDate": "2026-07-12"
   },
   {
@@ -42998,7 +43160,7 @@
     "purchase": 40,
     "size": "",
     "colour": "",
-    "stock": 1321,
+    "stock": 1319,
     "entryDate": "2026-07-12"
   },
   {
@@ -43718,7 +43880,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": 32,
+    "stock": 29,
     "entryDate": "2026-07-12"
   },
   {
@@ -45752,7 +45914,7 @@
     "purchase": 475,
     "size": "",
     "colour": "",
-    "stock": 2,
+    "stock": 1,
     "entryDate": "2026-07-12"
   },
   {
@@ -46166,7 +46328,7 @@
     "purchase": 600,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {
@@ -47084,7 +47246,7 @@
     "purchase": 18,
     "size": "",
     "colour": "",
-    "stock": 59,
+    "stock": 58,
     "entryDate": "2026-07-12"
   },
   {
@@ -47300,7 +47462,7 @@
     "purchase": 23,
     "size": "",
     "colour": "",
-    "stock": 1366,
+    "stock": 1354,
     "entryDate": "2026-07-12"
   },
   {
@@ -47318,7 +47480,7 @@
     "purchase": 0,
     "size": "",
     "colour": "",
-    "stock": -5,
+    "stock": -6,
     "entryDate": "2026-07-12"
   },
   {
@@ -49478,7 +49640,7 @@
     "purchase": 170,
     "size": "",
     "colour": "",
-    "stock": 70,
+    "stock": 69,
     "entryDate": "2026-07-12"
   },
   {
@@ -50090,7 +50252,7 @@
     "purchase": 13,
     "size": "",
     "colour": "",
-    "stock": -438,
+    "stock": -443,
     "entryDate": "2026-07-12"
   },
   {
@@ -50324,7 +50486,7 @@
     "purchase": 25,
     "size": "",
     "colour": "",
-    "stock": 2015.5,
+    "stock": 1964.8,
     "entryDate": "2026-07-12"
   },
   {
@@ -51206,7 +51368,7 @@
     "purchase": 525,
     "size": "",
     "colour": "",
-    "stock": 51,
+    "stock": 50,
     "entryDate": "2026-07-12"
   },
   {
@@ -51436,11 +51598,11 @@
     "PartGroup": "SUIT",
     "mrp": 697.5,
     "sale": 570,
-    "wholesale": 535,
-    "purchase": 505,
+    "wholesale": 500,
+    "purchase": 465,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 12,
     "entryDate": "2026-07-12"
   },
   {
@@ -53438,7 +53600,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": -16,
+    "stock": -17,
     "entryDate": "2026-07-12"
   },
   {
@@ -53474,7 +53636,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": 7,
+    "stock": 5,
     "entryDate": "2026-07-12"
   },
   {
@@ -53510,7 +53672,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": 10,
+    "stock": -4,
     "entryDate": "2026-07-12"
   },
   {
@@ -61970,7 +62132,7 @@
     "purchase": 34,
     "size": "",
     "colour": "",
-    "stock": 298,
+    "stock": 225,
     "entryDate": "2026-07-12"
   },
   {
@@ -66506,7 +66668,7 @@
     "purchase": 34.51,
     "size": "",
     "colour": "",
-    "stock": 2003,
+    "stock": 1948,
     "entryDate": "2026-07-12"
   },
   {
@@ -66848,7 +67010,7 @@
     "purchase": 0,
     "size": "",
     "colour": "",
-    "stock": -8,
+    "stock": -14,
     "entryDate": "2026-07-12"
   },
   {
@@ -67586,7 +67748,7 @@
     "purchase": 175,
     "size": "",
     "colour": "",
-    "stock": -62,
+    "stock": -70,
     "entryDate": "2026-07-12"
   },
   {
@@ -67802,7 +67964,7 @@
     "purchase": 20,
     "size": "",
     "colour": "",
-    "stock": 3100,
+    "stock": 3076,
     "entryDate": "2026-07-12"
   },
   {

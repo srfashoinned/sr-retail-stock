@@ -62,6 +62,12 @@ while ($true) {
                 Write-SyncLog "WARNING: Item ledger cache export failed. Stock export will continue."
             }
         }
+        if ($exportCode -eq 0 -and (Test-Path -LiteralPath (Join-Path $sourceDir "export-image-manifest.js"))) {
+            $imageManifestCode = Invoke-LoggedCommand -FilePath "node" -Arguments @("export-image-manifest.js") -WorkingDirectory $sourceDir
+            if ($imageManifestCode -ne 0) {
+                Write-SyncLog "WARNING: Image manifest export failed. Stock export will continue."
+            }
+        }
     } finally {
         Pop-Location
     }
@@ -74,6 +80,7 @@ while ($true) {
 
     $sourceItems = Join-Path $sourceDir "items.json"
     $sourceLedgers = Join-Path $sourceDir "item-ledgers-cache.json"
+    $sourceImageManifest = Join-Path $sourceDir "image-manifest.json"
     if (-not (Test-Path -LiteralPath $sourceItems)) {
         Write-SyncLog "ERROR: items.json was not created."
         Start-Sleep -Seconds 30
@@ -106,15 +113,18 @@ while ($true) {
         if (Test-Path -LiteralPath $sourceLedgers) {
             Copy-Item -LiteralPath $sourceLedgers -Destination (Join-Path $publishDir "item-ledgers-cache.json") -Force
         }
+        if (Test-Path -LiteralPath $sourceImageManifest) {
+            Copy-Item -LiteralPath $sourceImageManifest -Destination (Join-Path $publishDir "image-manifest.json") -Force
+        }
 
-        $addCode = Invoke-LoggedCommand -FilePath "git" -Arguments @("add", "--", "items.json", "item-ledgers-cache.json") -WorkingDirectory $publishDir
+        $addCode = Invoke-LoggedCommand -FilePath "git" -Arguments @("add", "--", "items.json", "item-ledgers-cache.json", "image-manifest.json") -WorkingDirectory $publishDir
         if ($addCode -ne 0) {
             Write-SyncLog "ERROR: Could not stage items.json. Will retry."
             Start-Sleep -Seconds 180
             continue
         }
 
-        & git diff --cached --quiet -- items.json item-ledgers-cache.json
+        & git diff --cached --quiet -- items.json item-ledgers-cache.json image-manifest.json
         if ($LASTEXITCODE -eq 0) {
             Write-SyncLog "No stock changes found."
         } else {

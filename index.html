@@ -1905,6 +1905,7 @@ const LEGACY_IMAGE_BRANCH = 'main';
 
 const IMAGE_SOURCE   = 'local';
 const IMAGE_BASE_URL = 'images/';
+let srImageManifestPromise = null;
 
 function getImageUrls(it){
   if(it.images && it.images.length){
@@ -1953,6 +1954,28 @@ async function loadLegacyImages(alias){
   }
 }
 
+async function loadStaticManifestImages(alias){
+  if(!alias) return [];
+  if(!srImageManifestPromise){
+    srImageManifestPromise = fetch("/image-manifest.json?t="+Date.now(), { cache:"no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null);
+  }
+  const manifest = await srImageManifestPromise;
+  const list = manifest?.products?.[String(alias)] || [];
+  return list.map(img => ({
+    ...img,
+    url: img.url && img.url.startsWith("/") ? location.origin + img.url : img.url,
+    staticSite: true
+  }));
+}
+
+async function loadSavedImages(alias){
+  const staticImages = await loadStaticManifestImages(alias);
+  if(staticImages.length) return staticImages;
+  return loadLegacyImages(alias);
+}
+
 async function imageApiFetch(path, options = {}) {
   let lastErr = null;
   for (const base of IMAGE_API_BASES) {
@@ -1969,6 +1992,12 @@ async function imageApiFetch(path, options = {}) {
     } catch (e) {
       lastErr = e;
     }
+  }
+  const match = String(path || "").match(/[?&]alias=([^&]+)/);
+  if(String(path || "").startsWith("/list") && match){
+    const alias = decodeURIComponent(match[1] || "");
+    const images = await loadSavedImages(alias);
+    if(images.length) return { ok:true, images, base:"static-manifest" };
   }
   throw lastErr || new Error("Image API unavailable");
 }
@@ -2900,9 +2929,9 @@ async function expLoadImages(it){
     const siteImages = (data.images || [])
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
       .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-    expLoadedImages = siteImages.length ? siteImages : await loadLegacyImages(alias);
+    expLoadedImages = siteImages.length ? siteImages : await loadSavedImages(alias);
   }catch(_){
-    expLoadedImages = await loadLegacyImages(alias);
+    expLoadedImages = await loadSavedImages(alias);
   }
 }
 
@@ -3574,13 +3603,13 @@ async function pimRefreshImages(alias, silent){
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
       .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
     pimStorageCount = siteImages.length;
-    pimImages = siteImages.length ? siteImages : await loadLegacyImages(alias);
+    pimImages = siteImages.length ? siteImages : await loadSavedImages(alias);
     pimImageListCache.set(alias, { at:Date.now(), storageCount:pimStorageCount, images:pimImages });
     srSetImageSeen(alias, pimImages.length > 0);
     pimRenderGrid();
   }catch(err){
     pimStorageCount = 0;
-    pimImages = await loadLegacyImages(alias);
+    pimImages = await loadSavedImages(alias);
     pimImageListCache.set(alias, { at:Date.now(), storageCount:pimStorageCount, images:pimImages });
     if(pimImages.length)srSetImageSeen(alias, true);
     pimRenderGrid();

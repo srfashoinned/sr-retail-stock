@@ -26,9 +26,13 @@ const state = {
 };
 
 const isFileMode = window.location.protocol === "file:";
+const isHostedStaticMode =
+  new URLSearchParams(window.location.search).get("static") === "1" ||
+  !["localhost", "127.0.0.1", ""].includes(window.location.hostname);
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
+let remoteDashboardCache = null;
 let restoringNavigation = false;
 const qs = selector => document.querySelector(selector);
 const qsa = selector => [...document.querySelectorAll(selector)];
@@ -135,9 +139,114 @@ function registerServiceWorker() {
 }
 
 async function api(path) {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error((await res.json()).error || "Request failed");
-  return res.json();
+  if (isHostedStaticMode && path.startsWith("/api/")) {
+    return offlineApi(path);
+  }
+  try {
+    const res = await fetch(path, { cache: "no-store" });
+    const contentType = res.headers.get("content-type") || "";
+    if (!res.ok) {
+      let error = "Request failed";
+      if (contentType.includes("application/json")) {
+        error = (await res.json()).error || error;
+      }
+      throw new Error(error);
+    }
+    if (!contentType.includes("application/json")) {
+      throw new Error("Live data endpoint returned a web page instead of data");
+    }
+    return res.json();
+  } catch (error) {
+    if (path.startsWith("/api/")) return offlineApi(path, error);
+    throw error;
+  }
+}
+
+async function dashboardCache() {
+  if (remoteDashboardCache) return remoteDashboardCache;
+  remoteDashboardCache = await readDashboardCache();
+  return remoteDashboardCache;
+}
+
+function offlineProfileFromCustomer(customer = {}) {
+  const balance = amount(customer.balance);
+  const summary = {
+    ...customer,
+    customerCode: customer.customerCode,
+    customerName: customer.customerName,
+    Mobile: customer.mobile || customer.whatsapp || customer.Mobile || "",
+    WhatsAppNo: customer.whatsapp || customer.mobile || customer.WhatsAppNo || "",
+    Address1: customer.address || customer.Address1 || "",
+    currentBalance: balance,
+    billCount: customer.billCount || 0,
+    lifetimePurchases: customer.lifetimePurchases || 0,
+    lastPurchaseDate: customer.lastPurchaseDate,
+    lastPaymentDate: customer.lastPaymentDate,
+    oldestDueDate: customer.oldestDueDate
+  };
+  const ledger = [];
+  if (customer.lastPurchaseDate || customer.oldestDueDate || balance) {
+    ledger.push({
+      Date: customer.oldestDueDate || customer.lastPurchaseDate || new Date().toISOString(),
+      VchType: "Saved Balance",
+      VchNo: customer.Alias || customer.customerCode || "",
+      amount: balance,
+      runningBalance: balance,
+      narration: "Saved Hostinger copy"
+    });
+  }
+  return [[summary], ledger, [], [], [], []];
+}
+
+function salesKey(from, to) {
+  return `${from || ""}_${to || ""}`;
+}
+
+function findSavedBill(cache, vchCode) {
+  const key = String(vchCode || "");
+  if (cache?.billByCode?.[key]) return cache.billByCode[key];
+  const profiles = cache?.profileByCode || {};
+  for (const profile of Object.values(profiles)) {
+    const bill = (profile?.[2] || []).find(row => String(row.VchCode) === key);
+    if (bill) return [[bill], []];
+  }
+  const reports = cache?.salesReports || {};
+  for (const report of Object.values(reports)) {
+    const bill = (report?.rows || report?.[1] || []).find(row => String(row.VchCode) === key);
+    if (bill) return [[bill], []];
+  }
+  return null;
+}
+
+async function offlineApi(path, originalError) {
+  const cache = await dashboardCache();
+  if (!cache) throw originalError || new Error("Saved Hostinger data is not available yet");
+  const url = new URL(path, window.location.origin);
+  if (url.pathname === "/api/kpis") {
+    return [cache.kpiRows || (cache.kpis ? [cache.kpis] : []), cache.trendRows || cache.trend || []];
+  }
+  if (url.pathname === "/api/customers") {
+    return [cache.customerRows || cache.customers || []];
+  }
+  if (url.pathname === "/api/customer") {
+    const code = String(url.searchParams.get("code") || "");
+    const saved = cache.profileByCode?.[code];
+    if (saved) return saved;
+    const customer = (cache.customerRows || cache.customers || []).find(row => String(row.customerCode) === code);
+    if (customer) return offlineProfileFromCustomer(customer);
+  }
+  if (url.pathname === "/api/sales-report") {
+    const from = url.searchParams.get("from") || "";
+    const to = url.searchParams.get("to") || "";
+    const report = cache.salesReports?.[salesKey(from, to)] || cache.salesReports?.today || cache.salesReport;
+    if (report) return [report.summary ? [report.summary] : (report[0] || []), report.rows || report[1] || []];
+    return [[{}], []];
+  }
+  if (url.pathname === "/api/bill") {
+    const saved = findSavedBill(cache, url.searchParams.get("vchCode"));
+    if (saved) return saved;
+  }
+  throw originalError || new Error("This detail is not in the saved Hostinger copy yet");
 }
 
 function readLocalDashboardCache() {
@@ -1228,20 +1337,23 @@ async function openBill(vchCode) {
   const h = headers[0] || {};
   state.currentBill = { header: h, items };
   qs("#billTitle").textContent = `Bill ${clean(h.VchNo || vchCode)}`;
-  qs("#billMeta").textContent = `${date(h.Date)} | ${clean(h.partyName || h.billingParty)} | Rs ${amount(h.VchAmtBaseCur).toLocaleString("en-IN")}`;
+  const billAmount = amount(h.VchAmtBaseCur || h.billAmount || h.amount);
+  const paidAmount = amount(h.FormRecAmt || h.paidAmount);
+  const balanceAmount = amount(h.FormIssAmt || h.balanceAmount || h.balance);
+  qs("#billMeta").textContent = `${date(h.Date)} | ${clean(h.partyName || h.billingParty)} | Rs ${billAmount.toLocaleString("en-IN")}`;
   const totalCost = items.reduce((sum, row) => sum + amount(row.costAmount), 0);
   const totalProfit = items.reduce((sum, row) => sum + amount(row.profitAmount), 0);
   qs("#billBody").innerHTML = `
     <div class="bill-summary compact">
-      <span>Total <b>Rs ${amount(h.VchAmtBaseCur).toLocaleString("en-IN")}</b></span>
-      <span>Paid <b>Rs ${amount(h.FormRecAmt).toLocaleString("en-IN")}</b></span>
-      <span>Balance <b>${plainMoney(h.FormIssAmt)}</b></span>
-      <span>Cost <b>${rupees(totalCost)}</b></span>
-      <span>Profit <b>${rupees(totalProfit)}</b></span>
+      <span>Total <b>Rs ${billAmount.toLocaleString("en-IN")}</b></span>
+      <span>Paid <b>Rs ${paidAmount.toLocaleString("en-IN")}</b></span>
+      <span>Balance <b>${plainMoney(balanceAmount)}</b></span>
+      <span>Cost <b>${rupees(totalCost || h.costPrice)}</b></span>
+      <span>Profit <b>${rupees(totalProfit || h.profitAmount || h.actualProfit)}</b></span>
       <span>Items <b>${items.length}</b></span>
     </div>
     <div class="bill-items">
-      ${items.map((r, index) => `
+      ${items.length ? items.map((r, index) => `
         <div class="bill-item">
           <div class="bill-item-head"><b><em>${index + 1}</em>${escapeHtml(r.itemName)}</b><strong>${rupees(r.amount)}</strong></div>
           <div class="bill-item-code">${escapeHtml(r.barcode || r.itemGroup || "")}${r.itemGroup && r.barcode ? ` | ${escapeHtml(r.itemGroup)}` : ""}</div>
@@ -1253,7 +1365,7 @@ async function openBill(vchCode) {
             <span>Profit <b>${rupees(r.profitAmount)}</b></span>
           </div>
         </div>
-      `).join("")}
+      `).join("") : `<div class="empty small">This hosted saved copy has the bill summary. Item-level bill details need the shop PC live connection.</div>`}
     </div>
   `;
   labelMobileTables(qs("#billBody"));
@@ -2085,8 +2197,10 @@ document.addEventListener("click", event => {
   }
   const customerRow = event.target.closest("tr[data-code]");
   if (customerRow && !event.target.closest("button")) openCustomer(customerRow.dataset.code);
-  const customerCard = event.target.closest("button[data-code]");
-  if (customerCard && !event.target.closest("[data-wa-code]")) openCustomer(customerCard.dataset.code);
+  const customerCard = event.target.closest(".mobile-debt-card[data-code], .sales-bill[data-code], button[data-code]");
+  if (customerCard && !event.target.closest("[data-wa-code], [data-sms-code], .call-btn, .row-actions")) {
+    openCustomer(customerCard.dataset.code);
+  }
   const tab = event.target.closest(".tab");
   if (tab) {
     state.activeTab = tab.dataset.tab;
@@ -2286,7 +2400,9 @@ async function init() {
     await loadKpis();
     qs("#dbStatus").textContent = "Loading customers and receivables...";
     await loadCustomers();
-    qs("#dbStatus").textContent = `Connected to Retail Daddy on ${new Date().toLocaleString("en-IN")}`;
+    qs("#dbStatus").textContent = isHostedStaticMode
+      ? `Showing saved Retail Daddy copy from ${new Date().toLocaleString("en-IN")}. Live data will resume when shop PC is on.`
+      : `Connected to Retail Daddy on ${new Date().toLocaleString("en-IN")}`;
     await restoreSavedNavigation();
     welcomeSound();
   } catch (error) {

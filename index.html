@@ -4274,6 +4274,7 @@ let srCurrentLedgerBill=null;
 let srPendingLedgerRi=null;
 let srPendingLedgerSearch=false;
 const SR_LEDGER_CACHE_KEY="srItemLedgerCacheV1";
+let srCloudLedgerCachePromise=null;
 function srGoPreviousPage(){
   if(srGoBackInternal())return;
   try{
@@ -4362,6 +4363,29 @@ function srLedgerCacheWrite(it,payload){
 function srLedgerCacheGet(it){
   return srLedgerCacheRead()[srLedgerCacheKey(it)]||null;
 }
+async function srCloudLedgerCacheRead(){
+  if(!srCloudLedgerCachePromise){
+    srCloudLedgerCachePromise=fetch("/item-ledgers-cache.json?t="+Date.now(),{cache:"no-store"})
+      .then(r=>r.ok?r.json():null)
+      .catch(()=>null);
+  }
+  return srCloudLedgerCachePromise;
+}
+async function srCloudLedgerCacheGet(it){
+  const cache=await srCloudLedgerCacheRead();
+  const ledgers=cache?.ledgers||{};
+  const keys=[
+    it?.ProductID,
+    it?.productId,
+    it?.barcode,
+    it?.alias,
+    it?.name
+  ].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean);
+  for(const key of keys){
+    if(ledgers[key]) return {savedAt:cache.savedAt,payload:ledgers[key]};
+  }
+  return null;
+}
 function srRenderItemLedger(it,payload,fromCache=false){
   const [items=[],summaryRows=[],sales=[],purchases=[]]=payload;
   const db=items[0]||{};
@@ -4422,7 +4446,12 @@ async function openItemLedger(ri,e){
     if(token!==srLedgerRequestToken)return;
     const cached=srLedgerCacheGet(it);
     if(cached?.payload)return srRenderItemLedger(it,cached.payload,true);
-    srLedgerShow(escq(it.name||"Item Ledger"),"Could not load live item history",`<div class="sr-ledger-note">Live item history is not reachable right now. The stock card still shows saved prices and stock. Open this ledger once while the dashboard connection is online and it will be saved here for later.</div>`);
+    const cloudCached=await srCloudLedgerCacheGet(it);
+    if(cloudCached?.payload){
+      srLedgerCacheWrite(it,cloudCached.payload);
+      return srRenderItemLedger(it,cloudCached.payload,true);
+    }
+    srLedgerShow(escq(it.name||"Item Ledger"),"Could not load item history",`<div class="sr-ledger-note">Live item history and saved cloud ledger were not reachable right now. The stock card still shows saved prices and stock.</div>`);
   }
 }
 function openItemLedgerSearch(){

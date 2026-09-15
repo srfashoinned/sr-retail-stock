@@ -4300,6 +4300,7 @@ function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 const ITEM_LEDGER_API_BASES=["https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
 let srCurrentLedgerBill=null;
+let srCurrentItemLedgerPayload=null;
 let srPendingLedgerRi=null;
 let srPendingLedgerSearch=false;
 const SR_LEDGER_CACHE_KEY="srItemLedgerCacheV1";
@@ -4416,6 +4417,7 @@ async function srCloudLedgerCacheGet(it){
   return null;
 }
 function srRenderItemLedger(it,payload,fromCache=false){
+  srCurrentItemLedgerPayload=payload;
   const [items=[],summaryRows=[],sales=[],purchases=[]]=payload;
   const db=items[0]||{};
   const sum=summaryRows[0]||{};
@@ -5068,7 +5070,12 @@ async function srLedgerOpenBill(vchCode){
     const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Rate<b>${money(r.rate)}</b></span><span>MRP<b>${money(r.mrp)}</b></span><span>Profit<b>${money(r.profitAmount)}</b></span></span></div>`).join("");
     srLedgerShow(escq(h.VchNo||("Bill "+vchCode)),`${srDate(h.Date)} · ${h.partyName||"Cash"} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${rows||"<div class='sr-ledger-note'>No products found in this bill.</div>"}`);
   }catch(err){
-    srLedgerShow("Bill "+escq(vchCode),"Could not open bill",`<div class="sr-ledger-note">This bill could not be loaded from Retail Daddy right now.</div>`);
+    const sale=(srCurrentItemLedgerPayload?.[2]||[]).find(r=>String(r.VchCode)===String(vchCode));
+    if(sale){
+      srCurrentLedgerBill={header:{VchNo:sale.VchNo,VchAmtBaseCur:sale.Amount,Date:sale.Date,partyName:sale.CustomerName},items:[{itemName:"Saved item row",barcode:sale.Barcode,qty:sale.Qty,rate:sale.Rate,mrp:sale.MRP,amount:sale.Amount,profitAmount:sale.ProfitAmount}]};
+      return srLedgerShow(escq(sale.VchNo||("Bill "+vchCode)),"Saved bill summary",`<div class="sr-ledger-note">Laptop is offline, so showing the saved item row from this bill.</div><div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${escq(sale.CustomerName||"Cash")}</b><strong>${money(sale.Amount)}</strong></span><small>${srDate(sale.Date)} · ${escq(sale.Barcode||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(sale.Qty)}</b></span><span>Rate<b>${money(sale.Rate)}</b></span><span>MRP<b>${money(sale.MRP)}</b></span><span>Profit<b>${money(sale.ProfitAmount)}</b></span></span></div>`);
+    }
+    srLedgerShow("Bill "+escq(vchCode),"Could not open bill",`<div class="sr-ledger-note">This bill needs the live Retail Daddy server. The saved item ledger is still available.</div>`);
   }
 }
 async function srLedgerOpenPurchase(stockId){
@@ -5081,7 +5088,11 @@ async function srLedgerOpenPurchase(stockId){
     const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Purchase<b>${money(r.rate)}</b></span><span>MRP<b>${money(r.mrp)}</b></span><span>Total<b>${money(r.amount)}</b></span></span></div>`).join("");
     srLedgerShow(escq(h.VchNo||("Purchase "+stockId)),`${srDate(h.Date)} · ${escq(party)} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${h.SupplierInvoiceNo?`<div class="sr-ledger-note">Supplier invoice: ${escq(h.SupplierInvoiceNo)}${h.SupplierInvoiceDate?" · "+srDate(h.SupplierInvoiceDate):""}</div>`:""}${rows||"<div class='sr-ledger-note'>No products found in this purchase bill.</div>"}`);
   }catch(err){
-    srLedgerShow("Purchase "+escq(stockId),"Could not open purchase",`<div class="sr-ledger-note">This purchase bill could not be loaded from Retail Daddy right now.</div>`);
+    const purchase=(srCurrentItemLedgerPayload?.[3]||[]).find(r=>String(r.RowCode)===String(stockId));
+    if(purchase){
+      return srLedgerShow(escq(purchase.VchNo||("Purchase "+stockId)),"Saved purchase summary",`<div class="sr-ledger-note">Laptop is offline, so showing the saved purchase row.</div><div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${escq(purchase.PartyName||purchase.SupplierInvoiceNo||"Purchase")}</b><strong>+${escq(purchase.Qty||0)}</strong></span><small>${srDate(purchase.Date)} · ${escq(purchase.Barcode||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(purchase.PurchasePrice)}</b></span><span>Sale<b>${money(purchase.SalePrice)}</b></span><span>Wholesale<b>${money(purchase.WholesalePrice)}</b></span><span>MRP<b>${money(purchase.MRP)}</b></span></span></div>`);
+    }
+    srLedgerShow("Purchase "+escq(stockId),"Could not open purchase",`<div class="sr-ledger-note">This purchase bill needs the live Retail Daddy server. The saved item ledger is still available.</div>`);
   }
 }
 function srBillChunks(items,size=12){

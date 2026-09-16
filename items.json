@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33713,
+    "name": "KF APPLE",
+    "alias": "P-33713",
+    "barcode": "5816",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 675,
+    "sale": 650,
+    "wholesale": 495,
+    "purchase": 450,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-17"
+  },
+  {
     "ProductID": 33712,
     "name": "JBT RED ROSE",
     "alias": "P-33712",

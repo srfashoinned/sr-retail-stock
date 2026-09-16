@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33711,
+    "name": "JBT DAMINI",
+    "alias": "P-33711",
+    "barcode": "5814",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 720,
+    "sale": 650,
+    "wholesale": 528,
+    "purchase": 480,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-17"
+  },
+  {
     "ProductID": 33710,
     "name": "JBT AAYAT",
     "alias": "P-33710",

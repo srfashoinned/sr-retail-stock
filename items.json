@@ -14,7 +14,7 @@
     "purchase": 985,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 55,
     "entryDate": "2026-09-17"
   },
   {
@@ -27,12 +27,12 @@
     "SubCategory": "SUIT",
     "PartGroup": "SUIT",
     "mrp": 690,
-    "sale": 550,
+    "sale": 580,
     "wholesale": 506,
     "purchase": 460,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 16,
     "entryDate": "2026-09-17"
   },
   {
@@ -50,7 +50,7 @@
     "purchase": 455,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-17"
   },
   {
@@ -68,7 +68,7 @@
     "purchase": 450,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-17"
   },
   {
@@ -86,7 +86,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-17"
   },
   {
@@ -104,7 +104,7 @@
     "purchase": 480,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-17"
   },
   {
@@ -122,7 +122,7 @@
     "purchase": 480,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-17"
   },
   {
@@ -140,7 +140,7 @@
     "purchase": 480,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-17"
   },
   {
@@ -158,7 +158,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 12,
     "entryDate": "2026-09-17"
   },
   {
@@ -176,7 +176,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-17"
   },
   {
@@ -194,7 +194,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-16"
   },
   {
@@ -212,7 +212,7 @@
     "purchase": 385,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-16"
   },
   {
@@ -230,7 +230,7 @@
     "purchase": 840,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -248,7 +248,7 @@
     "purchase": 430,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-16"
   },
   {
@@ -266,7 +266,7 @@
     "purchase": 480,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -284,7 +284,7 @@
     "purchase": 660,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -302,7 +302,7 @@
     "purchase": 660,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -320,7 +320,7 @@
     "purchase": 495,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -338,7 +338,7 @@
     "purchase": 520,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -356,7 +356,7 @@
     "purchase": 430,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -374,7 +374,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -392,7 +392,7 @@
     "purchase": 465,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 4,
     "entryDate": "2026-09-16"
   },
   {
@@ -410,7 +410,7 @@
     "purchase": 440,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-16"
   },
   {
@@ -1523,10 +1523,10 @@
     "mrp": 787.5,
     "sale": 650,
     "wholesale": 555,
-    "purchase": 525,
+    "purchase": 520,
     "size": "",
     "colour": "",
-    "stock": 15,
+    "stock": 23,
     "entryDate": "2026-08-09"
   },
   {

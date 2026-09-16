@@ -29,6 +29,8 @@ const isFileMode = window.location.protocol === "file:";
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
+const APP_VERSION = "43";
+const APP_VERSION_KEY = "srReceivablesAppVersion";
 let restoringNavigation = false;
 const qs = selector => document.querySelector(selector);
 const qsa = selector => [...document.querySelectorAll(selector)];
@@ -129,6 +131,22 @@ function setReminderTone(tone) {
   qs("#waToneStrong")?.classList.toggle("active", state.reminderTone === "strong");
 }
 
+
+async function clearOldAppCaches() {
+  try {
+    const previous = localStorage.getItem(APP_VERSION_KEY);
+    if (previous === APP_VERSION) return;
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter(key => key.startsWith("sr-receivables-")).map(key => caches.delete(key)));
+    }
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(reg => reg.update().catch(() => {})));
+    }
+    localStorage.setItem(APP_VERSION_KEY, APP_VERSION);
+  } catch (_) {}
+}
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || isFileMode) return;
   navigator.serviceWorker.register("/sw.js").catch(() => {});
@@ -1266,6 +1284,8 @@ function filteredPartyItems() {
 
 function cachedBillTables(vchCode) {
   const p = state.profile || {};
+  const details = p.billDetails?.[String(vchCode)];
+  if (details) return [details.headers || [], details.items || []];
   const bills = p.bills || [];
   const ledger = p.ledger || [];
   const bill = bills.find(r => String(r.VchCode) === String(vchCode)) || ledger.find(r => String(r.VchCode) === String(vchCode)) || {};
@@ -1314,7 +1334,7 @@ async function openBill(vchCode) {
     tables = cachedBillTables(vchCode);
     fromCache = !!tables;
     if (!tables) throw error;
-    toast("Showing saved bill summary because live bill detail is offline.");
+    toast((tables?.[1] || []).length ? "Showing saved bill item/profit details." : "Showing saved bill summary because live bill detail is offline.");
   }
   const [headers, items = []] = tables;
   const h = headers[0] || {};
@@ -2239,6 +2259,46 @@ qs("#clearFilters").addEventListener("click", () => {
 });
 qs("#themeToggle").addEventListener("click", toggleTheme);
 qs("#quickTheme").addEventListener("click", toggleTheme);
+async function cachedSalesReport(from, to) {
+  const cache = await readDashboardCache();
+  if (!cache) return null;
+  const customers = cache.customerRows || cache.customers || [];
+  const profiles = cache.customerProfiles || {};
+  const rows = [];
+  for (const profile of Object.values(profiles)) {
+    const summary = (profile.summary || [])[0] || {};
+    for (const bill of (profile.bills || [])) {
+      if (!inRange(bill.Date, from, to)) continue;
+      const detailItems = profile.billDetails?.[String(bill.VchCode)]?.items || [];
+      const costPrice = detailItems.reduce((sum, item) => sum + amount(item.costAmount), 0);
+      const profitAmount = detailItems.reduce((sum, item) => sum + amount(item.profitAmount), 0);
+      const billDiscount = amount(bill.billDiscount || bill.BillDiscount || 0);
+      rows.push({
+        ...bill,
+        partyName: summary.customerName || bill.partyName || "",
+        billAmount: amount(bill.billAmount || bill.amount || bill.VchAmtBaseCur),
+        paidAmount: amount(bill.paidAmount || bill.FormRecAmt),
+        balanceAmount: amount(bill.balanceAmount || bill.balance || bill.FormIssAmt),
+        costPrice,
+        profitAmount,
+        actualProfit: profitAmount - billDiscount,
+        billDiscount,
+        status: detailItems.length ? "Saved full detail" : "Saved summary"
+      });
+    }
+  }
+  const summary = {
+    billCount: rows.length,
+    billAmount: rows.reduce((sum, r) => sum + amount(r.billAmount), 0),
+    paidAmount: rows.reduce((sum, r) => sum + amount(r.paidAmount), 0),
+    balanceAmount: rows.reduce((sum, r) => sum + amount(r.balanceAmount), 0),
+    costPrice: rows.reduce((sum, r) => sum + amount(r.costPrice), 0),
+    profitAmount: rows.reduce((sum, r) => sum + amount(r.profitAmount), 0),
+    actualProfit: rows.reduce((sum, r) => sum + amount(r.actualProfit), 0)
+  };
+  return [[summary], rows.sort((a, b) => String(b.Date || "").localeCompare(String(a.Date || "")))];
+}
+
 async function openCashParty(period = "month") {
   const now = new Date();
   let from = inputDate(new Date(now.getFullYear(), now.getMonth(), 1));
@@ -2291,7 +2351,26 @@ async function openCashParty(period = "month") {
       try { history.replaceState({ srReceivables: true, view: "profile", salesReport: { period, from, to } }, "", location.href); } catch (_) {}
     }
   } catch (error) {
-    alert(`Could not load Retail Daddy sales report: ${error.message}`);
+    const cached = await cachedSalesReport(from, to);
+    if (cached) {
+      const [summary, rows] = cached;
+      state.profile = null;
+      state.activeTab = "sales";
+      state.salesReport = {
+        period,
+        periodLabel: (period === "day" ? "Day" : period === "year" ? "Yearly" : "Monthly") + " Saved",
+        from,
+        to,
+        summary: summary[0] || {},
+        rows: rows || []
+      };
+      renderProfile();
+      showView("profile");
+      saveNavigation({ salesReport: { period, from, to } });
+      toast("Showing saved sales summary because live report is offline.");
+      return;
+    }
+    toast(`Could not load sales report: ${error.message}`);
   }
 }
 
@@ -2369,6 +2448,7 @@ qs("#sendTextCsv").addEventListener("click", sendWhatsAppWithCsv);
 qs("#sendVoiceScript").addEventListener("click", sendVoiceScript);
 qs("#sendUrduVoiceScript").addEventListener("click", sendUrduVoiceScript);
 async function init() {
+  await clearOldAppCaches();
   applyTheme();
   installDatePickers();
   registerServiceWorker();

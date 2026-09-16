@@ -128,7 +128,7 @@ while ($true) {
         if ($LASTEXITCODE -eq 0) {
             Write-SyncLog "No stock changes found."
         } else {
-            $commitCode = Invoke-LoggedCommand -FilePath "git" -Arguments @("-c", "user.name=SR Fashion", "-c", "user.email=srfashoinned@users.noreply.github.com", "commit", "-m", "Auto stock update", "--", "items.json") -WorkingDirectory $publishDir
+            $commitCode = Invoke-LoggedCommand -FilePath "git" -Arguments @("-c", "user.name=SR Fashion", "-c", "user.email=srfashoinned@users.noreply.github.com", "commit", "-m", "Auto stock update", "--", "items.json", "item-ledgers-cache.json", "image-manifest.json") -WorkingDirectory $publishDir
             if ($commitCode -ne 0) {
                 Write-SyncLog "ERROR: Commit failed. Will retry."
             } else {

@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33715,
+    "name": "JAYVEELON CHICKEN BOTTOM",
+    "alias": "P-33715",
+    "barcode": "5818",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 690,
+    "sale": 550,
+    "wholesale": 506,
+    "purchase": 460,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-17"
+  },
+  {
     "ProductID": 33714,
     "name": "DAIRY MILK",
     "alias": "P-33714",

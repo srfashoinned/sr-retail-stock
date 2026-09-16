@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33714,
+    "name": "DAIRY MILK",
+    "alias": "P-33714",
+    "barcode": "5817",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 682.5,
+    "sale": 550,
+    "wholesale": 500.5,
+    "purchase": 455,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-17"
+  },
+  {
     "ProductID": 33713,
     "name": "KF APPLE",
     "alias": "P-33713",

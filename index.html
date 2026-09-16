@@ -2081,16 +2081,31 @@ const LIVE_STOCK_API = "https://live-stock.srfashionned.in/api/items";
 const LOCAL_STOCK_API = "http://localhost:3030/api/items";
 const STOCK_CACHE_KEY = "sr_live_stock_cache_v1";
 const STOCK_CACHE_TIME_KEY = "sr_live_stock_cache_time_v1";
+let stockStatusState = { source: "cache", count: 0, extra: "loading", updatedAt: "" };
+
+function stockAgeLabel(value) {
+  const ms = Date.now() - new Date(value || 0).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return "";
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 10) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  return `${Math.floor(minutes / 60)}h ago`;
+}
 
 function registerStockServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
 
-function setStockStatus(source, count, extra = "") {
-  const text = source === "live"
-    ? `Live Retail Daddy stock · ${count.toLocaleString("en-IN")} items`
-    : `Cached stock · ${count.toLocaleString("en-IN")} items${extra ? " · " + extra : ""}`;
+function setStockStatus(source, count, extra = "", updatedAt = "") {
+  stockStatusState = { source, count, extra, updatedAt: updatedAt || stockStatusState.updatedAt || localStorage.getItem(STOCK_CACHE_TIME_KEY) || "" };
+  const live = source === "live" && navigator.onLine;
+  const age = stockAgeLabel(stockStatusState.updatedAt);
+  const text = live
+    ? `● LIVE · ${count.toLocaleString("en-IN")} items${age ? " · updated " + age : ""}`
+    : `● OFFLINE COPY · ${count.toLocaleString("en-IN")} items${age ? " · saved " + age : ""}${extra ? " · " + extra : ""}`;
   const badge = document.getElementById("badge");
   if (badge) badge.textContent = count.toLocaleString("en-IN") + " items";
   const srCount = document.getElementById("sr-count");
@@ -2156,7 +2171,7 @@ function getBrowserStockCache() {
 function applyStockPayload(payload, statusSource) {
   raw = payload.items || [];
   stockContentSignature = getStockContentSignature(raw);
-  setStockStatus(statusSource || (payload.source === "live" ? "live" : "cache"), raw.length, payload.error ? "live offline" : "");
+  setStockStatus(statusSource || (payload.source === "live" ? "live" : "cache"), raw.length, payload.error ? "live offline" : "", payload.updatedAt);
   buildGroupChips();
   buildBrandChips();
 }
@@ -2190,6 +2205,10 @@ function startStockAutoRefresh() {
   if (stockAutoRefreshTimer) clearInterval(stockAutoRefreshTimer);
   stockAutoRefreshTimer = setInterval(autoRefreshLiveStock, 5000);
 }
+
+setInterval(() => setStockStatus(stockStatusState.source, stockStatusState.count, stockStatusState.extra, stockStatusState.updatedAt), 10000);
+window.addEventListener("online", () => { setStockStatus(stockStatusState.source, stockStatusState.count, "reconnecting", stockStatusState.updatedAt); autoRefreshLiveStock(); });
+window.addEventListener("offline", () => setStockStatus("cache", stockStatusState.count, "internet unavailable", stockStatusState.updatedAt));
 
 async function refreshLiveStockInBackground() {
   try {
@@ -3197,10 +3216,18 @@ async function openScanner(){
   document.getElementById("scan-btn").classList.add("on");
   document.getElementById("scan-code").textContent='';
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:"continuous"}}});
     scanStream=stream;
     const vid=document.getElementById("scan-vid");
     vid.srcObject=stream; await vid.play();
+    const track=stream.getVideoTracks()[0];
+    try{
+      const caps=track.getCapabilities?.()||{};
+      const advanced=[];
+      if(caps.focusMode?.includes?.("continuous"))advanced.push({focusMode:"continuous"});
+      if(caps.zoom)advanced.push({zoom:Math.min(caps.zoom.max||1.5,1.5)});
+      if(advanced.length)await track.applyConstraints({advanced});
+    }catch(_){}
     if('BarcodeDetector' in window){
       const bd=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','data_matrix','pdf417']});
       const canvas=document.createElement('canvas');

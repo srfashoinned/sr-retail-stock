@@ -26,13 +26,9 @@ const state = {
 };
 
 const isFileMode = window.location.protocol === "file:";
-const isHostedStaticMode =
-  new URLSearchParams(window.location.search).get("static") === "1" ||
-  !["localhost", "127.0.0.1", ""].includes(window.location.hostname);
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
-let remoteDashboardCache = null;
 let restoringNavigation = false;
 const qs = selector => document.querySelector(selector);
 const qsa = selector => [...document.querySelectorAll(selector)];
@@ -138,115 +134,56 @@ function registerServiceWorker() {
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
 
+const API_BASES = ["https://dashboard.srfashionned.in", ""];
 async function api(path) {
-  if (isHostedStaticMode && path.startsWith("/api/")) {
-    return offlineApi(path);
-  }
-  try {
-    const res = await fetch(path, { cache: "no-store" });
-    const contentType = res.headers.get("content-type") || "";
-    if (!res.ok) {
-      let error = "Request failed";
-      if (contentType.includes("application/json")) {
-        error = (await res.json()).error || error;
+  let lastError = null;
+  for (const base of API_BASES) {
+    try {
+      const url = `${base}${path}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const type = (res.headers.get("content-type") || "").toLowerCase();
+      const bodyText = await res.text();
+      if (!res.ok) {
+        let msg = "Request failed";
+        try { msg = JSON.parse(bodyText).error || msg; } catch (_) {}
+        throw new Error(msg);
       }
-      throw new Error(error);
+      if (!type.includes("application/json")) {
+        throw new Error("Server returned website page instead of data");
+      }
+      return JSON.parse(bodyText);
+    } catch (error) {
+      lastError = error;
     }
-    if (!contentType.includes("application/json")) {
-      throw new Error("Live data endpoint returned a web page instead of data");
-    }
-    return res.json();
-  } catch (error) {
-    if (path.startsWith("/api/")) return offlineApi(path, error);
-    throw error;
   }
+  throw lastError || new Error("Request failed");
 }
 
-async function dashboardCache() {
-  if (remoteDashboardCache) return remoteDashboardCache;
-  remoteDashboardCache = await readDashboardCache();
-  return remoteDashboardCache;
+async function readJsonResponse(response, label = "data") {
+  const type = (response.headers.get("content-type") || "").toLowerCase();
+  const text = await response.text();
+  if (!response.ok) {
+    let msg = "HTTP " + response.status;
+    try { msg = JSON.parse(text).error || msg; } catch (_) {}
+    throw new Error(msg);
+  }
+  if (!type.includes("application/json") && /^\s*</.test(text)) {
+    throw new Error(label + " returned website page instead of data");
+  }
+  try { return JSON.parse(text); } catch (_) { throw new Error(label + " returned invalid data"); }
 }
-
-function offlineProfileFromCustomer(customer = {}) {
-  const balance = amount(customer.balance);
-  const summary = {
-    ...customer,
-    customerCode: customer.customerCode,
-    customerName: customer.customerName,
-    Mobile: customer.mobile || customer.whatsapp || customer.Mobile || "",
-    WhatsAppNo: customer.whatsapp || customer.mobile || customer.WhatsAppNo || "",
-    Address1: customer.address || customer.Address1 || "",
-    currentBalance: balance,
-    billCount: customer.billCount || 0,
-    lifetimePurchases: customer.lifetimePurchases || 0,
-    lastPurchaseDate: customer.lastPurchaseDate,
-    lastPaymentDate: customer.lastPaymentDate,
-    oldestDueDate: customer.oldestDueDate
-  };
-  const ledger = [];
-  if (customer.lastPurchaseDate || customer.oldestDueDate || balance) {
-    ledger.push({
-      Date: customer.oldestDueDate || customer.lastPurchaseDate || new Date().toISOString(),
-      VchType: "Saved Balance",
-      VchNo: customer.Alias || customer.customerCode || "",
-      amount: balance,
-      runningBalance: balance,
-      narration: "Saved Hostinger copy"
-    });
-  }
-  return [[summary], ledger, [], [], [], []];
-}
-
-function salesKey(from, to) {
-  return `${from || ""}_${to || ""}`;
-}
-
-function findSavedBill(cache, vchCode) {
-  const key = String(vchCode || "");
-  if (cache?.billByCode?.[key]) return cache.billByCode[key];
-  const profiles = cache?.profileByCode || {};
-  for (const profile of Object.values(profiles)) {
-    const bill = (profile?.[2] || []).find(row => String(row.VchCode) === key);
-    if (bill) return [[bill], []];
-  }
-  const reports = cache?.salesReports || {};
-  for (const report of Object.values(reports)) {
-    const bill = (report?.rows || report?.[1] || []).find(row => String(row.VchCode) === key);
-    if (bill) return [[bill], []];
-  }
-  return null;
-}
-
-async function offlineApi(path, originalError) {
-  const cache = await dashboardCache();
-  if (!cache) throw originalError || new Error("Saved Hostinger data is not available yet");
-  const url = new URL(path, window.location.origin);
-  if (url.pathname === "/api/kpis") {
-    return [cache.kpiRows || (cache.kpis ? [cache.kpis] : []), cache.trendRows || cache.trend || []];
-  }
-  if (url.pathname === "/api/customers") {
-    return [cache.customerRows || cache.customers || []];
-  }
-  if (url.pathname === "/api/customer") {
-    const code = String(url.searchParams.get("code") || "");
-    const saved = cache.profileByCode?.[code];
-    if (saved) return saved;
-    const customer = (cache.customerRows || cache.customers || []).find(row => String(row.customerCode) === code);
-    if (customer) return offlineProfileFromCustomer(customer);
-  }
-  if (url.pathname === "/api/sales-report") {
-    const from = url.searchParams.get("from") || "";
-    const to = url.searchParams.get("to") || "";
-    const report = cache.salesReports?.[salesKey(from, to)] || cache.salesReports?.today || cache.salesReport;
-    if (report) return [report.summary ? [report.summary] : (report[0] || []), report.rows || report[1] || []];
-    return [[{}], []];
-  }
-  if (url.pathname === "/api/bill") {
-    const saved = findSavedBill(cache, url.searchParams.get("vchCode"));
-    if (saved) return saved;
-  }
-  throw originalError || new Error("This detail is not in the saved Hostinger copy yet");
+async function cachedCustomerProfile(code) {
+  const cache = await readDashboardCache();
+  const profile = cache?.customerProfiles?.[String(code)];
+  if (!profile) return null;
+  return [
+    profile.summary || [],
+    profile.ledger || [],
+    profile.bills || [],
+    profile.payments || [],
+    profile.outstanding || [],
+    profile.items || []
+  ];
 }
 
 function readLocalDashboardCache() {
@@ -306,7 +243,7 @@ function markSmsSent(customer) {
 async function readDashboardCache() {
   try {
     const res = await fetch(`/cache-data.json?t=${Date.now()}`, { cache: "no-store" });
-    if (res.ok) return await res.json();
+    if (res.ok) return await readJsonResponse(res, "Saved dashboard cache");
   } catch (_) {}
   return readLocalDashboardCache();
 }
@@ -432,19 +369,6 @@ function applyCustomerFilters(filters = {}) {
 
 async function restoreSavedNavigation() {
   if (restoringNavigation) return;
-  const forceHome = new URLSearchParams(location.search).get("home") === "1";
-  if (forceHome) {
-    try { localStorage.removeItem(NAV_KEY); } catch (_) {}
-    state.viewStack = [];
-    showView("dashboard", false);
-    try {
-      const clean = new URL(location.href);
-      clean.searchParams.delete("home");
-      history.replaceState({ srReceivables: true, view: "dashboard" }, "", clean.pathname + clean.search + clean.hash);
-    } catch (_) {}
-    updateBackButton();
-    return;
-  }
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(NAV_KEY) || "null"); } catch (_) {}
   if (!saved) {
@@ -1134,7 +1058,15 @@ function toggleHoldReminder() {
 }
 
 async function openCustomer(code) {
-  const [summary, ledger, bills, payments, outstanding, items] = await api(`/api/customer?code=${code}`);
+  let tables;
+  try {
+    tables = await api(`/api/customer?code=${code}`);
+  } catch (error) {
+    tables = await cachedCustomerProfile(code);
+    if (!tables) throw error;
+    toast("Showing saved ledger because live server is offline.");
+  }
+  const [summary, ledger, bills, payments, outstanding, items] = tables;
   const listRow = state.customers.find(c => String(c.customerCode) === String(code)) || {};
   state.profile = { summary: { ...summary[0], oldestDueDate: listRow.oldestDueDate, lastPaymentDate: listRow.lastPaymentDate }, ledger, bills, payments, outstanding, items };
   state.salesReport = null;
@@ -1337,23 +1269,20 @@ async function openBill(vchCode) {
   const h = headers[0] || {};
   state.currentBill = { header: h, items };
   qs("#billTitle").textContent = `Bill ${clean(h.VchNo || vchCode)}`;
-  const billAmount = amount(h.VchAmtBaseCur || h.billAmount || h.amount);
-  const paidAmount = amount(h.FormRecAmt || h.paidAmount);
-  const balanceAmount = amount(h.FormIssAmt || h.balanceAmount || h.balance);
-  qs("#billMeta").textContent = `${date(h.Date)} | ${clean(h.partyName || h.billingParty)} | Rs ${billAmount.toLocaleString("en-IN")}`;
+  qs("#billMeta").textContent = `${date(h.Date)} | ${clean(h.partyName || h.billingParty)} | Rs ${amount(h.VchAmtBaseCur).toLocaleString("en-IN")}`;
   const totalCost = items.reduce((sum, row) => sum + amount(row.costAmount), 0);
   const totalProfit = items.reduce((sum, row) => sum + amount(row.profitAmount), 0);
   qs("#billBody").innerHTML = `
     <div class="bill-summary compact">
-      <span>Total <b>Rs ${billAmount.toLocaleString("en-IN")}</b></span>
-      <span>Paid <b>Rs ${paidAmount.toLocaleString("en-IN")}</b></span>
-      <span>Balance <b>${plainMoney(balanceAmount)}</b></span>
-      <span>Cost <b>${rupees(totalCost || h.costPrice)}</b></span>
-      <span>Profit <b>${rupees(totalProfit || h.profitAmount || h.actualProfit)}</b></span>
+      <span>Total <b>Rs ${amount(h.VchAmtBaseCur).toLocaleString("en-IN")}</b></span>
+      <span>Paid <b>Rs ${amount(h.FormRecAmt).toLocaleString("en-IN")}</b></span>
+      <span>Balance <b>${plainMoney(h.FormIssAmt)}</b></span>
+      <span>Cost <b>${rupees(totalCost)}</b></span>
+      <span>Profit <b>${rupees(totalProfit)}</b></span>
       <span>Items <b>${items.length}</b></span>
     </div>
     <div class="bill-items">
-      ${items.length ? items.map((r, index) => `
+      ${items.map((r, index) => `
         <div class="bill-item">
           <div class="bill-item-head"><b><em>${index + 1}</em>${escapeHtml(r.itemName)}</b><strong>${rupees(r.amount)}</strong></div>
           <div class="bill-item-code">${escapeHtml(r.barcode || r.itemGroup || "")}${r.itemGroup && r.barcode ? ` | ${escapeHtml(r.itemGroup)}` : ""}</div>
@@ -1365,7 +1294,7 @@ async function openBill(vchCode) {
             <span>Profit <b>${rupees(r.profitAmount)}</b></span>
           </div>
         </div>
-      `).join("") : `<div class="empty small">This hosted saved copy has the bill summary. Item-level bill details need the shop PC live connection.</div>`}
+      `).join("")}
     </div>
   `;
   labelMobileTables(qs("#billBody"));
@@ -1789,7 +1718,7 @@ async function sendTextSms(customer, text = "") {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ from: "7588756668", to: `+${phone}`, text: message, customerCode: customer.customerCode || "" })
     });
-    const payload = await res.json().catch(() => ({}));
+    const payload = await readJsonResponse(res, "SMS response").catch(() => ({}));
     if (!res.ok || !payload.sent) throw new Error(payload.error || "SMS sender not connected");
     markSmsSent(customer);
     renderDashboardReceivables();
@@ -2197,10 +2126,8 @@ document.addEventListener("click", event => {
   }
   const customerRow = event.target.closest("tr[data-code]");
   if (customerRow && !event.target.closest("button")) openCustomer(customerRow.dataset.code);
-  const customerCard = event.target.closest(".mobile-debt-card[data-code], .sales-bill[data-code], button[data-code]");
-  if (customerCard && !event.target.closest("[data-wa-code], [data-sms-code], .call-btn, .row-actions")) {
-    openCustomer(customerCard.dataset.code);
-  }
+  const customerCard = event.target.closest("button[data-code]");
+  if (customerCard && !event.target.closest("[data-wa-code]")) openCustomer(customerCard.dataset.code);
   const tab = event.target.closest(".tab");
   if (tab) {
     state.activeTab = tab.dataset.tab;
@@ -2400,9 +2327,7 @@ async function init() {
     await loadKpis();
     qs("#dbStatus").textContent = "Loading customers and receivables...";
     await loadCustomers();
-    qs("#dbStatus").textContent = isHostedStaticMode
-      ? `Showing saved Retail Daddy copy from ${new Date().toLocaleString("en-IN")}. Live data will resume when shop PC is on.`
-      : `Connected to Retail Daddy on ${new Date().toLocaleString("en-IN")}`;
+    qs("#dbStatus").textContent = `Connected to Retail Daddy on ${new Date().toLocaleString("en-IN")}`;
     await restoreSavedNavigation();
     welcomeSound();
   } catch (error) {

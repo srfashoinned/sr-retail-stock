@@ -1939,12 +1939,27 @@ function getImageUrls(it){
   return urls;
 }
 
+
+async function srReadJsonResponse(response, label="data"){
+  const type=(response.headers.get("content-type")||"").toLowerCase();
+  const text=await response.text();
+  if(!response.ok){
+    let msg="HTTP "+response.status;
+    try{msg=JSON.parse(text).error||msg}catch(_){ }
+    throw new Error(msg);
+  }
+  if(!type.includes("application/json") && /^\s*</.test(text)){
+    throw new Error(label+" returned website page instead of data");
+  }
+  try{return JSON.parse(text)}catch(e){throw new Error(label+" returned invalid data")}
+}
+
 async function loadLegacyImages(alias){
   const apiUrl = `https://api.github.com/repos/${LEGACY_IMAGE_OWNER}/${LEGACY_IMAGE_REPO}/contents/products/${encodeURIComponent(alias)}?ref=${LEGACY_IMAGE_BRANCH}`;
   try{
     const r = await fetch(apiUrl, { cache:'force-cache', headers:{ 'Accept':'application/vnd.github+json' } });
     if(!r.ok) return [];
-    const files = await r.json();
+    const files = await srReadJsonResponse(r, "Legacy image list");
     return files
       .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
       .sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}))
@@ -1958,7 +1973,7 @@ async function loadStaticManifestImages(alias){
   if(!alias) return [];
   if(!srImageManifestPromise){
     srImageManifestPromise = fetch("/image-manifest.json?t="+Date.now(), { cache:"no-store" })
-      .then(r => r.ok ? r.json() : null)
+      .then(r => r.ok ? srReadJsonResponse(r, "Image manifest") : null)
       .catch(() => null);
   }
   const manifest = await srImageManifestPromise;
@@ -1981,8 +1996,7 @@ async function imageApiFetch(path, options = {}) {
   for (const base of IMAGE_API_BASES) {
     try {
       const r = await fetch(base + path, options);
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      const data = await r.json();
+      const data = await srReadJsonResponse(r, "Image API");
       const origin = base.replace(/\/image-api$/, "");
       const images = (data.images || []).map(img => ({
         ...img,
@@ -2085,8 +2099,7 @@ function setStockStatus(source, count, extra = "") {
 
 async function fetchStockJson(url) {
   const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  const payload = await r.json();
+  const payload = await srReadJsonResponse(r, "Stock data");
   return Array.isArray(payload) ? { source: "file", items: payload } : payload;
 }
 
@@ -3278,7 +3291,7 @@ async function srAuthLogin(pin){
           body:JSON.stringify({pin}),
           cache:"no-store"
         });
-        const data=await r.json().catch(()=>({}));
+        const data=await srReadJsonResponse(r, "Auth login").catch(()=>({}));
         if(!r.ok)throw new Error(data.error||("HTTP "+r.status));
         if(data?.ok&&data?.role)return data;
       }catch(e){lastErr=e}
@@ -3296,7 +3309,7 @@ async function srEnsureStaffImageToken(){
       for(const endpoint of ["/auth/staff-session","/auth/staff-session.php"]){
         try{
           const r=await fetch(base+endpoint,{method:"POST",cache:"no-store"});
-          const data=await r.json().catch(()=>({}));
+          const data=await srReadJsonResponse(r, "Staff session").catch(()=>({}));
           if(!r.ok)throw new Error(data.error||("HTTP "+r.status));
           if(data?.ok && data?.imageKey){
             pimSetToken(data.imageKey,false);
@@ -4341,8 +4354,7 @@ async function srLedgerApi(path){
   for(const base of ITEM_LEDGER_API_BASES){
     try{
       const r=await fetch(base+path,{cache:"no-store"});
-      if(!r.ok)throw new Error("HTTP "+r.status);
-      return await r.json();
+      return await srReadJsonResponse(r, "Item ledger API");
     }catch(e){lastErr=e}
   }
   throw lastErr||new Error("Ledger not available");
@@ -4396,7 +4408,7 @@ function srLedgerCacheGet(it){
 async function srCloudLedgerCacheRead(){
   if(!srCloudLedgerCachePromise){
     srCloudLedgerCachePromise=fetch("/item-ledgers-cache.json?t="+Date.now(),{cache:"no-store"})
-      .then(r=>r.ok?r.json():null)
+      .then(r=>r.ok?srReadJsonResponse(r, "Item ledger cache"):null)
       .catch(()=>null);
   }
   return srCloudLedgerCachePromise;

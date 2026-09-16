@@ -2081,6 +2081,8 @@ const LIVE_STOCK_API = "https://live-stock.srfashionned.in/api/items";
 const LOCAL_STOCK_API = "http://localhost:3030/api/items";
 const STOCK_CACHE_KEY = "sr_live_stock_cache_v1";
 const STOCK_CACHE_TIME_KEY = "sr_live_stock_cache_time_v1";
+const STOCK_VERSION_KEY = "sr_live_stock_version_v1";
+let remoteStockVersion = localStorage.getItem(STOCK_VERSION_KEY) || "";
 let stockStatusState = { source: "cache", count: 0, extra: "loading", updatedAt: "" };
 
 function stockAgeLabel(value) {
@@ -2126,13 +2128,21 @@ async function getStockData(forceLive = false) {
     : LIVE_STOCK_API;
 
   try {
-    const payload = await fetchStockJson(apiUrl);
+    const versionUrl = remoteStockVersion ? `${apiUrl}?version=${encodeURIComponent(remoteStockVersion)}` : apiUrl;
+    const payload = await fetchStockJson(versionUrl);
+    if (payload.unchanged) {
+      return { source: "live", items: raw.length ? raw : (getBrowserStockCache()?.items || []), updatedAt: payload.updatedAt, version: payload.version, unchanged: true };
+    }
     const items = payload.items || [];
     if (!Array.isArray(items)) throw new Error("Bad stock response");
     const oldStock = localStorage.getItem(STOCK_CACHE_KEY);
     if (oldStock) localStorage.setItem(SR_PREV_STOCK_KEY, oldStock);
     localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(items));
     localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
+    if (payload.version) {
+      remoteStockVersion = payload.version;
+      localStorage.setItem(STOCK_VERSION_KEY, payload.version);
+    }
     return { source: payload.source || "live", items, updatedAt: payload.updatedAt || new Date().toISOString() };
   } catch (liveError) {
     if (forceLive) throw liveError;

@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33716,
+    "name": "GNA READY MADE",
+    "alias": "P-33716",
+    "barcode": "5819",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "PLAZO",
+    "PartGroup": "SUIT",
+    "mrp": 1477.5,
+    "sale": 1400,
+    "wholesale": 1083.5,
+    "purchase": 985,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-17"
+  },
+  {
     "ProductID": 33715,
     "name": "JAYVEELON CHICKEN BOTTOM",
     "alias": "P-33715",

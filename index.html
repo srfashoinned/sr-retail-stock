@@ -4498,12 +4498,25 @@ function openItemLedgerSearch(){
   srLedgerShow("Item Ledger","Search by barcode, code, or item name",`<div style="display:flex;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / item name"><button id="sr-ledger-search-go" onclick="srLedgerSearchGo()">Search</button></div><div id="sr-ledger-suggestions"></div><div class="sr-ledger-note">Type to see matching products. Tap any result to open its complete sale and purchase ledger.</div>`);
   setTimeout(()=>{const x=$("sr-ledger-search"); if(x){x.focus(); x.oninput=()=>srLedgerSuggest(x.value,"openItemLedger")}},80);
 }
-function srFindItemIndex(term){
-  term=String(term||"").trim().toLowerCase();
+function srNormCode(v){return String(v??"").trim().toLowerCase().replace(/[^a-z0-9]/g,"").replace(/^0+(?=\d)/,"")}
+function srItemIsInStock(it){return Number(it?.stock||0)>0}
+function srItemSearchHay(it){return [it?.name,it?.alias,it?.barcode,it?.group,it?.PartGroup,it?.Category,it?.SubCategory,it?.size,it?.Size,it?.colour,it?.color,it?.Colour,it?.Color].join(" ").toLowerCase()}
+function srItemMatchesTerm(it,term){
+  const q=String(term||"").trim().toLowerCase();
+  if(!q)return false;
+  const nq=srNormCode(q);
+  const codes=[it?.ProductID,it?.productId,it?.alias,it?.barcode].map(srNormCode).filter(Boolean);
+  if(nq && codes.some(c=>c===nq || c.endsWith(nq) || nq.endsWith(c)))return true;
+  return srItemSearchHay(it).includes(q);
+}
+function srFindItemIndex(term, opts={}){
+  term=String(term||"").trim();
   if(!term)return -1;
-  let idx=raw.findIndex(it=>String(it.barcode||"").toLowerCase()===term||String(it.alias||"").toLowerCase()===term);
+  const onlyInStock=!!opts.onlyInStock;
+  const nq=srNormCode(term);
+  let idx=raw.findIndex(it=>(!onlyInStock||srItemIsInStock(it)) && [it?.ProductID,it?.productId,it?.barcode,it?.alias].map(srNormCode).filter(Boolean).some(c=>c===nq || c.endsWith(nq) || nq.endsWith(c)));
   if(idx>=0)return idx;
-  return raw.findIndex(it=>[it.name,it.alias,it.barcode,it.group,it.PartGroup].some(v=>String(v||"").toLowerCase().includes(term)));
+  return raw.findIndex(it=>(!onlyInStock||srItemIsInStock(it)) && srItemMatchesTerm(it,term));
 }
 function srLedgerSuggest(term,fnName="openItemLedger"){
   const box=$("sr-ledger-suggestions");
@@ -4802,19 +4815,30 @@ async function srOpenMissingImagesReport(mode="all"){
   srShowReport(title,`${rows.length} instant ${desc}. Uploading removes the product from this list.`,rows,`No ${desc} in the instant queue.`,{upload:true});
   const body=document.getElementById("sr-ledger-body");
   if(body){
-    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Search or scan a product, then tap Upload or Camera in that same row. Staff PIN is enough; no second image password.</div><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px"><input id="sr-missing-image-search" placeholder="Search product, barcode, group..." oninput="srFilterMissingImageQueue(this.value)"></div><div class="sr-ledger-actions"><button class="gold" onclick="srImageWorkScan()">Scan Barcode</button><button onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
+    body.insertAdjacentHTML("afterbegin",`<div class="sr-ledger-note">Search or scan a product from stock, then tap Upload or Camera in that same row. This shows only items that are in stock.</div><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px"><input id="sr-missing-image-search" placeholder="Scan/type barcode, code, or item name..." oninput="srFilterMissingImageQueue(this.value)" onkeydown="if(event.key==='Enter')srImageWorkOpenSearch(this.value)"></div><div class="sr-ledger-actions"><button class="gold" onclick="srImageWorkOpenSearch(document.getElementById('sr-missing-image-search')?.value||'')">Find Item</button><button class="gold" onclick="srImageWorkScan()">Scan Barcode</button><button onclick="srOpenMissingImagesReport('${mode}')">Instant Queue</button><button onclick="srDeepCheckMissingImages('${mode}')">Deep Check</button></div>`);
   }
 }
+function srImageWorkSearchRows(term=""){
+  const q=String(term||"").trim();
+  const base=q ? raw.map((it,ri)=>[it,ri]).filter(([it])=>srItemIsInStock(it) && srItemMatchesTerm(it,q)) : (window.srMissingImageRows||[]).filter(([it])=>srItemIsInStock(it));
+  return base.slice(0,400);
+}
 function srFilterMissingImageQueue(term=""){
-  const rows=window.srMissingImageRows||[];
-  const q=String(term||"").trim().toLowerCase();
-  const filtered=q ? rows.filter(([it])=>[it.name,it.alias,it.barcode,it.group,it.PartGroup,it.Category,it.SubCategory].some(v=>String(v||"").toLowerCase().includes(q))) : rows;
+  const q=String(term||"").trim();
+  const filtered=srImageWorkSearchRows(q);
   window.srLastReportRows=filtered;
   const list=document.querySelector("#sr-ledger-body .sr-report-list");
   if(!list)return;
   list.innerHTML=filtered.length
-    ? filtered.slice(0,400).map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")
-    : `<div class="sr-ledger-note">No missing-photo product matched this search.</div>`;
+    ? filtered.map(([it,ri])=>srReportItem(it,ri,{upload:true})).join("")
+    : `<div class="sr-ledger-note">No in-stock product matched this search.</div>`;
+}
+function srImageWorkOpenSearch(term=""){
+  const q=String(term||"").trim();
+  if(!q){toast("Scan or type barcode, code, or name");return}
+  const idx=srFindItemIndex(q,{onlyInStock:true});
+  if(idx<0){srFilterMissingImageQueue(q);toast("No in-stock item found");return}
+  srImageWorkFound(q);
 }
 function srImageWorkScan(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock admin/staff for image scan"); return; }
@@ -4827,8 +4851,8 @@ function srImageWorkScan(){
   },120);
 }
 function srImageWorkFound(code){
-  const idx=srFindItemIndex(code);
-  if(idx<0){toast("No product found for "+code);return}
+  const idx=srFindItemIndex(code,{onlyInStock:true});
+  if(idx<0){toast("No in-stock product found for "+code);return}
   const it=raw[idx];
   if(!document.getElementById("sr-ledger-body"))srOpenMissingImagesReport("all");
   const input=$("sr-missing-image-search");

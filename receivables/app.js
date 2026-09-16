@@ -1264,26 +1264,79 @@ function filteredPartyItems() {
   return rows.filter(item => [item.itemName, item.barcode, item.itemGroup].join(" ").toLowerCase().includes(q));
 }
 
+function cachedBillTables(vchCode) {
+  const p = state.profile || {};
+  const bills = p.bills || [];
+  const ledger = p.ledger || [];
+  const bill = bills.find(r => String(r.VchCode) === String(vchCode)) || ledger.find(r => String(r.VchCode) === String(vchCode)) || {};
+  if (!Object.keys(bill).length) return null;
+  const h = {
+    ...bill,
+    partyName: p.summary?.customerName || bill.partyName || "",
+    billingParty: p.summary?.customerName || bill.billingParty || "",
+    VchAmtBaseCur: bill.billAmount || bill.amount || bill.VchAmtBaseCur || 0,
+    FormRecAmt: bill.paidAmount || bill.FormRecAmt || 0,
+    FormIssAmt: bill.balanceAmount || bill.balance || bill.FormIssAmt || 0
+  };
+  return [[h], []];
+}
+
+function renderBillItemDetail(index) {
+  const item = state.currentBill?.items?.[Number(index)];
+  if (!item) return;
+  const amountValue = amount(item.amount);
+  const costValue = amount(item.costAmount);
+  const profitValue = amount(item.profitAmount);
+  const margin = amountValue ? (profitValue / amountValue * 100) : 0;
+  const box = qs("#billItemDetail");
+  if (!box) return;
+  box.innerHTML = `
+    <div class="bill-summary compact">
+      <span>Item <b>${escapeHtml(clean(item.itemName || "Item"))}</b></span>
+      <span>Code <b>${escapeHtml(clean(item.barcode || item.itemCode || "-"))}</b></span>
+      <span>Qty <b>${amount(item.qty)}</b></span>
+      <span>Sale <b>${rupees(amountValue)}</b></span>
+      <span>Cost <b>${rupees(costValue)}</b></span>
+      <span>Profit <b>${rupees(profitValue)}</b></span>
+      <span>Margin <b>${Number.isFinite(margin) ? margin.toFixed(1) : "0.0"}%</b></span>
+      <span>MRP <b>${item.mrp ? rupees(item.mrp) : "-"}</b></span>
+    </div>
+    <div class="empty small">Profit detail for this bill item. Tap another item to compare.</div>`;
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 async function openBill(vchCode) {
-  const [headers, items] = await api(`/api/bill?vchCode=${vchCode}`);
+  let tables;
+  let fromCache = false;
+  try {
+    tables = await api(`/api/bill?vchCode=${vchCode}`);
+  } catch (error) {
+    tables = cachedBillTables(vchCode);
+    fromCache = !!tables;
+    if (!tables) throw error;
+    toast("Showing saved bill summary because live bill detail is offline.");
+  }
+  const [headers, items = []] = tables;
   const h = headers[0] || {};
   state.currentBill = { header: h, items };
   qs("#billTitle").textContent = `Bill ${clean(h.VchNo || vchCode)}`;
-  qs("#billMeta").textContent = `${date(h.Date)} | ${clean(h.partyName || h.billingParty)} | Rs ${amount(h.VchAmtBaseCur).toLocaleString("en-IN")}`;
+  qs("#billMeta").textContent = `${date(h.Date)} | ${clean(h.partyName || h.billingParty)} | Rs ${amount(h.VchAmtBaseCur || h.billAmount || h.amount).toLocaleString("en-IN")}`;
   const totalCost = items.reduce((sum, row) => sum + amount(row.costAmount), 0);
   const totalProfit = items.reduce((sum, row) => sum + amount(row.profitAmount), 0);
+  const totalAmount = amount(h.VchAmtBaseCur || h.billAmount || h.amount);
   qs("#billBody").innerHTML = `
     <div class="bill-summary compact">
-      <span>Total <b>Rs ${amount(h.VchAmtBaseCur).toLocaleString("en-IN")}</b></span>
-      <span>Paid <b>Rs ${amount(h.FormRecAmt).toLocaleString("en-IN")}</b></span>
-      <span>Balance <b>${plainMoney(h.FormIssAmt)}</b></span>
-      <span>Cost <b>${rupees(totalCost)}</b></span>
-      <span>Profit <b>${rupees(totalProfit)}</b></span>
-      <span>Items <b>${items.length}</b></span>
+      <span>Total <b>Rs ${totalAmount.toLocaleString("en-IN")}</b></span>
+      <span>Paid <b>Rs ${amount(h.FormRecAmt || h.paidAmount).toLocaleString("en-IN")}</b></span>
+      <span>Balance <b>${plainMoney(h.FormIssAmt || h.balanceAmount || h.balance)}</b></span>
+      <span>Cost <b>${items.length ? rupees(totalCost) : "Live only"}</b></span>
+      <span>Profit <b>${items.length ? rupees(totalProfit) : "Live only"}</b></span>
+      <span>Items <b>${items.length || "Live only"}</b></span>
     </div>
+    <div id="billItemDetail"></div>
     <div class="bill-items">
-      ${items.map((r, index) => `
-        <div class="bill-item">
+      ${items.length ? items.map((r, index) => `
+        <button type="button" class="bill-item" data-bill-item="${index}">
           <div class="bill-item-head"><b><em>${index + 1}</em>${escapeHtml(r.itemName)}</b><strong>${rupees(r.amount)}</strong></div>
           <div class="bill-item-code">${escapeHtml(r.barcode || r.itemGroup || "")}${r.itemGroup && r.barcode ? ` | ${escapeHtml(r.itemGroup)}` : ""}</div>
           <div class="bill-item-grid">
@@ -1293,8 +1346,8 @@ async function openBill(vchCode) {
             <span>Cost <b>${rupees(r.costAmount)}</b></span>
             <span>Profit <b>${rupees(r.profitAmount)}</b></span>
           </div>
-        </div>
-      `).join("")}
+        </button>
+      `).join("") : `<div class="empty small">${fromCache ? "Saved bill summary is available. Full item-wise profit opens when live Retail Daddy dashboard is online." : "No item rows found for this bill."}</div>`}
     </div>
   `;
   labelMobileTables(qs("#billBody"));
@@ -2116,6 +2169,13 @@ document.addEventListener("click", event => {
     event.stopPropagation();
     const c = state.customers.find(row => String(row.customerCode) === String(smsCode.dataset.smsCode));
     if (c) sendTextSms(c);
+  }
+  const billItemTarget = event.target.closest("[data-bill-item]");
+  if (billItemTarget) {
+    event.preventDefault();
+    event.stopPropagation();
+    renderBillItemDetail(billItemTarget.dataset.billItem);
+    return;
   }
   const billTarget = event.target.closest("[data-bill]");
   if (billTarget) {

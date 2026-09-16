@@ -1409,10 +1409,20 @@ tbody tr:hover { background: color-mix(in srgb, var(--accent-soft) 55%, transpar
 }
 
 .bill-item {
+  width: 100%;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 12px;
   background: var(--panel);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.bill-item:hover {
+  border-color: var(--gold);
+  box-shadow: 0 10px 24px rgba(215, 163, 31, .14);
 }
 
 .bill-item-head {

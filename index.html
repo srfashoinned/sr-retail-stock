@@ -2065,6 +2065,8 @@ let scrollEl, spacer, stage;
 
 let expItem  = null;
 let expPrice = 'sale';
+let stockAutoRefreshTimer = null;
+let stockContentSignature = "";
 
 /* image viewer state (old modal — untouched) */
 let imgItem     = null;
@@ -2153,9 +2155,40 @@ function getBrowserStockCache() {
 
 function applyStockPayload(payload, statusSource) {
   raw = payload.items || [];
+  stockContentSignature = getStockContentSignature(raw);
   setStockStatus(statusSource || (payload.source === "live" ? "live" : "cache"), raw.length, payload.error ? "live offline" : "");
   buildGroupChips();
   buildBrandChips();
+}
+
+function getStockContentSignature(items) {
+  let hash = 2166136261;
+  for (const item of items || []) {
+    const value = `${item.id || item.productId || item.ProductID || ""}|${item.alias || item.code || item.ProductCode || ""}|${item.name || item.ProductName || ""}|${item.stock ?? item.AvailableStock ?? ""}|${item.sale ?? item.SalePrice ?? ""}|${item.mrp ?? item.MRP ?? ""}`;
+    for (let i = 0; i < value.length; i++) {
+      hash ^= value.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+  }
+  return `${items?.length || 0}:${hash >>> 0}`;
+}
+
+async function autoRefreshLiveStock() {
+  if (document.hidden) return;
+  try {
+    const payload = await getStockData(true);
+    const nextItems = payload.items || [];
+    const nextSignature = getStockContentSignature(nextItems);
+    if (nextSignature === stockContentSignature) return;
+    applyStockPayload(payload, "live");
+    if (typeof applyAll === "function") applyAll();
+    toast("Stock updated automatically");
+  } catch (e) {}
+}
+
+function startStockAutoRefresh() {
+  if (stockAutoRefreshTimer) clearInterval(stockAutoRefreshTimer);
+  stockAutoRefreshTimer = setInterval(autoRefreshLiveStock, 5000);
 }
 
 async function refreshLiveStockInBackground() {
@@ -2198,6 +2231,7 @@ async function loadData(){
   pimInitToken();
   setAdminUi(false);
   refreshLiveStockInBackground();
+  startStockAutoRefresh();
 }
 
 function applyUrlFilters(){

@@ -626,7 +626,7 @@
     "purchase": 560,
     "size": "XL",
     "colour": "",
-    "stock": 8,
+    "stock": 0,
     "entryDate": "2026-09-05"
   },
   {
@@ -662,7 +662,7 @@
     "purchase": 560,
     "size": "2XL",
     "colour": "",
-    "stock": 40,
+    "stock": 32,
     "entryDate": "2026-09-05"
   },
   {

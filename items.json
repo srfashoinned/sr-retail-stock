@@ -14,7 +14,7 @@
     "purchase": 357,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 30,
     "entryDate": "2026-09-19"
   },
   {
@@ -603,12 +603,12 @@
     "SubCategory": "TROUSER",
     "PartGroup": "TROUSER",
     "mrp": 728,
-    "sale": 650,
+    "sale": 720,
     "wholesale": 603.75,
     "purchase": 560,
     "size": "3XL",
     "colour": "",
-    "stock": 1,
+    "stock": 9,
     "entryDate": "2026-09-05"
   },
   {
@@ -621,12 +621,12 @@
     "SubCategory": "TROUSER",
     "PartGroup": "TROUSER",
     "mrp": 728,
-    "sale": 650,
+    "sale": 700,
     "wholesale": 603.75,
     "purchase": 560,
     "size": "XL",
     "colour": "",
-    "stock": 0,
+    "stock": 8,
     "entryDate": "2026-09-05"
   },
   {
@@ -658,11 +658,11 @@
     "PartGroup": "TROUSER",
     "mrp": 728,
     "sale": 650,
-    "wholesale": 600,
+    "wholesale": 603.75,
     "purchase": 560,
     "size": "2XL",
     "colour": "",
-    "stock": 24,
+    "stock": 40,
     "entryDate": "2026-09-05"
   },
   {

@@ -590,7 +590,7 @@
     "purchase": 335,
     "size": "",
     "colour": "",
-    "stock": 11,
+    "stock": 10,
     "entryDate": "2026-09-09"
   },
   {
@@ -3920,7 +3920,7 @@
     "purchase": 240,
     "size": "",
     "colour": "",
-    "stock": -10,
+    "stock": -11,
     "entryDate": "2026-07-12"
   },
   {
@@ -50072,7 +50072,7 @@
     "purchase": 170,
     "size": "",
     "colour": "",
-    "stock": 69,
+    "stock": 68,
     "entryDate": "2026-07-12"
   },
   {

@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33717,
+    "name": "JT FIROZA",
+    "alias": "P-33717",
+    "barcode": "5820",
+    "group": "SUIT",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "SUIT",
+    "mrp": 535.5,
+    "sale": 450,
+    "wholesale": 392.7,
+    "purchase": 357,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-19"
+  },
+  {
     "ProductID": 33716,
     "name": "GNA READY MADE",
     "alias": "P-33716",

@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33726,
+    "name": "trail",
+    "alias": "P-33726",
+    "barcode": "5829",
+    "group": "PLAZO",
+    "Category": "GENERAL",
+    "SubCategory": "PLAZO",
+    "PartGroup": "PLAZO",
+    "mrp": 1.1,
+    "sale": 1.1,
+    "wholesale": 2,
+    "purchase": 1,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-21"
+  },
+  {
     "ProductID": 33725,
     "name": "JT FIROZA",
     "alias": "P-33725",

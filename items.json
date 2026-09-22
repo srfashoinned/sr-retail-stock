@@ -716,7 +716,7 @@
     "purchase": 450,
     "size": "",
     "colour": "",
-    "stock": 4,
+    "stock": 8,
     "entryDate": "2026-09-09"
   },
   {
@@ -896,7 +896,7 @@
     "purchase": 1030,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": 2,
     "entryDate": "2026-09-01"
   },
   {
@@ -986,7 +986,7 @@
     "purchase": 858,
     "size": "",
     "colour": "",
-    "stock": 1,
+    "stock": 2,
     "entryDate": "2026-09-01"
   },
   {
@@ -1652,7 +1652,7 @@
     "purchase": 196,
     "size": "",
     "colour": "",
-    "stock": 18,
+    "stock": 17,
     "entryDate": "2026-08-17"
   },
   {
@@ -44456,7 +44456,7 @@
     "purchase": 340,
     "size": "",
     "colour": "",
-    "stock": -2,
+    "stock": 0,
     "entryDate": "2026-07-12"
   },
   {

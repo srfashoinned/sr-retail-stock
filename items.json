@@ -1,5 +1,23 @@
 [
   {
+    "ProductID": 33727,
+    "name": "DILKHUSH BOTTOM WORK",
+    "alias": "P-33727",
+    "barcode": "0003831",
+    "group": "0",
+    "Category": "GENERAL",
+    "SubCategory": "SUIT",
+    "PartGroup": "0",
+    "mrp": 722.5,
+    "sale": 650,
+    "wholesale": 0,
+    "purchase": 0,
+    "size": "",
+    "colour": "",
+    "stock": 0,
+    "entryDate": "2026-09-26"
+  },
+  {
     "ProductID": 33726,
     "name": "trail",
     "alias": "P-33726",

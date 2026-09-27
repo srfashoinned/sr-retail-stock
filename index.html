@@ -5401,19 +5401,23 @@ function srPurchaseRowsHtml(rows=[]){
 async function srOpenOwnerEmailReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner email"); return; }
   drawer(false);
+  const today=srIsoToday();
+  srLedgerShow("Owner Email","Select date for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr auto"><input id="sr-owner-report-date" type="date" value="${today}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-date').value)">Generate</button></div><div class="sr-ledger-note">Default send-to email remains srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Website share works without Gmail login; automatic send runs by the scheduled Gmail automation.</div>`);
+}
+async function srRunOwnerEmailReport(selectedDate){
+  const day=/^\d{4}-\d{2}-\d{2}$/.test(selectedDate||"")?selectedDate:srIsoToday();
   toast("Preparing owner report...");
   try{
-    const today=srIsoToday();
     const [sales, receivables, purchases, payables]=await Promise.all([
-      srLedgerApi(`/api/sales-report?from=${encodeURIComponent(today)}&to=${encodeURIComponent(today)}`),
+      srLedgerApi(`/api/sales-report?from=${encodeURIComponent(day)}&to=${encodeURIComponent(day)}`),
       srFetchReceivablesCache(),
-      srLedgerApi(`/api/purchase-report?from=${encodeURIComponent(today)}&to=${encodeURIComponent(today)}`),
+      srLedgerApi(`/api/purchase-report?from=${encodeURIComponent(day)}&to=${encodeURIComponent(day)}`),
       srLedgerApi("/api/payables")
     ]);
     const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables);
     const purchaseRows=(purchases&&purchases[1])||[];
     try{await navigator.clipboard.writeText(msg.text)}catch(e){}
-    srLedgerShow("Owner Email Report","Copied. Use Share to send without Gmail web login.",`<div class="sr-ledger-actions"><button class="gold" onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills today</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
+    srLedgerShow("Owner Email Report",`${day} report copied. Use Share to send without Gmail web login.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills on ${day}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
     window.srOwnerReportText=msg.text;
     window.srOwnerReportSubject=msg.subject;
     toast("Owner report copied");

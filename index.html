@@ -4409,7 +4409,7 @@ loadData();
 (function(){
 const $=id=>document.getElementById(id);
 let ac=null,quoteOpen=false,cart=[],quoteSearch="",scannerForQuote=false,scannerForImageWork=false,qtyPick=null;
-const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1";
+const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1",SR_OWNER_EMAIL_WEBAPP_KEY="sr_owner_email_webapp_url",SR_OWNER_EMAIL_SECRET_KEY="sr_owner_email_secret";
 let srNavRestoring=false,srLastView="home",srLastPayload={},srNextNav=null,srLedgerRequestToken=0,srNavFromDrawer=false,srViewStack=[];
 
 function sound(kind="tap"){
@@ -5402,7 +5402,7 @@ async function srOpenOwnerEmailReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner email"); return; }
   drawer(false);
   const today=srIsoToday();
-  srLedgerShow("Owner Email","Select date for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr auto"><input id="sr-owner-report-date" type="date" value="${today}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-date').value)">Generate</button></div><div class="sr-ledger-note">Default send-to email remains srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Website share works without Gmail login; automatic send runs by the scheduled Gmail automation.</div>`);
+  srLedgerShow("Owner Email","Select date for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr auto"><input id="sr-owner-report-date" type="date" value="${today}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-date').value)">Generate</button></div><div class="sr-ledger-actions"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button onclick="srOpenOwnerEmailSetup()">Email Setup</button></div><div class="sr-ledger-note">Default send-to email remains srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Website share works now; silent email works after one-time Google Apps Script setup.</div>`);
 }
 async function srRunOwnerEmailReport(selectedDate){
   const day=/^\d{4}-\d{2}-\d{2}$/.test(selectedDate||"")?selectedDate:srIsoToday();
@@ -5417,7 +5417,8 @@ async function srRunOwnerEmailReport(selectedDate){
     const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables);
     const purchaseRows=(purchases&&purchases[1])||[];
     try{await navigator.clipboard.writeText(msg.text)}catch(e){}
-    srLedgerShow("Owner Email Report",`${day} report copied. Use Share to send without Gmail web login.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills on ${day}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
+    const emailTo=($("sr-owner-email-to")?.value||"").trim();
+    srLedgerShow("Owner Email Report",`${day} report copied. Use Share now, or Send Email after one-time setup.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srSendOwnerEmailSilent('${day}','${String(emailTo).replace(/'/g,"\\'")}')">Send Email</button><button onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills on ${day}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
     window.srOwnerReportText=msg.text;
     window.srOwnerReportSubject=msg.subject;
     toast("Owner report copied");
@@ -5434,6 +5435,34 @@ async function srShareOwnerReport(){
     else { await navigator.clipboard.writeText(text); toast("Copied"); }
   }catch(e){
     try{await navigator.clipboard.writeText(text); toast("Copied");}catch(_){toast("Could not share");}
+  }
+}
+function srOpenOwnerEmailSetup(){
+  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||"";
+  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||"";
+  srLedgerShow("Silent Email Setup","Paste Google Apps Script Web App URL once",`<div class="sr-ledger-note">Use the Apps Script file saved on this laptop: E:\\New Website\\google-apps-script-owner-email.gs. Deploy it from the Gmail account that should send the mail, then paste the Web App URL here.</div><div style="display:grid;gap:8px"><input id="sr-email-webapp-url" placeholder="Apps Script Web App URL" value="${escq(url)}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><input id="sr-email-secret" placeholder="Secret key" value="${escq(key)}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srSaveOwnerEmailSetup()">Save Setup</button></div>`);
+}
+function srSaveOwnerEmailSetup(){
+  const url=($("sr-email-webapp-url")?.value||"").trim();
+  const key=($("sr-email-secret")?.value||"").trim();
+  if(!/^https:\/\/script\.google\.com\/macros\/s\//.test(url))return toast("Paste Apps Script Web App URL");
+  if(!key)return toast("Paste secret key");
+  localStorage.setItem(SR_OWNER_EMAIL_WEBAPP_KEY,url);
+  localStorage.setItem(SR_OWNER_EMAIL_SECRET_KEY,key);
+  toast("Silent email setup saved");
+  srOpenOwnerEmailReport();
+}
+async function srSendOwnerEmailSilent(date,to){
+  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||"";
+  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||"";
+  if(!url||!key){srOpenOwnerEmailSetup();toast("Setup silent email once");return;}
+  const target=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to||"")?to:"srfashionned@gmail.com";
+  const body=new URLSearchParams({key,date:date||srIsoToday(),to:target});
+  try{
+    await fetch(url,{method:"POST",mode:"no-cors",body});
+    toast("Silent email request sent");
+  }catch(e){
+    toast("Silent email failed · "+e.message);
   }
 }
 function srOpenScannerQa(){

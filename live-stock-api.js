@@ -1,6 +1,10 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
+const { execFile } = require("child_process");
+const { promisify } = require("util");
+const sharp = require("sharp");
 const sql = require("mssql");
 
 const ROOT = __dirname;
@@ -9,7 +13,10 @@ const CACHE_FILE = path.join(ROOT, "items.json");
 const IMAGE_ROOT = path.join(ROOT, "images", "products");
 const PRIVATE_DIR = path.join(ROOT, "private");
 const IMAGE_KEY_FILE = path.join(PRIVATE_DIR, "image-upload-key.txt");
+const ACCESS_KEY_FILE = path.join(PRIVATE_DIR, "access-keys.json");
+const UPLOAD_SESSION_FILE = path.join(PRIVATE_DIR, "upload-sessions.json");
 const config = require("./config.json");
+const execFileAsync = promisify(execFile);
 const imageTypes = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -21,8 +28,13 @@ const imageTypes = {
 let memoryCache = {
   items: null,
   updatedAt: null,
+  version: null,
   loading: null
 };
+
+function stockVersion(items) {
+  return crypto.createHash("sha1").update(JSON.stringify(items || [])).digest("hex").slice(0, 16);
+}
 
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -86,7 +98,76 @@ function readImageKeys() {
 }
 
 function imageKeyAllowed(value) {
-  return readImageKeys().has(String(value || "").trim());
+  const token = String(value || "").trim();
+  return readImageKeys().has(token) || authSessionAllowed(token);
+}
+
+function readJsonFile(file, fallback) {
+  try {
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    return data && typeof data === "object" ? data : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function authHash(pin, salt) {
+  return crypto.createHash("sha256").update(`${salt}:${pin}`).digest("hex");
+}
+
+function safeHashEqual(a, b) {
+  const left = Buffer.from(String(a || ""));
+  const right = Buffer.from(String(b || ""));
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function authRole(pin) {
+  const data = readJsonFile(ACCESS_KEY_FILE, {});
+  const salt = String(data.salt || "");
+  if (!salt) return "";
+  const digest = authHash(String(pin || "").trim(), salt);
+  if (data.adminHash && safeHashEqual(data.adminHash, digest)) return "admin";
+  if (data.staffHash && safeHashEqual(data.staffHash, digest)) return "staff";
+  return "";
+}
+
+function readAuthSessions() {
+  return readJsonFile(UPLOAD_SESSION_FILE, {});
+}
+
+function saveAuthSessions(sessions) {
+  fs.mkdirSync(PRIVATE_DIR, { recursive: true });
+  fs.writeFileSync(UPLOAD_SESSION_FILE, JSON.stringify(sessions));
+}
+
+function makeAuthSession(role) {
+  const now = Date.now();
+  const sessions = readAuthSessions();
+  for (const [token, row] of Object.entries(sessions)) {
+    if (!row || Number(row.expiresAt || 0) <= now) delete sessions[token];
+  }
+  const token = `${role}.${crypto.randomBytes(24).toString("hex")}`;
+  sessions[token] = { role, expiresAt: now + 12 * 60 * 60 * 1000 };
+  saveAuthSessions(sessions);
+  return token;
+}
+
+function authSessionAllowed(token) {
+  if (!token) return false;
+  const row = readAuthSessions()[token];
+  return !!row && Number(row.expiresAt || 0) > Date.now();
+}
+
+async function handleAuth(req, res, url) {
+  if ((url.pathname === "/auth/login" || url.pathname === "/auth/login.php") && req.method === "POST") {
+    const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");
+    const pin = String(body.pin || "").trim();
+    if (pin.length < 3) return sendJson(res, 400, { ok: false, error: "PIN required" });
+    const role = authRole(pin);
+    if (!role) return sendJson(res, 403, { ok: false, error: "Wrong PIN" });
+    return sendJson(res, 200, { ok: true, role, imageKey: makeAuthSession(role) });
+  }
+  return sendJson(res, 404, { ok: false, error: "Auth not found" });
 }
 
 function readBody(req, limit = 9 * 1024 * 1024) {
@@ -136,12 +217,18 @@ function imageList(alias) {
   const folder = path.join(IMAGE_ROOT, alias);
   if (!folder.startsWith(IMAGE_ROOT) || !fs.existsSync(folder)) return [];
   return fs.readdirSync(folder)
-    .filter(name => /\.(jpe?g|png|webp|gif)$/i.test(name))
+    .filter(name => /\.(jpe?g|png|webp|gif)$/i.test(name) && !/-thumb\.webp$/i.test(name))
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-    .map(name => ({
-      name,
-      url: `/images/products/${encodeURIComponent(alias)}/${encodeURIComponent(name)}?v=${fs.statSync(path.join(folder, name)).mtimeMs}`
-    }));
+    .map(name => {
+      const full = path.join(folder, name);
+      const thumbName = name.replace(/\.[^.]+$/, "-thumb.webp");
+      const thumb = path.join(folder, thumbName);
+      return {
+        name,
+        url: `/images/products/${encodeURIComponent(alias)}/${encodeURIComponent(name)}?v=${fs.statSync(full).mtimeMs}`,
+        thumbnailUrl: fs.existsSync(thumb) ? `/images/products/${encodeURIComponent(alias)}/${encodeURIComponent(thumbName)}?v=${fs.statSync(thumb).mtimeMs}` : null
+      };
+    });
 }
 
 async function handleImageApi(req, res, url) {
@@ -176,12 +263,26 @@ async function handleImageApi(req, res, url) {
     const folder = path.join(IMAGE_ROOT, alias);
     if (!folder.startsWith(IMAGE_ROOT)) return sendJson(res, 403, { ok: false, error: "Invalid product code" });
     fs.mkdirSync(folder, { recursive: true });
+    const normalized = await sharp(file.data, { animated: false })
+      .rotate()
+      .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 84, mozjpeg: true })
+      .toBuffer();
+    const incomingHash = crypto.createHash("sha256").update(normalized).digest("hex");
+    for (const existing of imageList(alias)) {
+      const existingBuffer = fs.readFileSync(path.join(folder, existing.name));
+      if (crypto.createHash("sha256").update(existingBuffer).digest("hex") === incomingHash) {
+        return sendJson(res, 200, { ok: true, duplicate: true, image: existing });
+      }
+    }
     const used = new Set(imageList(alias).map(img => parseInt(img.name, 10)));
     let num = 1;
     while (used.has(num)) num++;
     if (num > 10) return sendJson(res, 400, { ok: false, error: "Max 10 images reached" });
     const filename = `${num}.jpg`;
-    fs.writeFileSync(path.join(folder, filename), file.data);
+    const thumbnailName = `${num}-thumb.webp`;
+    fs.writeFileSync(path.join(folder, filename), normalized);
+    await sharp(normalized).resize({ width: 360, height: 360, fit: "inside", withoutEnlargement: true }).webp({ quality: 76 }).toFile(path.join(folder, thumbnailName));
     return sendJson(res, 200, { ok: true, image: imageList(alias).find(img => img.name === filename) });
   }
 
@@ -198,6 +299,8 @@ async function handleImageApi(req, res, url) {
     const file = path.join(IMAGE_ROOT, alias, name);
     if (!file.startsWith(path.join(IMAGE_ROOT, alias))) return sendJson(res, 403, { ok: false, error: "Invalid path" });
     if (fs.existsSync(file)) fs.unlinkSync(file);
+    const thumbnail = path.join(IMAGE_ROOT, alias, name.replace(/\.[^.]+$/, "-thumb.webp"));
+    if (fs.existsSync(thumbnail)) fs.unlinkSync(thumbnail);
     return sendJson(res, 200, { ok: true });
   }
 
@@ -262,6 +365,34 @@ SELECT
     ) AS EntryDate,
     ISNULL(P.MRP, 0) AS MRP,
     ISNULL(P.SellingPrice, 0) AS SalePrice,
+    LTRIM(RTRIM(ISNULL(
+        (
+            SELECT TOP 1 NULLIF(CONVERT(NVARCHAR(100), SP.Size), '')
+            FROM dbo.Stock_Product SP
+            WHERE SP.ProductID = P.PID
+            ORDER BY SP.SP_ID DESC
+        ),
+        (
+            SELECT TOP 1 NULLIF(CONVERT(NVARCHAR(100), O.Size), '')
+            FROM dbo.Product_OpeningStock O
+            WHERE O.ProductID = P.PID
+            ORDER BY O.ID DESC
+        )
+    ))) AS Size,
+    LTRIM(RTRIM(ISNULL(
+        (
+            SELECT TOP 1 NULLIF(CONVERT(NVARCHAR(100), SP.Color), '')
+            FROM dbo.Stock_Product SP
+            WHERE SP.ProductID = P.PID
+            ORDER BY SP.SP_ID DESC
+        ),
+        (
+            SELECT TOP 1 NULLIF(CONVERT(NVARCHAR(100), O.Colour), '')
+            FROM dbo.Product_OpeningStock O
+            WHERE O.ProductID = P.PID
+            ORDER BY O.ID DESC
+        )
+    ))) AS Colour,
     ISNULL((SELECT TOP 1 O.WSalePrice FROM dbo.Product_OpeningStock O WHERE O.ProductID = P.PID ORDER BY O.ID DESC), 0) AS WholesalePrice,
     ISNULL((SELECT TOP 1 O.PPrice FROM dbo.Product_OpeningStock O WHERE O.ProductID = P.PID ORDER BY O.ID DESC), ISNULL(P.CostPrice, 0)) AS PurchasePrice,
     CAST(ISNULL(P.OpeningStock, 0) AS DECIMAL(18,3)) AS ProductOpeningStock,
@@ -300,15 +431,36 @@ ORDER BY P.PID DESC;
       sale: Number(item.SalePrice || 0),
       wholesale: Number(item.WholesalePrice || 0),
       purchase: Number(item.PurchasePrice || 0),
+      size: item.Size || "",
+      colour: item.Colour || "",
       stock: availableQty,
       entryDate: normalizeDate(item.EntryDate)
     };
   }).filter(product => product.ProductID || product.name || product.alias || product.barcode);
 
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(products, null, 2), "utf8");
-  memoryCache = { items: products, updatedAt: new Date().toISOString(), loading: null };
+  const version = stockVersion(products);
+  const changed = version !== memoryCache.version;
+  if (changed) fs.writeFileSync(CACHE_FILE, JSON.stringify(products, null, 2), "utf8");
+  memoryCache = { items: products, updatedAt: changed || !memoryCache.updatedAt ? new Date().toISOString() : memoryCache.updatedAt, version, loading: null };
   return products;
 }
+
+fetchLiveStock = async function fetchBusyWinStock() {
+  await execFileAsync(process.execPath, [path.join(ROOT, "export-stock-busywin.js")], {
+    cwd: ROOT,
+    windowsHide: true,
+    maxBuffer: 20 * 1024 * 1024
+  });
+  const products = loadFileCache();
+  const version = stockVersion(products);
+  memoryCache = {
+    items: products,
+    updatedAt: new Date().toISOString(),
+    version,
+    loading: null
+  };
+  return products;
+};
 
 async function getStock() {
   if (memoryCache.loading) return memoryCache.loading;
@@ -316,6 +468,13 @@ async function getStock() {
     memoryCache.loading = null;
   });
   return memoryCache.loading;
+}
+
+function refreshStockInBackground() {
+  if (memoryCache.loading) return;
+  memoryCache.loading = fetchLiveStock().catch(() => null).finally(() => {
+    memoryCache.loading = null;
+  });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -327,6 +486,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     const url = new URL(req.url, `http://${req.headers.host}`);
+    if (url.pathname.startsWith("/auth/")) {
+      return handleAuth(req, res, url);
+    }
     if (url.pathname.startsWith("/image-api/")) {
       return handleImageApi(req, res, url);
     }
@@ -338,12 +500,28 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         ok: true,
         updatedAt: memoryCache.updatedAt,
+        version: memoryCache.version,
         cachedItems: memoryCache.items?.length || loadFileCache().length
       });
     }
 
     if (url.pathname === "/api/items") {
       try {
+        const cached = memoryCache.items || loadFileCache();
+        if (cached.length) {
+          refreshStockInBackground();
+          const version = memoryCache.version || stockVersion(cached);
+          if (url.searchParams.get("version") === version) {
+            return sendJson(res, 200, { source: "live", unchanged: true, version, updatedAt: memoryCache.updatedAt, count: cached.length });
+          }
+          return sendJson(res, 200, {
+            source: memoryCache.updatedAt ? "memory-cache" : "file-cache",
+            updatedAt: memoryCache.updatedAt || (fs.existsSync(CACHE_FILE) ? fs.statSync(CACHE_FILE).mtime.toISOString() : null),
+            count: cached.length,
+            version,
+            items: cached
+          }, "public, max-age=30, stale-while-revalidate=300");
+        }
         const items = await getStock();
         return sendJson(res, 200, {
           source: "live",
@@ -368,6 +546,11 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 500, { error: error.message });
   }
 });
+
+// Keep one current snapshot ready for every website visitor. This avoids making
+// each browser wait for a database query and lets the page see changes quickly.
+setInterval(refreshStockInBackground, 5000).unref();
+refreshStockInBackground();
 
 server.listen(PORT, () => {
   console.log(`SR Fashion live stock API running on http://localhost:${PORT}`);

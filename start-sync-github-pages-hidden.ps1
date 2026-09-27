@@ -42,7 +42,9 @@ if (-not $createdNew) {
 }
 
 try {
+$syncCycle = 0
 while ($true) {
+    $syncCycle++
     Write-SyncLog "=========================================="
     Write-SyncLog "SR FASHION - GITHUB PAGES AUTO SYNC"
     Write-SyncLog "Exporting latest stock from Retail Daddy"
@@ -55,14 +57,17 @@ while ($true) {
 
     Push-Location $sourceDir
     try {
-        $exportCode = Invoke-LoggedCommand -FilePath "node" -Arguments @("export-stock.js") -WorkingDirectory $sourceDir
-        if ($exportCode -eq 0 -and (Test-Path -LiteralPath (Join-Path $sourceDir "export-item-ledgers-cache.js"))) {
+        $exportCode = Invoke-LoggedCommand -FilePath "node" -Arguments @("export-stock-busywin.js") -WorkingDirectory $sourceDir
+        # Stock is checked every cycle. The larger offline ledger/image snapshots
+        # are refreshed every 20 cycles so they do not delay new product updates.
+        $refreshOfflineCaches = ($syncCycle -eq 1 -or ($syncCycle % 20) -eq 0)
+        if ($exportCode -eq 0 -and $refreshOfflineCaches -and (Test-Path -LiteralPath (Join-Path $sourceDir "export-item-ledgers-cache.js"))) {
             $ledgerExportCode = Invoke-LoggedCommand -FilePath "node" -Arguments @("export-item-ledgers-cache.js") -WorkingDirectory $sourceDir
             if ($ledgerExportCode -ne 0) {
                 Write-SyncLog "WARNING: Item ledger cache export failed. Stock export will continue."
             }
         }
-        if ($exportCode -eq 0 -and (Test-Path -LiteralPath (Join-Path $sourceDir "export-image-manifest.js"))) {
+        if ($exportCode -eq 0 -and $refreshOfflineCaches -and (Test-Path -LiteralPath (Join-Path $sourceDir "export-image-manifest.js"))) {
             $imageManifestCode = Invoke-LoggedCommand -FilePath "node" -Arguments @("export-image-manifest.js") -WorkingDirectory $sourceDir
             if ($imageManifestCode -ne 0) {
                 Write-SyncLog "WARNING: Image manifest export failed. Stock export will continue."
@@ -128,7 +133,7 @@ while ($true) {
         if ($LASTEXITCODE -eq 0) {
             Write-SyncLog "No stock changes found."
         } else {
-            $commitCode = Invoke-LoggedCommand -FilePath "git" -Arguments @("-c", "user.name=SR Fashion", "-c", "user.email=srfashoinned@users.noreply.github.com", "commit", "-m", "Auto stock update", "--", "items.json", "item-ledgers-cache.json", "image-manifest.json") -WorkingDirectory $publishDir
+            $commitCode = Invoke-LoggedCommand -FilePath "git" -Arguments @("-c", "user.name=SR-Fashion", "-c", "user.email=srfashoinned@users.noreply.github.com", "commit", "-m", "Auto-stock-update", "--", "items.json", "item-ledgers-cache.json", "image-manifest.json") -WorkingDirectory $publishDir
             if ($commitCode -ne 0) {
                 Write-SyncLog "ERROR: Commit failed. Will retry."
             } else {
@@ -136,7 +141,13 @@ while ($true) {
                 if ($pushCode -ne 0) {
                     Write-SyncLog "ERROR: GitHub push failed. Will retry."
                 } else {
-                    Write-SyncLog "SUCCESS: Stock updated on GitHub Pages."
+                    Write-SyncLog "Upload finished. Waiting for three-way verification."
+                    $verifyCode = Invoke-LoggedCommand -FilePath "node" -Arguments @("verify-pipeline.js", "90") -WorkingDirectory $sourceDir
+                    if ($verifyCode -eq 0) {
+                        Write-SyncLog "SUCCESS: Software, API and cloud stock match; journey tests passed."
+                    } else {
+                        Write-SyncLog "ERROR: Upload completed but verification did not pass. Will retry."
+                    }
                 }
             }
         }
@@ -144,8 +155,8 @@ while ($true) {
         Pop-Location
     }
 
-    Write-SyncLog "Next stock check in 180 seconds."
-    Start-Sleep -Seconds 180
+    Write-SyncLog "Next stock check in 15 seconds."
+    Start-Sleep -Seconds 15
 }
 } finally {
     if ($syncLock) {

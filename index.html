@@ -3255,6 +3255,7 @@ async function openScanner(){
         document.getElementById("scan-code").textContent='Loading scanner…';
         await new Promise((res,rej)=>{
           const urls=[
+            '/vendor/zxing-0.19.1.min.js',
             'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js',
             'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js'
           ];
@@ -3345,10 +3346,10 @@ async function initBiometric(){
     return;
   }
   try{
-    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    if(bioBtn) bioBtn.disabled = !available;
+    await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(bioBtn) bioBtn.disabled = false;
   }catch(_){
-    if(bioBtn) bioBtn.disabled = true;
+    if(bioBtn) bioBtn.disabled = false;
   }
 }
 

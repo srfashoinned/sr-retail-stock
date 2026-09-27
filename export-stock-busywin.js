@@ -49,7 +49,7 @@ SELECT
   REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(G.Name,''))), '|', ' '), CHAR(13), ' '), CHAR(10), ' ') AS ItemGroup,
   CAST(ISNULL(I.D2,0) AS decimal(18,2)) AS MRP,
   CAST(ISNULL(I.D3,0) AS decimal(18,2)) AS SalePrice,
-  CAST(ISNULL(I.D3,0) AS decimal(18,2)) AS WholesalePrice,
+  CAST(CASE WHEN ISNULL(I.D10,0) <> 0 THEN ISNULL(I.D10,0) ELSE ISNULL(I.D3,0) END AS decimal(18,2)) AS WholesalePrice,
   CAST(ISNULL(I.D4,0) AS decimal(18,2)) AS PurchasePrice,
   CAST(ISNULL(O.OpeningQty,0) + ISNULL(M.MovementQty,0) AS decimal(18,3)) AS StockQty,
   CONVERT(varchar(10), NULLIF(I.CreationTime, CONVERT(datetime,'19000101')), 120) AS EntryDate

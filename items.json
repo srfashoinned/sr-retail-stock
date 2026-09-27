@@ -4568,7 +4568,7 @@
     "purchase": 25,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": -1,
     "entryDate": "2026-09-25"
   },
   {
@@ -21128,7 +21128,7 @@
     "purchase": 355,
     "size": "",
     "colour": "",
-    "stock": 0,
+    "stock": -1,
     "entryDate": "2026-09-25"
   },
   {

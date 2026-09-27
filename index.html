@@ -5367,34 +5367,69 @@ function srOwnerReportText(salesPayload, receivablesCache){
     ...debts.slice(0,20).map(c=>`- ${c.name}: ${money(c.balance)}${c.mobile?" | "+c.mobile:""}`),
     "",
     "Payables Till Date",
-    "Supplier payables are not yet exposed by the live BUSY API, so this section is intentionally not guessed.",
-    "Next API needed: supplier/account payable balances from BUSY."
+    "Loading supplier payables..."
   ];
   if((topItems||[]).length){
     lines.splice(9,0,"","Top Sold Items",...topItems.slice(0,8).map(it=>`- ${it.itemName||"Item"}: ${Math.round(+it.qtySold||0)} qty | Sale ${money(it.saleAmount)} | Profit ${money(it.profitAmount)}`));
   }
   return {subject:"SR Fashion Owner Report - "+today,text:lines.join("\n")};
 }
+function srOwnerReportTextWithPurchase(salesPayload, receivablesCache, purchasePayload, payablesPayload){
+  const base=srOwnerReportText(salesPayload,receivablesCache);
+  const [purchaseSummaryRows=[], purchaseRows=[]]=purchasePayload||[];
+  const [payableSummaryRows=[], payableRows=[]]=payablesPayload||[];
+  const ps=purchaseSummaryRows[0]||{};
+  const pays=payableSummaryRows[0]||{};
+  let text=base.text.replace(
+    "Payables Till Date\nLoading supplier payables...",
+    [
+      "Selected Date Purchases",
+      `Purchase bills: ${Math.round(+ps.purchaseBillCount||0).toLocaleString("en-IN")} | Qty: ${Math.round(+ps.purchaseQty||0).toLocaleString("en-IN")} | Amount: ${money(ps.purchaseAmount)}`,
+      ...purchaseRows.slice(0,12).map(r=>`- ${r.VchNo||r.VchCode}: ${r.partyName||"Supplier"} | ${money(r.amount)} | Qty ${Math.round(+r.qty||0)}`),
+      "",
+      "Payables Till Date",
+      `Total payable: ${money(pays.payableAmount)} | Suppliers: ${Math.round(+pays.supplierCount||0).toLocaleString("en-IN")}`,
+      ...payableRows.slice(0,20).map(r=>`- ${r.supplierName||"Supplier"}: ${money(r.payableAmount)} (BUSY balance ${money(r.rawBalance)})`)
+    ].join("\n")
+  );
+  text += "\n\nDefault owner email: srfashionned@gmail.com\nCustomer ID: srfashionpsd@gmail.com";
+  return {...base,text};
+}
+function srPurchaseRowsHtml(rows=[]){
+  return rows.length ? `<div class="sr-report-list">${rows.slice(0,25).map(r=>`<button class="sr-report-item" onclick="srLedgerOpenPurchase('${String(r.VchCode||r.VchNo).replace(/'/g,"\\'")}')"><span class="sr-report-item-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.partyName||"Supplier")} · Qty ${Math.round(+r.qty||0)} · tap for bill items</small></button>`).join("")}</div>` : `<div class="sr-ledger-note">No purchase bills found for selected date.</div>`;
+}
 async function srOpenOwnerEmailReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner email"); return; }
   drawer(false);
-  const email=srOwnerReportEmail();
-  const win=window.open("about:blank","_blank","noopener");
-  toast("Preparing owner email...");
+  toast("Preparing owner report...");
   try{
     const today=srIsoToday();
-    const [sales, receivables]=await Promise.all([
+    const [sales, receivables, purchases, payables]=await Promise.all([
       srLedgerApi(`/api/sales-report?from=${encodeURIComponent(today)}&to=${encodeURIComponent(today)}`),
-      srFetchReceivablesCache()
+      srFetchReceivablesCache(),
+      srLedgerApi(`/api/purchase-report?from=${encodeURIComponent(today)}&to=${encodeURIComponent(today)}`),
+      srLedgerApi("/api/payables")
     ]);
-    const msg=srOwnerReportText(sales,receivables);
+    const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables);
+    const purchaseRows=(purchases&&purchases[1])||[];
     try{await navigator.clipboard.writeText(msg.text)}catch(e){}
-    const gmail=`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(msg.subject)}&body=${encodeURIComponent(msg.text)}`;
-    if(win)win.location=gmail; else location.href=gmail;
-    toast("Owner email ready");
+    srLedgerShow("Owner Email Report","Copied. Use Share to send without Gmail web login.",`<div class="sr-ledger-actions"><button class="gold" onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills today</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
+    window.srOwnerReportText=msg.text;
+    window.srOwnerReportSubject=msg.subject;
+    toast("Owner report copied");
   }catch(e){
-    if(win)win.close();
-    toast("Owner email failed · "+e.message);
+    toast("Owner report failed · "+e.message);
+  }
+}
+async function srShareOwnerReport(){
+  const text=window.srOwnerReportText||"";
+  const title=window.srOwnerReportSubject||"SR Fashion Owner Report";
+  if(!text)return toast("Open owner report first");
+  try{
+    if(navigator.share) await navigator.share({title,text});
+    else { await navigator.clipboard.writeText(text); toast("Copied"); }
+  }catch(e){
+    try{await navigator.clipboard.writeText(text); toast("Copied");}catch(_){toast("Could not share");}
   }
 }
 function srOpenScannerQa(){

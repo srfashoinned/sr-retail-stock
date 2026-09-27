@@ -544,6 +544,7 @@ mark{background:rgba(245,197,66,0.25);color:var(--gold);border-radius:2px;paddin
 .sr-ledger-row-top strong{color:#22c55e;white-space:nowrap}
 .sr-ledger-row small{display:block;color:#8e826c;margin-top:4px}
 .sr-ledger-row-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px;font-size:11px}
+.sr-ledger-summary{grid-template-columns:repeat(5,1fr);margin:0 0 8px}
 .sr-ledger-row-grid span{background:#0a0a0b;border:1px solid #28200b;border-radius:8px;padding:6px;color:#bfb7a7}
 .sr-ledger-row-grid b{display:block;color:#fff;margin-top:2px}
 #sr-ledger-search{width:100%;height:44px;background:#09090b;border:1px solid #5d450e;border-radius:11px;color:#fff;padding:0 12px;font:inherit}
@@ -577,7 +578,7 @@ body.admin-on .sr-ledger-admin-only{display:flex!important}
 #sr-cartbadge{position:fixed;right:14px;bottom:16px;z-index:7900;border:1px solid #805a00;background:linear-gradient(135deg,#ffd35c,#d89a00);color:#111;border-radius:16px;padding:12px 15px;font-weight:1000;display:none;box-shadow:0 10px 35px #000}
 body.sr-quote .pb{cursor:pointer;outline:1px solid #9b6c00}
 #sr-quote-mode{position:fixed;left:50%;bottom:17px;transform:translateX(-50%);z-index:7899;background:#171006;border:1px solid #8b6200;color:#ffd35c;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:1000;display:none}body.sr-quote #sr-quote-mode{display:block}
-@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid,.sr-report-meta,.sr-tag-row{grid-template-columns:repeat(2,1fr)}#sr-screen.ledger-pro{padding:0}}
+@media(max-width:650px){#sr-brand{font-size:18px}#sr-screen{padding:13px}.sr-pill{display:none}.sr-ledger-grid{grid-template-columns:repeat(2,1fr)}.sr-ledger-row-grid,.sr-report-meta,.sr-tag-row{grid-template-columns:repeat(2,1fr)}.sr-ledger-summary{grid-template-columns:repeat(3,1fr)}#sr-screen.ledger-pro{padding:0}}
 @media(max-width:520px){
  .sr-ledger-actions{grid-template-columns:1fr}
  .sr-ledger-kpi{min-height:68px;text-align:left}
@@ -5369,8 +5370,13 @@ async function srLedgerOpenBill(vchCode){
     const [headers=[],items=[]]=await srLedgerApi("/api/bill?vchCode="+encodeURIComponent(vchCode));
     const h=headers[0]||{};
     srCurrentLedgerBill={header:h,items};
+    const totalQty=items.reduce((s,r)=>s+(+r.qty||0),0);
+    const totalSale=items.reduce((s,r)=>s+(+r.amount||0),0);
+    const totalCost=items.reduce((s,r)=>s+(+r.costAmount||0),0);
+    const totalProfit=items.reduce((s,r)=>s+(+r.profitAmount||0),0);
+    const summary=`<span class="sr-ledger-row-grid sr-ledger-summary"><span>Items<b>${items.length}</b></span><span>Qty<b>${escq(totalQty)}</b></span><span>Sale<b>${money(totalSale||h.VchAmtBaseCur)}</b></span><span>Cost<b>${money(totalCost)}</b></span><span>Profit<b>${money(totalProfit)}</b></span></span>`;
     const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Sold/pc<b>${money(r.rate)}</b></span><span>Cost/pc<b>${srUnitCost(r.costAmount,r.qty)}</b></span><span>Total cost<b>${money(r.costAmount)}</b></span><span>Profit<b>${money(r.profitAmount)}</b></span></span></div>`).join("");
-    srLedgerShow(escq(h.VchNo||("Bill "+vchCode)),`${srDate(h.Date)} · ${h.partyName||"Cash"} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${rows||"<div class='sr-ledger-note'>No products found in this bill.</div>"}`);
+    srLedgerShow(escq(h.VchNo||("Bill "+vchCode)),`${srDate(h.Date)} · ${h.partyName||"Cash"} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${items.length?summary:""}${rows||"<div class='sr-ledger-note'>No products found in this bill.</div>"}`);
   }catch(err){
     const sale=(srCurrentItemLedgerPayload?.[2]||[]).find(r=>String(r.VchCode)===String(vchCode));
     if(sale){

@@ -4544,6 +4544,7 @@ window.addEventListener("popstate",e=>{
 setTimeout(()=>{try{srStackLoad();srEnsureHistoryBase();const saved=JSON.parse(localStorage.getItem(SR_NAV_KEY)||"null");if(saved?.view&&saved.view!=="home"){srRestoreNav(saved);setTimeout(()=>srPushNav(saved.view,saved.payload||{}),60)}else srRestoreFilters(saved)}catch(e){}},900);
 
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
+function srUnitCost(cost,qty){qty=+qty||0;return qty?money((+cost||0)/qty):money(0)}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 const ITEM_LEDGER_API_BASES=["https://live-stock.srfashionned.in","https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
 let srCurrentLedgerBill=null;
@@ -4669,7 +4670,7 @@ function srRenderItemLedger(it,payload,fromCache=false){
   const sum=summaryRows[0]||{};
   const title=escq(db.ProductName||it.name||"Item Ledger");
   const code=[db.ProductCode||it.alias,db.ProductBarcode||it.barcode].filter(Boolean).join(" / ");
-  const rows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Rate<b>${money(r.Rate)}</b></span><span>MRP<b>${money(r.MRP)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
+  const rows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Sold/pc<b>${money(r.Rate)}</b></span><span>Cost/pc<b>${srUnitCost(r.CostAmount,r.Qty)}</b></span><span>Total cost<b>${money(r.CostAmount)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
   const purchaseRows=purchases.map(r=>{const body=`<span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.MovementType||"Purchase")}</b><strong>+${escq(r.Qty||0)}</strong></span><small>${srDate(r.Date)} · ${escq(r.PartyName||r.SupplierInvoiceNo||r.Barcode||code||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(r.PurchasePrice)}</b></span><span>Sale<b>${money(r.SalePrice)}</b></span><span>Wholesale<b>${money(r.WholesalePrice)}</b></span><span>MRP<b>${money(r.MRP)}</b></span></span>`;return +r.CanOpen?`<button class="sr-ledger-row" onclick="srLedgerOpenPurchase('${escq(r.RowCode)}')">${body}</button>`:`<div class="sr-ledger-row">${body}</div>`}).join("");
   srLedgerShow(title,code||"SR item ledger",`
     ${fromCache?`<div class="sr-ledger-note">Showing saved item ledger from ${srDate(srLedgerCacheGet(it)?.savedAt)}. Live BUSY connection was not reachable.</div>`:""}
@@ -5368,13 +5369,13 @@ async function srLedgerOpenBill(vchCode){
     const [headers=[],items=[]]=await srLedgerApi("/api/bill?vchCode="+encodeURIComponent(vchCode));
     const h=headers[0]||{};
     srCurrentLedgerBill={header:h,items};
-    const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Rate<b>${money(r.rate)}</b></span><span>MRP<b>${money(r.mrp)}</b></span><span>Profit<b>${money(r.profitAmount)}</b></span></span></div>`).join("");
+    const rows=items.map((r,i)=>`<div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${i+1}. ${escq(r.itemName)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.barcode||r.itemGroup||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.qty)}</b></span><span>Sold/pc<b>${money(r.rate)}</b></span><span>Cost/pc<b>${srUnitCost(r.costAmount,r.qty)}</b></span><span>Total cost<b>${money(r.costAmount)}</b></span><span>Profit<b>${money(r.profitAmount)}</b></span></span></div>`).join("");
     srLedgerShow(escq(h.VchNo||("Bill "+vchCode)),`${srDate(h.Date)} · ${h.partyName||"Cash"} · ${money(h.VchAmtBaseCur)}`,`<div class="sr-ledger-actions"><button class="gold" onclick="srLedgerExportBillPdf()">PDF invoice</button><button onclick="srLedgerExportBillPng()">PNG invoice</button></div>${rows||"<div class='sr-ledger-note'>No products found in this bill.</div>"}`);
   }catch(err){
     const sale=(srCurrentItemLedgerPayload?.[2]||[]).find(r=>String(r.VchCode)===String(vchCode));
     if(sale){
       srCurrentLedgerBill={header:{VchNo:sale.VchNo,VchAmtBaseCur:sale.Amount,Date:sale.Date,partyName:sale.CustomerName},items:[{itemName:"Saved item row",barcode:sale.Barcode,qty:sale.Qty,rate:sale.Rate,mrp:sale.MRP,amount:sale.Amount,profitAmount:sale.ProfitAmount}]};
-      return srLedgerShow(escq(sale.VchNo||("Bill "+vchCode)),"Saved bill summary",`<div class="sr-ledger-note">Laptop is offline, so showing the saved item row from this bill.</div><div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${escq(sale.CustomerName||"Cash")}</b><strong>${money(sale.Amount)}</strong></span><small>${srDate(sale.Date)} · ${escq(sale.Barcode||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(sale.Qty)}</b></span><span>Rate<b>${money(sale.Rate)}</b></span><span>MRP<b>${money(sale.MRP)}</b></span><span>Profit<b>${money(sale.ProfitAmount)}</b></span></span></div>`);
+      return srLedgerShow(escq(sale.VchNo||("Bill "+vchCode)),"Saved bill summary",`<div class="sr-ledger-note">Laptop is offline, so showing the saved item row from this bill.</div><div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${escq(sale.CustomerName||"Cash")}</b><strong>${money(sale.Amount)}</strong></span><small>${srDate(sale.Date)} · ${escq(sale.Barcode||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(sale.Qty)}</b></span><span>Sold/pc<b>${money(sale.Rate)}</b></span><span>Cost/pc<b>${srUnitCost(sale.CostAmount,sale.Qty)}</b></span><span>Total cost<b>${money(sale.CostAmount)}</b></span><span>Profit<b>${money(sale.ProfitAmount)}</b></span></span></div>`);
     }
     srLedgerShow("Bill "+escq(vchCode),"Could not open bill",`<div class="sr-ledger-note">This bill needs the live BUSY bridge. The saved item ledger is still available.</div>`);
   }

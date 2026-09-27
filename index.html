@@ -4544,7 +4544,7 @@ setTimeout(()=>{try{srStackLoad();srEnsureHistoryBase();const saved=JSON.parse(l
 
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-const ITEM_LEDGER_API_BASES=["https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
+const ITEM_LEDGER_API_BASES=["https://live-stock.srfashionned.in","https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
 let srCurrentLedgerBill=null;
 let srCurrentItemLedgerPayload=null;
 let srPendingLedgerRi=null;

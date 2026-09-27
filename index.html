@@ -1613,8 +1613,9 @@ body{
 <div class="sr-drawer-tools">
 <button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>Retail Daddy dashboard</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>BUSY live dashboard</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="profit-loss"><span class="sr-ico">₹</span><span>Profit / Loss<small>Bill and item profit</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="scanner-qa"><span class="sr-ico">▣</span><span>Scanner QA<small>iPhone camera test</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
@@ -4671,7 +4672,7 @@ function srRenderItemLedger(it,payload,fromCache=false){
   const rows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Rate<b>${money(r.Rate)}</b></span><span>MRP<b>${money(r.MRP)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
   const purchaseRows=purchases.map(r=>{const body=`<span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.MovementType||"Purchase")}</b><strong>+${escq(r.Qty||0)}</strong></span><small>${srDate(r.Date)} · ${escq(r.PartyName||r.SupplierInvoiceNo||r.Barcode||code||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(r.PurchasePrice)}</b></span><span>Sale<b>${money(r.SalePrice)}</b></span><span>Wholesale<b>${money(r.WholesalePrice)}</b></span><span>MRP<b>${money(r.MRP)}</b></span></span>`;return +r.CanOpen?`<button class="sr-ledger-row" onclick="srLedgerOpenPurchase('${escq(r.RowCode)}')">${body}</button>`:`<div class="sr-ledger-row">${body}</div>`}).join("");
   srLedgerShow(title,code||"SR item ledger",`
-    ${fromCache?`<div class="sr-ledger-note">Showing saved item ledger from ${srDate(srLedgerCacheGet(it)?.savedAt)}. Live Retail Daddy connection was not reachable.</div>`:""}
+    ${fromCache?`<div class="sr-ledger-note">Showing saved item ledger from ${srDate(srLedgerCacheGet(it)?.savedAt)}. Live BUSY connection was not reachable.</div>`:""}
     ${srLedgerKpis([
       ["MRP",money(db.MRP||it.mrp)],["Sale",money(db.SalePrice||it.sale)],["Wholesale",money(db.WholesalePrice||it.wholesale)],
       ["Purchase",money(db.PurchasePrice||it.purchase)],["Stock",String(db.CurrentStock??it.stock??"-")],["Invoices",String(sum.invoiceCount||0)],
@@ -5019,7 +5020,7 @@ async function srOpenHealthCheck(){
     try{const r=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"});rows.push([name,r.ok?"Online":"Error "+r.status,r.ok])}
     catch(e){rows.push([name,"Offline",false])}
   }
-  srLedgerShow("Health Check","Live service status",`<div class="sr-ledger-grid">${rows.map(([n,v,ok])=>`<div class="sr-ledger-kpi"><small>${escq(n)}</small><b style="color:${ok?"#22c55e":"#f87171"}">${escq(v)}</b></div>`).join("")}</div><div class="sr-ledger-note">If Cloudflare tunnel or shop PC is off, live Retail Daddy features cannot update, but browser/file cache can still show saved stock.</div>`);
+  srLedgerShow("Health Check","Live service status",`<div class="sr-ledger-grid">${rows.map(([n,v,ok])=>`<div class="sr-ledger-kpi"><small>${escq(n)}</small><b style="color:${ok?"#22c55e":"#f87171"}">${escq(v)}</b></div>`).join("")}</div><div class="sr-ledger-note">If Cloudflare tunnel or shop PC is off, live BUSY features cannot update, but browser/file cache can still show saved stock.</div>`);
 }
 function srShareCatalog(){
   const params=new URLSearchParams();
@@ -5254,7 +5255,7 @@ function srOpenOfflineCenter(){
   const ledgerCount=Object.keys(srLedgerCacheRead()).length;
   const online=navigator.onLine?"Online":"Offline";
   const savedAge=stockTime?srDate(stockTime):"Not saved yet";
-  srLedgerShow("Offline Center","Saved data for laptop-off and weak-network use",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>Network</small><b>${online}</b><span>${navigator.onLine?"live can update":"saved mode"}</span></div><div class="sr-ledger-kpi"><small>Saved stock</small><b>${stockCount.toLocaleString("en-IN")}</b><span>${savedAge}</span></div><div class="sr-ledger-kpi"><small>Saved ledgers</small><b>${ledgerCount}</b><span>opened item histories</span></div><div class="sr-ledger-kpi"><small>Install</small><b>PWA</b><span>home screen app</span></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srTrueRefresh()">Sync Now</button><button onclick="srRetryStockSync()">Retry Failed Upload</button><button onclick="srRestorePreviousStock()">Restore Previous Copy</button><button onclick="srDownloadEmergencyStockBackup()">Download Emergency Backup</button><button onclick="srOpenStaffTasks()">Staff Queue</button><button onclick="srOpenHealthCheck()">Health Check</button></div><div class="sr-ledger-note">Stock search, filters, quotation draft, saved item ledgers, and cached app files can keep opening from this device. Live Retail Daddy history still needs the dashboard connection unless that ledger was opened once and saved.</div>`);
+  srLedgerShow("Offline Center","Saved data for laptop-off and weak-network use",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>Network</small><b>${online}</b><span>${navigator.onLine?"live can update":"saved mode"}</span></div><div class="sr-ledger-kpi"><small>Saved stock</small><b>${stockCount.toLocaleString("en-IN")}</b><span>${savedAge}</span></div><div class="sr-ledger-kpi"><small>Saved ledgers</small><b>${ledgerCount}</b><span>opened item histories</span></div><div class="sr-ledger-kpi"><small>Install</small><b>PWA</b><span>home screen app</span></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srTrueRefresh()">Sync Now</button><button onclick="srRetryStockSync()">Retry Failed Upload</button><button onclick="srRestorePreviousStock()">Restore Previous Copy</button><button onclick="srDownloadEmergencyStockBackup()">Download Emergency Backup</button><button onclick="srOpenStaffTasks()">Staff Queue</button><button onclick="srOpenHealthCheck()">Health Check</button></div><div class="sr-ledger-note">Stock search, filters, quotation draft, saved item ledgers, and cached app files can keep opening from this device. Live BUSY history still needs the dashboard connection unless that ledger was opened once and saved.</div>`);
 }
 
 async function srRetryStockSync(){toast("Retrying live stock...");await autoRefreshLiveStock()}
@@ -5298,19 +5299,46 @@ function srOpenControlCenter(){
   const ledgerCached=Object.keys(srLedgerCacheRead()).length;
   const saleValue=inRows.reduce((s,it)=>s+pn(it.sale)*Number(it.stock||0),0);
   const purchaseValue=inRows.reduce((s,it)=>s+pn(it.purchase)*Number(it.stock||0),0);
-  srLedgerShow("Control Center","Owner command screen for the full stock website",`
+  srLedgerShow("Control Center","Fast mobile admin home for BUSY live work",`
     <div class="sr-ledger-grid">
+      <button class="sr-ledger-kpi" onclick="window.location.href='https://receivables.srfashionned.in/?home=1'"><small>Daily Closing</small><b>Today</b><span>sales and profit</span></button>
+      <button class="sr-ledger-kpi" onclick="window.location.href='https://receivables.srfashionned.in/profit.html'"><small>Profit</small><b>Live</b><span>bill and item</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenReceivables()"><small>Receivables</small><b>BUSY</b><span>customer dena</span></button>
+      <button class="sr-ledger-kpi" onclick="openItemLedgerSearch()"><small>Item ledger</small><b>${ledgerCached}</b><span>bill drill down</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenCompleteStockReport()"><small>Total items</small><b>${raw.length}</b><span>open full list</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenCompleteFilters()"><small>In stock</small><b>${inRows.length}</b><span>${money(saleValue)}</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenDeadStockReport()"><small>Dead stock</small><b>${dead.length}</b><span>60+ days</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenLowStockReport()"><small>Low stock</small><b>${low.length}</b><span>needs buying</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenMissingImagesReport('in')"><small>Missing photos</small><b>${missingGuess}</b><span>in stock queue</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative.length+noCode.length+noPrice.length}</b><span>fix codes/prices</span></button>
-      <button class="sr-ledger-kpi" onclick="openItemLedgerSearch()"><small>Item ledger</small><b>${ledgerCached}</b><span>saved ledgers</span></button>
-      <button class="sr-ledger-kpi" onclick="srOpenReceivables()"><small>Receivables</small><b>Admin</b><span>open dashboard</span></button>
+      <button class="sr-ledger-kpi" onclick="srOpenScannerQa()"><small>Scanner QA</small><b>iPhone</b><span>camera test</span></button>
     </div>
     <div class="sr-ledger-actions"><button class="gold" onclick="srOpenHealthCheck()">Health Check</button><button onclick="srOpenStockAgeingReport()">Stock Ageing</button><button onclick="srOpenSmartReorderReport()">Reorder</button><button onclick="srOpenPriceChangesReport()">Price Changes</button></div>
     <div class="sr-ledger-note">Estimated margin from loaded stock: ${money(saleValue-purchaseValue)}. Use this screen first when checking the shop from mobile.</div>
+  `);
+}
+function srOpenScannerQa(){
+  if(!isAdmin && !isStaff){ openAdm(); toast("Unlock staff/admin for scanner QA"); return; }
+  srNextView("scanner-qa");
+  drawer(false);
+  const ua=navigator.userAgent||"";
+  const isIOS=/iPhone|iPad|iPod/i.test(ua);
+  const secure=location.protocol==="https:" || location.hostname==="localhost";
+  const camera=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+  const detector="BarcodeDetector" in window;
+  const html5=!!window.Html5Qrcode || !!document.querySelector('script[src*="html5-qrcode"]');
+  const zxing=!!window.ZXing || !!document.querySelector('script[src*="zxing"]');
+  srLedgerShow("Scanner QA","iPhone barcode readiness",`
+    <div class="sr-ledger-grid">
+      <div class="sr-ledger-kpi"><small>Device</small><b>${isIOS?"iPhone/iPad":"Other"}</b><span>${escq(navigator.platform||"")}</span></div>
+      <div class="sr-ledger-kpi"><small>HTTPS</small><b style="color:${secure?"#22c55e":"#f87171"}">${secure?"OK":"No"}</b><span>camera needs secure page</span></div>
+      <div class="sr-ledger-kpi"><small>Camera API</small><b style="color:${camera?"#22c55e":"#f87171"}">${camera?"OK":"Blocked"}</b><span>browser support</span></div>
+      <div class="sr-ledger-kpi"><small>iPhone engine</small><b style="color:${html5?"#22c55e":"#facc15"}">${html5?"Ready":"Loads on open"}</b><span>html5-qrcode</span></div>
+      <div class="sr-ledger-kpi"><small>Android/Chrome</small><b style="color:${detector||zxing?"#22c55e":"#facc15"}">${detector?"Native":zxing?"ZXing":"Loads"}</b><span>scanner engine</span></div>
+      <div class="sr-ledger-kpi"><small>Last scan</small><b>${escq(localStorage.getItem("srLastScanCode")||"-")}</b><span>saved on device</span></div>
+    </div>
+    <div class="sr-ledger-actions"><button class="gold" onclick="openScanner()">Start Live Scanner</button><button onclick="scanFromPhoto()">Take Photo Scan</button><button onclick="srOpenHealthCheck()">Health Check</button></div>
+    <div class="sr-ledger-note">On iPhone use Safari/Chrome with camera permission allowed. If live camera struggles, Photo Scan is the fallback.</div>
   `);
 }
 function srOpenFestivalPlanner(){
@@ -5335,7 +5363,7 @@ function srDownloadReportCsv(){
   setTimeout(()=>URL.revokeObjectURL(a.href),600);
 }
 async function srLedgerOpenBill(vchCode){
-  srLedgerShow("Bill "+escq(vchCode),"Loading bill products...","<div class='sr-ledger-note'>Opening invoice from Retail Daddy...</div>");
+  srLedgerShow("Bill "+escq(vchCode),"Loading bill products...","<div class='sr-ledger-note'>Opening invoice from BUSY...</div>");
   try{
     const [headers=[],items=[]]=await srLedgerApi("/api/bill?vchCode="+encodeURIComponent(vchCode));
     const h=headers[0]||{};
@@ -5348,11 +5376,11 @@ async function srLedgerOpenBill(vchCode){
       srCurrentLedgerBill={header:{VchNo:sale.VchNo,VchAmtBaseCur:sale.Amount,Date:sale.Date,partyName:sale.CustomerName},items:[{itemName:"Saved item row",barcode:sale.Barcode,qty:sale.Qty,rate:sale.Rate,mrp:sale.MRP,amount:sale.Amount,profitAmount:sale.ProfitAmount}]};
       return srLedgerShow(escq(sale.VchNo||("Bill "+vchCode)),"Saved bill summary",`<div class="sr-ledger-note">Laptop is offline, so showing the saved item row from this bill.</div><div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${escq(sale.CustomerName||"Cash")}</b><strong>${money(sale.Amount)}</strong></span><small>${srDate(sale.Date)} · ${escq(sale.Barcode||"")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(sale.Qty)}</b></span><span>Rate<b>${money(sale.Rate)}</b></span><span>MRP<b>${money(sale.MRP)}</b></span><span>Profit<b>${money(sale.ProfitAmount)}</b></span></span></div>`);
     }
-    srLedgerShow("Bill "+escq(vchCode),"Could not open bill",`<div class="sr-ledger-note">This bill needs the live Retail Daddy server. The saved item ledger is still available.</div>`);
+    srLedgerShow("Bill "+escq(vchCode),"Could not open bill",`<div class="sr-ledger-note">This bill needs the live BUSY bridge. The saved item ledger is still available.</div>`);
   }
 }
 async function srLedgerOpenPurchase(stockId){
-  srLedgerShow("Purchase "+escq(stockId),"Loading purchase products...","<div class='sr-ledger-note'>Opening purchase invoice from Retail Daddy...</div>");
+  srLedgerShow("Purchase "+escq(stockId),"Loading purchase products...","<div class='sr-ledger-note'>Opening purchase invoice from BUSY...</div>");
   try{
     const [headers=[],items=[]]=await srLedgerApi("/api/purchase-bill?stockId="+encodeURIComponent(stockId));
     const h=headers[0]||{};
@@ -5365,7 +5393,7 @@ async function srLedgerOpenPurchase(stockId){
     if(purchase){
       return srLedgerShow(escq(purchase.VchNo||("Purchase "+stockId)),"Saved purchase summary",`<div class="sr-ledger-note">Laptop is offline, so showing the saved purchase row.</div><div class="sr-ledger-row"><span class="sr-ledger-row-top"><b>${escq(purchase.PartyName||purchase.SupplierInvoiceNo||"Purchase")}</b><strong>+${escq(purchase.Qty||0)}</strong></span><small>${srDate(purchase.Date)} · ${escq(purchase.Barcode||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(purchase.PurchasePrice)}</b></span><span>Sale<b>${money(purchase.SalePrice)}</b></span><span>Wholesale<b>${money(purchase.WholesalePrice)}</b></span><span>MRP<b>${money(purchase.MRP)}</b></span></span></div>`);
     }
-    srLedgerShow("Purchase "+escq(stockId),"Could not open purchase",`<div class="sr-ledger-note">This purchase bill needs the live Retail Daddy server. The saved item ledger is still available.</div>`);
+    srLedgerShow("Purchase "+escq(stockId),"Could not open purchase",`<div class="sr-ledger-note">This purchase bill needs the live BUSY bridge. The saved item ledger is still available.</div>`);
   }
 }
 function srBillChunks(items,size=12){
@@ -5723,6 +5751,7 @@ document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
   if(v==="ledger")return openItemLedgerSearch();
   if(v==="receivables")return srOpenReceivables();
   if(v==="profit-loss"){drawer(false); window.location.href="https://receivables.srfashionned.in/profit.html"; return;}
+  if(v==="scanner-qa")return srOpenScannerQa();
   if(v==="stock-issues")return srOpenStockIssuesReport();
   if(v==="price-changes")return srOpenPriceChangesReport();
   if(v==="barcode-sheet")return srOpenBarcodeSheet();
@@ -5733,6 +5762,7 @@ let srScanBusy=false, srLastScanCode="", srLastScanAt=0;
 window.onScanResult=function(code){
  code=String(code??"").trim();
  if(!code)return;
+ try{localStorage.setItem("srLastScanCode", code)}catch(e){}
  const now=Date.now();
  if(srScanBusy || (code===srLastScanCode && now-srLastScanAt<1500))return;
  srScanBusy=true; srLastScanCode=code; srLastScanAt=now;
@@ -5765,6 +5795,12 @@ window.onScanResult=function(code){
 };
 
 loadCart();renderQuoteCounters();setTimeout(()=>{try{$("sr-count").textContent=(raw?.length||0).toLocaleString("en-IN")+" items"}catch(e){}},1000);
+window.addEventListener("load",()=>setTimeout(()=>{
+ const h=String(location.hash||"").replace("#","");
+ if(h==="ledger")openItemLedgerSearch();
+ if(h==="scanner-qa")srOpenScannerQa();
+ if(h==="control-center")srOpenControlCenter();
+},500));
 })();
 </script>
 </body>

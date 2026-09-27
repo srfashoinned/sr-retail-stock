@@ -177,6 +177,8 @@ body.admin-on .sr-card-upload,body.staff-on .sr-card-upload{display:block}
 #scan-hint{margin-top:22px;color:rgba(255,255,255,0.7);font-size:14px;text-align:center}
 #scan-code{margin-top:8px;color:var(--gold);font-size:13px;min-height:18px;font-variant-numeric:tabular-nums}
 #scan-close{margin-top:22px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:10px 26px;border-radius:30px;font-size:14px;cursor:pointer;font-family:inherit}
+#scan-photo{margin-top:12px;background:var(--gold);border:0;color:#050505;padding:10px 22px;border-radius:30px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit}
+#scan-file{position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0}
 
 /* ── ADMIN MODAL ── */
 #adm-ov{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center}
@@ -1692,8 +1694,10 @@ body{
     <div id="scan-frame"><div id="scan-line"></div></div>
     <div id="scan-hint">Point at any barcode or QR code</div>
     <div id="scan-code"></div>
+    <button id="scan-photo" onclick="scanFromPhoto()">Take Photo Scan</button>
     <button id="scan-close" onclick="closeScanner()">✕ Close</button>
   </div>
+  <input id="scan-file" type="file" accept="image/*" capture="environment" onchange="decodeScanFile(this.files&&this.files[0])">
 </div>
 
 <!-- ADMIN MODAL -->
@@ -3222,10 +3226,63 @@ async function getExpBlob(){
 /* ═══ SCANNER ═══ */
 let scanStream=null, scanLoop=null, codeReader=null, zxingReady=false;
 
+async function ensureZxing(){
+  if(window.ZXing && zxingReady) return;
+  document.getElementById("scan-code").textContent='Loading scanner...';
+  await new Promise((res,rej)=>{
+    const urls=[
+      '/vendor/zxing-0.19.1.min.js',
+      'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js',
+      'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js'
+    ];
+    let i=0;
+    const load=()=>{
+      const s=document.createElement('script');
+      s.src=urls[i++];
+      s.onload=()=>window.ZXing?res():i<urls.length?load():rej(new Error('Scanner library could not start'));
+      s.onerror=()=>i<urls.length?load():rej(new Error('Scanner library could not load'));
+      document.head.appendChild(s);
+    };
+    load();
+  });
+  zxingReady=true;
+  document.getElementById("scan-code").textContent='';
+}
+
+function scanFromPhoto(){
+  const input=document.getElementById("scan-file");
+  if(input){ input.value=""; input.click(); }
+}
+
+async function decodeScanFile(file){
+  if(!file) return;
+  try{
+    document.getElementById("scan-ov").classList.add("show");
+    document.getElementById("scan-btn").classList.add("on");
+    document.getElementById("scan-code").textContent='Reading photo...';
+    await ensureZxing();
+    const reader = new ZXing.BrowserMultiFormatReader();
+    const url = URL.createObjectURL(file);
+    try{
+      const result = await reader.decodeFromImageUrl(url);
+      const text = result && (result.getText ? result.getText() : result.text);
+      if(text) onScanResult(text);
+      else throw new Error('No barcode found');
+    }finally{
+      URL.revokeObjectURL(url);
+      try{ reader.reset(); }catch(_){}
+    }
+  }catch(e){
+    document.getElementById("scan-code").textContent='No barcode found. Take a closer, brighter photo.';
+    toast("Barcode photo: "+(e.message||"try again"));
+  }
+}
+
 async function openScanner(){
   document.getElementById("scan-ov").classList.add("show");
   document.getElementById("scan-btn").classList.add("on");
-  document.getElementById("scan-code").textContent='';
+  const isIOSScanner = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+  document.getElementById("scan-code").textContent=isIOSScanner?'If live scan does not catch, tap Take Photo Scan.':'';
   try{
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:"continuous"}}});
     scanStream=stream;
@@ -3239,7 +3296,6 @@ async function openScanner(){
       if(caps.zoom)advanced.push({zoom:Math.min(caps.zoom.max||1.5,1.5)});
       if(advanced.length)await track.applyConstraints({advanced});
     }catch(_){}
-    const isIOSScanner = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
     if('BarcodeDetector' in window && !isIOSScanner){
       const bd=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','data_matrix','pdf417']});
       const canvas=document.createElement('canvas');
@@ -3251,27 +3307,7 @@ async function openScanner(){
         try{ const c=await bd.detect(canvas); if(c.length) onScanResult(c[0].rawValue); }catch(_){}
       },300);
     } else {
-      if(!zxingReady){
-        document.getElementById("scan-code").textContent='Loading scanner…';
-        await new Promise((res,rej)=>{
-          const urls=[
-            '/vendor/zxing-0.19.1.min.js',
-            'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js',
-            'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js'
-          ];
-          let i=0;
-          const load=()=>{
-            const s=document.createElement('script');
-            s.src=urls[i++];
-            s.onload=res;
-            s.onerror=()=>i<urls.length?load():rej(new Error('Scanner library could not load'));
-            document.head.appendChild(s);
-          };
-          load();
-        });
-        zxingReady=true;
-        document.getElementById("scan-code").textContent='';
-      }
+      await ensureZxing();
       stream.getTracks().forEach(t=>t.stop()); scanStream=null;
       codeReader=new ZXing.BrowserMultiFormatReader();
       const devices=await codeReader.listVideoInputDevices();
@@ -3279,7 +3315,11 @@ async function openScanner(){
       const devId=(backCam||devices[devices.length-1]||devices[0])?.deviceId || null;
       await codeReader.decodeFromVideoDevice(devId,'scan-vid',(r,err)=>{ if(r) onScanResult(r.getText()); });
     }
-  }catch(e){ toast("Camera: "+e.message); closeScanner(); }
+  }catch(e){
+    toast("Camera: "+e.message);
+    if(/iPhone|iPad|iPod/i.test(navigator.userAgent || "")) scanFromPhoto();
+    else closeScanner();
+  }
 }
 
 function onScanResult(code){
@@ -3298,6 +3338,8 @@ function closeScanner(){
   if(codeReader){ try{codeReader.reset();}catch(_){} codeReader=null; }
   const v=document.getElementById("scan-vid");
   if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
+  const input=document.getElementById("scan-file");
+  if(input)input.value="";
 }
 
 /* ═══ COPY / SHARE ═══ */
@@ -3997,15 +4039,46 @@ function pimPreloadAround(idx){
 
 function pimBuildAiPrompt(){
   const it = pimCurrentItem || {};
+  const seedText = [it.name,it.alias,it.barcode,it.group,it.size,it.colour||it.color,pimImages.length].join('|');
+  let seed = 0;
+  for(let i=0;i<seedText.length;i++) seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
+  const pick = arr => arr[seed++ % arr.length];
+  const productName = it.name || 'this garment';
+  const colour = it.colour || it.color || '';
+  const group = it.group || it.PartGroup || it.Category || '';
+  const priceBand = Number(it.sale||0) >= 1200 ? 'premium occasionwear' : Number(it.sale||0) >= 600 ? 'boutique daily wear' : 'affordable retail fashion';
+  const scene = pick([
+    'minimal warm boutique studio with soft cream wall and polished floor',
+    'clean catalogue studio with subtle fabric-toned backdrop and gentle shadow',
+    'premium changing-room mirror setup with elegant retail lighting',
+    'simple indoor fashion shoot with neutral wall, full-body product visibility',
+    'bright showroom corner with uncluttered background and realistic floor contact'
+  ]);
+  const pose = pick([
+    'standing straight with one hand holding the phone over the face',
+    'slight three-quarter turn, phone covering face, garment falling naturally',
+    'one foot forward, relaxed shoulders, phone hiding face cleanly',
+    'front-facing full-body pose with phone covering face and fabric clearly visible',
+    'catalogue pose with one hand adjusting dupatta or sleeve while phone hides face'
+  ]);
+  const camera = pick([
+    '50mm realistic phone-camera perspective',
+    'full-body vertical ecommerce frame',
+    'sharp catalogue framing from head to sandals',
+    'natural retail social-media product photo framing',
+    'high-detail product-first fashion photography'
+  ]);
   const parts = [
-    it.name || 'this garment',
-    it.alias ? 'code ' + it.alias : '',
-    it.group || '',
+    productName,
+    it.alias ? 'item code ' + it.alias : '',
+    it.barcode ? 'barcode ' + it.barcode : '',
+    group,
     it.size ? 'size ' + it.size : '',
-    (it.colour || it.color) ? 'colour ' + (it.colour || it.color) : ''
+    colour ? 'colour ' + colour : '',
+    priceBand
   ].filter(Boolean).join(', ');
   const multi = pimImages.length > 1;
-  return `Use the uploaded product photo${multi ? 's as exact references from multiple views' : ' as the exact reference'} for ${parts}. Create a premium photorealistic catalog image of a young adult female model wearing the same garment. The model must hide her face with a mobile phone held in front of her face. Preserve the exact fabric, colour, print, embroidery, neckline, sleeve length, border, dupatta/trouser details, fit and proportions. Do not change the product design. Use clean boutique lighting, full body framing, sharp fabric detail, natural pose, no extra text, no watermark, no logo. ${multi ? 'Combine all uploaded views consistently: front photo controls front design, back or side photos control those parts, close-up photos control texture and embroidery.' : ''}`;
+  return `Use the uploaded product photo${multi ? 's as exact references from multiple views' : ' as the exact reference'} for ${parts}. Create one photorealistic SR Fashion catalogue image of a young adult female model wearing the exact same garment. Scene: ${scene}. Pose: ${pose}. Camera style: ${camera}. The model must hide her face with a mobile phone held in front of her face. Preserve the exact fabric, colour, print, embroidery, neckline, sleeve length, border, dupatta/trouser details, fit, proportions, stitching and fall. Do not redesign the product, do not add new patterns, do not change colours, and do not make the cloth look more expensive than the reference. Keep full body visible, sharp fabric detail, realistic hands, natural Indian retail styling, clean lighting, no text, no watermark, no logo, no extra accessories unless visible in the reference. ${multi ? 'Combine all uploaded views consistently: front photo controls front design, back or side photos control those parts, close-up photos control texture and embroidery.' : 'If any part is not visible, keep it simple and consistent with the visible garment instead of inventing heavy details.'}`;
 }
 function pimRenderAiPrompt(){
   const box = document.getElementById('pim-ai-prompt');

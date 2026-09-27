@@ -169,7 +169,11 @@ body.admin-on .sr-card-upload,body.staff-on .sr-card-upload{display:block}
 .sr-near-chip small{display:block;margin-top:3px;color:var(--muted);font-size:10px;font-weight:700}
 #scan-ov{position:fixed;inset:0;z-index:200;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center}
 #scan-ov.show{display:flex}
-#scan-vid{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+#scan-vid,#html5-reader{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+#html5-reader{display:none;background:#000}
+#html5-reader video{width:100%!important;height:100%!important;object-fit:cover!important}
+#html5-reader__scan_region{min-height:100%!important}
+#html5-reader__dashboard,#html5-reader__header_message{display:none!important}
 #scan-ui{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
 #scan-frame{width:260px;height:130px;border:2px solid var(--gold);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,0.6);position:relative;overflow:hidden}
 #scan-line{position:absolute;left:0;right:0;height:2px;background:var(--gold);box-shadow:0 0 6px var(--gold);animation:sl 1.8s ease-in-out infinite}
@@ -1690,6 +1694,7 @@ body{
 <!-- SCANNER -->
 <div id="scan-ov">
   <video id="scan-vid" autoplay muted playsinline></video>
+  <div id="html5-reader"></div>
   <div id="scan-ui">
     <div id="scan-frame"><div id="scan-line"></div></div>
     <div id="scan-hint">Point at any barcode or QR code</div>
@@ -3224,7 +3229,29 @@ async function getExpBlob(){
 
 
 /* ═══ SCANNER ═══ */
-let scanStream=null, scanLoop=null, codeReader=null, zxingReady=false;
+let scanStream=null, scanLoop=null, codeReader=null, zxingReady=false, html5Scanner=null, html5Ready=false;
+
+async function ensureHtml5Qr(){
+  if(window.Html5Qrcode && html5Ready) return;
+  document.getElementById("scan-code").textContent='Loading iPhone scanner...';
+  await new Promise((res,rej)=>{
+    const urls=[
+      '/vendor/html5-qrcode.min.js',
+      'https://unpkg.com/html5-qrcode'
+    ];
+    let i=0;
+    const load=()=>{
+      const s=document.createElement('script');
+      s.src=urls[i++];
+      s.onload=()=>window.Html5Qrcode?res():i<urls.length?load():rej(new Error('iPhone scanner library could not start'));
+      s.onerror=()=>i<urls.length?load():rej(new Error('iPhone scanner library could not load'));
+      document.head.appendChild(s);
+    };
+    load();
+  });
+  html5Ready=true;
+  document.getElementById("scan-code").textContent='';
+}
 
 async function ensureZxing(){
   if(window.ZXing && zxingReady) return;
@@ -3282,8 +3309,38 @@ async function openScanner(){
   document.getElementById("scan-ov").classList.add("show");
   document.getElementById("scan-btn").classList.add("on");
   const isIOSScanner = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-  document.getElementById("scan-code").textContent=isIOSScanner?'If live scan does not catch, tap Take Photo Scan.':'';
+  document.getElementById("scan-code").textContent=isIOSScanner?'Starting iPhone scanner...':'';
   try{
+    if(isIOSScanner){
+      await ensureHtml5Qr();
+      const reader=document.getElementById("html5-reader");
+      const vid=document.getElementById("scan-vid");
+      if(reader)reader.style.display='block';
+      if(vid)vid.style.display='none';
+      html5Scanner = new Html5Qrcode("html5-reader", false);
+      await html5Scanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 12,
+          qrbox: { width: 280, height: 160 },
+          aspectRatio: 1.7777778,
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.QR_CODE
+          ].filter(Boolean)
+        },
+        decodedText => onScanResult(decodedText),
+        () => {}
+      );
+      document.getElementById("scan-code").textContent='Scanning... keep barcode inside the box';
+      return;
+    }
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:"continuous"}}});
     scanStream=stream;
     const vid=document.getElementById("scan-vid");
@@ -3334,9 +3391,13 @@ function closeScanner(){
   document.getElementById("scan-ov").classList.remove("show");
   document.getElementById("scan-btn").classList.remove("on");
   if(scanLoop){ clearInterval(scanLoop); scanLoop=null; }
+  if(html5Scanner){ try{ html5Scanner.stop().catch(()=>{}); }catch(_){} try{ html5Scanner.clear(); }catch(_){} html5Scanner=null; }
   if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
   if(codeReader){ try{codeReader.reset();}catch(_){} codeReader=null; }
   const v=document.getElementById("scan-vid");
+  if(v)v.style.display='';
+  const reader=document.getElementById("html5-reader");
+  if(reader)reader.style.display='none';
   if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
   const input=document.getElementById("scan-file");
   if(input)input.value="";

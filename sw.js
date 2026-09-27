@@ -1,9 +1,10 @@
-const CACHE_NAME = "sr-stock-v68";
+const CACHE_NAME = "sr-stock-v69";
 const APP_SHELL = [
   "/",
   "/index.html",
   "/items.json",
   "/vendor/zxing-0.19.1.min.js",
+  "/vendor/html5-qrcode.min.js",
   "/site.webmanifest",
   "/favicon-32x32.png",
   "/apple-touch-icon.png",

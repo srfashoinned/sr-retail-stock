@@ -4409,7 +4409,7 @@ loadData();
 (function(){
 const $=id=>document.getElementById(id);
 let ac=null,quoteOpen=false,cart=[],quoteSearch="",scannerForQuote=false,scannerForImageWork=false,qtyPick=null;
-const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1",SR_OWNER_EMAIL_WEBAPP_KEY="sr_owner_email_webapp_url",SR_OWNER_EMAIL_SECRET_KEY="sr_owner_email_secret";
+const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1",SR_OWNER_EMAIL_WEBAPP_KEY="sr_owner_email_webapp_url",SR_OWNER_EMAIL_SECRET_KEY="sr_owner_email_secret",SR_OWNER_EMAIL_DEFAULT_WEBAPP_URL="https://script.google.com/macros/s/AKfycbyt9tQp_Uk98tb-3jSecC-zPdK939l_p0F9c5Ma-tAecnGa4EMfA_NPMJBZg4jQkKM/exec",SR_OWNER_EMAIL_DEFAULT_SECRET="doxtDw4GauCg87bMvnlVhpXI3W1yPqH0";
 let srNavRestoring=false,srLastView="home",srLastPayload={},srNextNav=null,srLedgerRequestToken=0,srNavFromDrawer=false,srViewStack=[];
 
 function sound(kind="tap"){
@@ -5446,8 +5446,8 @@ async function srShareOwnerReport(){
   }
 }
 function srOpenOwnerEmailSetup(){
-  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||"";
-  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||"";
+  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||SR_OWNER_EMAIL_DEFAULT_WEBAPP_URL;
+  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||SR_OWNER_EMAIL_DEFAULT_SECRET;
   srLedgerShow("Silent Email Setup","Paste Google Apps Script Web App URL once",`<div class="sr-ledger-note">Use the Apps Script file saved on this laptop: E:\\New Website\\google-apps-script-owner-email.gs. Deploy it from the Gmail account that should send the mail, then paste the Web App URL here.</div><div style="display:grid;gap:8px"><input id="sr-email-webapp-url" placeholder="Apps Script Web App URL" value="${escq(url)}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><input id="sr-email-secret" placeholder="Secret key" value="${escq(key)}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srSaveOwnerEmailSetup()">Save Setup</button></div>`);
 }
 function srSaveOwnerEmailSetup(){
@@ -5461,8 +5461,8 @@ function srSaveOwnerEmailSetup(){
   srOpenOwnerEmailReport();
 }
 async function srSendOwnerEmailSilent(fromDate,toDate,to){
-  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||"";
-  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||"";
+  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||SR_OWNER_EMAIL_DEFAULT_WEBAPP_URL;
+  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||SR_OWNER_EMAIL_DEFAULT_SECRET;
   if(!url||!key){srOpenOwnerEmailSetup();toast("Setup silent email once");return;}
   const target=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to||"")?to:"srfashionned@gmail.com";
   const from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();

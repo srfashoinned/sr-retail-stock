@@ -51,10 +51,15 @@ SELECT
   CAST(ISNULL(I.D3,0) AS decimal(18,2)) AS SalePrice,
   CAST(ISNULL(I.D3,0) AS decimal(18,2)) AS WholesalePrice,
   CAST(ISNULL(I.D4,0) AS decimal(18,2)) AS PurchasePrice,
-  CAST(ISNULL(M.MovementQty,0) AS decimal(18,3)) AS StockQty,
+  CAST(ISNULL(O.OpeningQty,0) + ISNULL(M.MovementQty,0) AS decimal(18,3)) AS StockQty,
   CONVERT(varchar(10), NULLIF(I.CreationTime, CONVERT(datetime,'19000101')), 120) AS EntryDate
 FROM Master1 I
 LEFT JOIN Master1 G ON G.Code = I.ParentGrp
+OUTER APPLY (
+  SELECT SUM(ISNULL(T.D1,0)) AS OpeningQty
+  FROM Tran4 T
+  WHERE T.MasterCode1 = I.Code
+) O
 OUTER APPLY (
   SELECT SUM(ISNULL(T.Value1,0)) AS MovementQty
   FROM Tran2 T

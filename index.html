@@ -3332,17 +3332,24 @@ function setAdminUi(on){
 }
 
 async function initBiometric(){
-  if(!window.PublicKeyCredential) return;
+  const bioBtn = document.getElementById('adm-bio-btn');
+  const divider = document.getElementById('adm-divider');
+  const bioBtnText = document.querySelector('#adm-bio-btn span:last-child');
+  if(bioBtnText){
+    bioBtnText.textContent = /iPhone|iPad|iPod/i.test(navigator.userAgent || "") ? 'Use Face ID / Passcode' : 'Use Fingerprint / Face ID';
+  }
+  if(bioBtn) bioBtn.classList.remove('hidden');
+  if(divider) divider.classList.remove('hidden');
+  if(!window.PublicKeyCredential || !window.isSecureContext){
+    if(bioBtn) bioBtn.disabled = true;
+    return;
+  }
   try{
     const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    if(available){
-      const bioText = /iPhone|iPad|iPod/i.test(navigator.userAgent || "") ? 'Use Face ID / Passcode' : 'Use Fingerprint / Face ID';
-      const bioBtnText = document.querySelector('#adm-bio-btn span:last-child');
-      if(bioBtnText) bioBtnText.textContent = bioText;
-      document.getElementById('adm-bio-btn').classList.remove('hidden');
-      document.getElementById('adm-divider').classList.remove('hidden');
-    }
-  }catch(_){}
+    if(bioBtn) bioBtn.disabled = !available;
+  }catch(_){
+    if(bioBtn) bioBtn.disabled = true;
+  }
 }
 
 function openAdm(){

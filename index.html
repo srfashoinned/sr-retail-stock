@@ -5343,23 +5343,28 @@ function srReceivableRowsFromCache(cache){
     balance:+(c.balance||c.Balance||0)
   })).filter(c=>c.balance>0).sort((a,b)=>b.balance-a.balance);
 }
-function srOwnerReportText(salesPayload, receivablesCache){
+function srReportPeriodLabel(fromDate,toDate){
+  const from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();
+  const to=/^\d{4}-\d{2}-\d{2}$/.test(toDate||"")?toDate:from;
+  return from===to ? from : `${from} to ${to}`;
+}
+function srOwnerReportText(salesPayload, receivablesCache, fromDate, toDate){
   const [summaryRows=[], rows=[], topItems=[]]=salesPayload||[];
   const s=summaryRows[0]||{};
   const debts=srReceivableRowsFromCache(receivablesCache);
   const totalReceivable=debts.reduce((sum,c)=>sum+(+c.balance||0),0);
-  const today=srIsoToday();
+  const period=srReportPeriodLabel(fromDate,toDate);
   const lines=[
     "SR Fashion Owner Report",
-    "Date: "+today,
+    "Period: "+period,
     "",
-    "Today's Sale / Profit",
+    "Sale / Profit",
     `Bills: ${Math.round(+s.billCount||0).toLocaleString("en-IN")} | Qty: ${Math.round(+s.qtySold||0).toLocaleString("en-IN")}`,
     `Sales: ${money(s.billAmount)} | Cost: ${money(s.costPrice)} | Profit: ${money(s.actualProfit||s.profitAmount)}`,
     `Cash: ${money(s.cashAmount)} | Credit: ${money(s.creditAmount)}`,
     "",
-    "Today Receivables",
-    `Credit sale today: ${money(s.creditAmount)} (${Math.round(+s.creditBillCount||0).toLocaleString("en-IN")} bills)`,
+    "Selected Period Receivables",
+    `Credit sale: ${money(s.creditAmount)} (${Math.round(+s.creditBillCount||0).toLocaleString("en-IN")} bills)`,
     "",
     "Receivables Till Date",
     `Total receivable: ${money(totalReceivable)}`,
@@ -5372,10 +5377,10 @@ function srOwnerReportText(salesPayload, receivablesCache){
   if((topItems||[]).length){
     lines.splice(9,0,"","Top Sold Items",...topItems.slice(0,8).map(it=>`- ${it.itemName||"Item"}: ${Math.round(+it.qtySold||0)} qty | Sale ${money(it.saleAmount)} | Profit ${money(it.profitAmount)}`));
   }
-  return {subject:"SR Fashion Owner Report - "+today,text:lines.join("\n")};
+  return {subject:"SR Fashion Owner Report - "+period,text:lines.join("\n")};
 }
-function srOwnerReportTextWithPurchase(salesPayload, receivablesCache, purchasePayload, payablesPayload){
-  const base=srOwnerReportText(salesPayload,receivablesCache);
+function srOwnerReportTextWithPurchase(salesPayload, receivablesCache, purchasePayload, payablesPayload, fromDate, toDate){
+  const base=srOwnerReportText(salesPayload,receivablesCache,fromDate,toDate);
   const [purchaseSummaryRows=[], purchaseRows=[]]=purchasePayload||[];
   const [payableSummaryRows=[], payableRows=[]]=payablesPayload||[];
   const ps=purchaseSummaryRows[0]||{};
@@ -5383,7 +5388,7 @@ function srOwnerReportTextWithPurchase(salesPayload, receivablesCache, purchaseP
   let text=base.text.replace(
     "Payables Till Date\nLoading supplier payables...",
     [
-      "Selected Date Purchases",
+      "Selected Period Purchases",
       `Purchase bills: ${Math.round(+ps.purchaseBillCount||0).toLocaleString("en-IN")} | Qty: ${Math.round(+ps.purchaseQty||0).toLocaleString("en-IN")} | Amount: ${money(ps.purchaseAmount)}`,
       ...purchaseRows.slice(0,12).map(r=>`- ${r.VchNo||r.VchCode}: ${r.partyName||"Supplier"} | ${money(r.amount)} | Qty ${Math.round(+r.qty||0)}`),
       "",
@@ -5402,23 +5407,26 @@ async function srOpenOwnerEmailReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner email"); return; }
   drawer(false);
   const today=srIsoToday();
-  srLedgerShow("Owner Email","Select date for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr auto"><input id="sr-owner-report-date" type="date" value="${today}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-date').value)">Generate</button></div><div class="sr-ledger-actions"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button onclick="srOpenOwnerEmailSetup()">Email Setup</button></div><div class="sr-ledger-note">Default send-to email remains srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Website share works now; silent email works after one-time Google Apps Script setup.</div>`);
+  srLedgerShow("Owner Email","Select date range for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr 1fr auto"><input id="sr-owner-report-from" type="date" value="${today}" aria-label="From date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><input id="sr-owner-report-to" type="date" value="${today}" aria-label="To date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-from').value,document.getElementById('sr-owner-report-to').value)">Generate</button></div><div class="sr-ledger-actions"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button onclick="srOpenOwnerEmailSetup()">Email Setup</button></div><div class="sr-ledger-note">Default send-to email remains srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Website share works now; silent email works after one-time Google Apps Script setup.</div>`);
 }
-async function srRunOwnerEmailReport(selectedDate){
-  const day=/^\d{4}-\d{2}-\d{2}$/.test(selectedDate||"")?selectedDate:srIsoToday();
+async function srRunOwnerEmailReport(fromDate,toDate){
+  let from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();
+  let to=/^\d{4}-\d{2}-\d{2}$/.test(toDate||"")?toDate:from;
+  if(from>to){const t=from;from=to;to=t;}
+  const period=srReportPeriodLabel(from,to);
   toast("Preparing owner report...");
   try{
     const [sales, receivables, purchases, payables]=await Promise.all([
-      srLedgerApi(`/api/sales-report?from=${encodeURIComponent(day)}&to=${encodeURIComponent(day)}`),
+      srLedgerApi(`/api/sales-report?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
       srFetchReceivablesCache(),
-      srLedgerApi(`/api/purchase-report?from=${encodeURIComponent(day)}&to=${encodeURIComponent(day)}`),
+      srLedgerApi(`/api/purchase-report?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
       srLedgerApi("/api/payables")
     ]);
-    const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables);
+    const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables,from,to);
     const purchaseRows=(purchases&&purchases[1])||[];
     try{await navigator.clipboard.writeText(msg.text)}catch(e){}
     const emailTo=($("sr-owner-email-to")?.value||"").trim();
-    srLedgerShow("Owner Email Report",`${day} report copied. Use Share now, or Send Email after one-time setup.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srSendOwnerEmailSilent('${day}','${String(emailTo).replace(/'/g,"\\'")}')">Send Email</button><button onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills on ${day}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
+    srLedgerShow("Owner Email Report",`${period} report copied. Use Share now, or Send Email after one-time setup.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srSendOwnerEmailSilent('${from}','${to}','${String(emailTo).replace(/'/g,"\\'")}')">Send Email</button><button onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills for ${period}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
     window.srOwnerReportText=msg.text;
     window.srOwnerReportSubject=msg.subject;
     toast("Owner report copied");
@@ -5452,12 +5460,17 @@ function srSaveOwnerEmailSetup(){
   toast("Silent email setup saved");
   srOpenOwnerEmailReport();
 }
-async function srSendOwnerEmailSilent(date,to){
+async function srSendOwnerEmailSilent(fromDate,toDate,to){
   const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||"";
   const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||"";
   if(!url||!key){srOpenOwnerEmailSetup();toast("Setup silent email once");return;}
   const target=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to||"")?to:"srfashionned@gmail.com";
-  const body=new URLSearchParams({key,date:date||srIsoToday(),to:target});
+  const from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();
+  const toDay=/^\d{4}-\d{2}-\d{2}$/.test(toDate||"")?toDate:from;
+  const body=new URLSearchParams({key,from,to:target,toDate:toDay});
+  body.set("to",target);
+  body.set("from",from);
+  body.set("toDate",toDay);
   try{
     await fetch(url,{method:"POST",mode:"no-cors",body});
     toast("Silent email request sent");
@@ -5644,6 +5657,12 @@ Object.assign(window,{
   srImageWorkFound,
   srOpenStaffTasks,
   srOpenOwnerBrief,
+  srOpenOwnerEmailReport,
+  srRunOwnerEmailReport,
+  srShareOwnerReport,
+  srOpenOwnerEmailSetup,
+  srSaveOwnerEmailSetup,
+  srSendOwnerEmailSilent,
   srOpenFestivalPlanner,
   srFestivalRun,
   srOpenCardFromReport,

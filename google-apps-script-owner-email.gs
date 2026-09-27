@@ -17,19 +17,26 @@ function handleOwnerEmail_(e) {
   if (String(p.key || "") !== SECRET_KEY) {
     return json_({ ok: false, error: "Bad key" });
   }
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(p.date || "")) ? String(p.date) : today_();
+  let from = validDate_(p.from) ? String(p.from) : validDate_(p.date) ? String(p.date) : today_();
+  let toDate = validDate_(p.toDate) ? String(p.toDate) : validDate_(p.until) ? String(p.until) : from;
+  if (from > toDate) {
+    const swap = from;
+    from = toDate;
+    toDate = swap;
+  }
   const to = validEmail_(p.to) ? String(p.to).trim() : DEFAULT_TO;
-  const report = buildOwnerReport_(date);
+  const report = buildOwnerReport_(from, toDate);
   GmailApp.sendEmail(to, report.subject, report.text, {
     name: "SR Fashion Owner Report",
     htmlBody: report.html
   });
-  return json_({ ok: true, to, date, subject: report.subject });
+  return json_({ ok: true, to, from, toDate, subject: report.subject });
 }
 
-function buildOwnerReport_(date) {
-  const sales = fetchJson_(LIVE_API + "/api/sales-report?from=" + encodeURIComponent(date) + "&to=" + encodeURIComponent(date));
-  const purchases = fetchJson_(LIVE_API + "/api/purchase-report?from=" + encodeURIComponent(date) + "&to=" + encodeURIComponent(date));
+function buildOwnerReport_(from, toDate) {
+  const period = from === toDate ? from : from + " to " + toDate;
+  const sales = fetchJson_(LIVE_API + "/api/sales-report?from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(toDate));
+  const purchases = fetchJson_(LIVE_API + "/api/purchase-report?from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(toDate));
   const payables = fetchJson_(LIVE_API + "/api/payables");
   const receivables = fetchJson_(RECEIVABLES_URL + "?t=" + Date.now());
 
@@ -44,10 +51,10 @@ function buildOwnerReport_(date) {
 
   const lines = [
     "SR Fashion Owner Report",
-    "Date: " + date,
+    "Period: " + period,
     "Customer ID: " + CUSTOMER_ID,
     "",
-    "Today's Sale / Profit",
+    "Sale / Profit",
     "Bills: " + n_(s.billCount) + " | Qty: " + n_(s.qtySold),
     "Sales: " + money_(s.billAmount) + " | Cost: " + money_(s.costPrice) + " | Profit: " + money_(s.actualProfit || s.profitAmount),
     "Cash: " + money_(s.cashAmount) + " | Credit: " + money_(s.creditAmount),
@@ -55,7 +62,7 @@ function buildOwnerReport_(date) {
     "Top Sold Items",
     topItems.length ? topItems.map(item => "- " + (item.itemName || "Item") + ": " + n_(item.qtySold) + " qty | Sale " + money_(item.saleAmount) + " | Profit " + money_(item.profitAmount)).join("\n") : "- None",
     "",
-    "Selected Date Purchases",
+    "Selected Period Purchases",
     "Purchase bills: " + n_(ps.purchaseBillCount) + " | Qty: " + n_(ps.purchaseQty) + " | Amount: " + money_(ps.purchaseAmount),
     purchaseRows.length ? purchaseRows.map(row => "- " + (row.VchNo || row.VchCode) + ": " + (row.partyName || "Supplier") + " | " + money_(row.amount) + " | Qty " + n_(row.qty)).join("\n") : "- No purchase bills",
     "",
@@ -69,7 +76,7 @@ function buildOwnerReport_(date) {
   ].join("\n");
 
   return {
-    subject: "SR Fashion Owner Report - " + date,
+    subject: "SR Fashion Owner Report - " + period,
     text: lines,
     html: "<pre style=\"font-family:Arial,sans-serif;white-space:pre-wrap;line-height:1.45\">" + escapeHtml_(lines) + "</pre>"
   };
@@ -98,6 +105,10 @@ function today_() {
 
 function validEmail_(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
+function validDate_(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
 }
 
 function num_(value) {

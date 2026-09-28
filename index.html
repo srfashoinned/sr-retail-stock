@@ -1608,7 +1608,7 @@ body{
 <div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
 <button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="missing-images"><span class="sr-ico">▧</span><span>Image Work<small>Upload and manage product photos</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">▧</span><span>Image Work<small>Upload and manage product photos</small></span></button>
 <button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
 <div class="sr-drawer-tools">
 <button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
@@ -3448,14 +3448,15 @@ const SR_ADMIN_SESSION_KEY = 'sr_admin_unlocked_session';
 let adminToken = '';
 
 function setAdminUi(on){
-  document.body.classList.toggle('admin-on', !!on);
+  const unlocked=!!(isAdmin||isStaff);
+  document.body.classList.toggle('admin-on', !!isAdmin);
   document.body.classList.toggle('staff-on', !!isStaff);
-  const label = on ? 'Logout' : 'Admin';
+  const label = isAdmin ? 'Logout' : isStaff ? 'Staff Logout' : 'Admin';
   ['admin-btn','sr-top-admin'].forEach(id=>{
     const btn = document.getElementById(id);
     if(!btn) return;
     btn.textContent = label;
-    btn.classList.toggle('on', !!on);
+    btn.classList.toggle('on', unlocked);
   });
 }
 
@@ -3467,7 +3468,7 @@ async function initBiometric(){
 }
 
 function openAdm(){
-  if(isAdmin){ logout(); return; }
+  if(isAdmin||isStaff){ logout(); return; }
   document.getElementById("adm-ov").classList.add("show");
   setTimeout(()=>document.getElementById("adm-pw").focus(), 150);
 }
@@ -3548,11 +3549,13 @@ async function doLogin(){
     [0,1,2,3].forEach(i=>dot(i,'g')); pw.classList.add('ok');
     if(auth.imageKey)pimSetToken(auth.imageKey,false);
     if(auth.role==="staff"){
-      m.textContent='✓ Photo saving ready'; m.className='g';
+      m.textContent='✓ Staff access granted'; m.className='g';
       isAdmin=false; isStaff=true;
       adminToken='';
-      try{ sessionStorage.removeItem(SR_ADMIN_SESSION_KEY); }catch(e){}
-      setTimeout(()=>{ closeAdm(); setAdminUi(false); toast("Photo saving ready"); },450);
+      const staffToken=String(auth.sessionToken||auth.imageKey||'');
+      pimSetToken(staffToken,false);
+      try{ sessionStorage.setItem(SR_ADMIN_SESSION_KEY,staffToken); }catch(e){}
+      setTimeout(()=>{ closeAdm(); setAdminUi(false); toast("Staff panel opened"); srOpenMissingImagesReport("all"); },450);
       return;
     }
     if(auth.role!=="admin") throw new Error("Admin PIN only");
@@ -3569,7 +3572,7 @@ async function doLogin(){
   }
 }
 async function logout(){
-  const token=adminToken;
+  const token=adminToken||pimToken;
   isAdmin=false;
   isStaff=false;
   adminToken='';
@@ -4108,12 +4111,12 @@ async function srRestoreAdminSession(){
     try{
       const r=await fetch(base+'/auth/session',{headers:{'x-sr-admin-token':token},cache:'no-store'});
       const data=await srReadJsonResponse(r,'Admin session');
-      if(r.ok&&data.ok&&data.role==='admin'){
-        adminToken=token;
-        isAdmin=true;
-        isStaff=false;
+      if(r.ok&&data.ok&&(data.role==='admin'||data.role==='staff')){
+        isAdmin=data.role==='admin';
+        isStaff=data.role==='staff';
+        adminToken=isAdmin?token:'';
         pimSetToken(token,false);
-        setAdminUi(true);
+        setAdminUi(isAdmin);
         return;
       }
     }catch(e){}

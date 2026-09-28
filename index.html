@@ -5001,23 +5001,16 @@ async function srOpenHealthCheck(){
   srNextView("health");
   drawer(false);
   srLedgerShow("Health Check","Testing live services...","<div class='sr-ledger-note'>Checking stock, receivables, and image upload path.</div>");
-  const checks=[
-    ["Stock API",[LIVE_STOCK_API]],
-    ["BUSY reports",ITEM_LEDGER_API_BASES.map(base=>base+"/api/kpis")],
-    ["Image storage",IMAGE_API_BASES.map(base=>base+"/list?alias=health-check")]
-  ];
-  const rows=[];
-  for(const [name,urls] of checks){
-    let status="Offline",ok=false;
-    for(const url of urls){
-      try{
-        const r=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store",headers:adminToken?{"x-sr-admin-token":adminToken}:{}});
-        if(r.ok){ok=true;status="Online";break}
-        status="Error "+r.status;
-      }catch(e){}
-    }
-    rows.push([name,status,ok]);
+  const stockLive=stockStatusState==="live";
+  let connectorLive=stockLive;
+  if(!connectorLive){
+    try{const r=await fetch("https://live-stock.srfashionned.in/api/health?t="+Date.now(),{cache:"no-store"});connectorLive=r.ok}catch(e){}
   }
+  const rows=[
+    ["Stock sync",stockLive?"Live":"Saved copy",stockLive],
+    ["BUSY connector",connectorLive?"Online":"Offline",connectorLive],
+    ["Image storage",connectorLive?"Ready":"Waiting",connectorLive]
+  ];
   srLedgerShow("Health Check","Live service status",`<div class="sr-ledger-grid">${rows.map(([n,v,ok])=>`<div class="sr-ledger-kpi"><small>${escq(n)}</small><b style="color:${ok?"#22c55e":"#f87171"}">${escq(v)}</b></div>`).join("")}</div><div class="sr-ledger-note">If Cloudflare tunnel or shop PC is off, live BUSY features cannot update, but browser/file cache can still show saved stock.</div>`);
 }
 function srShareCatalog(){

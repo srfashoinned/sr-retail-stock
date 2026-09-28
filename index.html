@@ -4609,6 +4609,81 @@ function srLedgerShow(title,sub,html){
 function srLedgerKpis(cells){
   return `<div class="sr-ledger-grid">${cells.map(([l,v])=>`<div class="sr-ledger-kpi"><small>${escq(l)}</small><b>${escq(v)}</b></div>`).join("")}</div>`;
 }
+function srLedgerCacheRead(){
+  try{return JSON.parse(localStorage.getItem(SR_LEDGER_CACHE_KEY)||"{}")}catch(_){return{}}
+}
+function srLedgerCacheKey(it){return String(it?.ProductID||it?.barcode||it?.alias||it?.name||"").trim().toLowerCase()}
+function srLedgerCacheWrite(it,payload){
+  const key=srLedgerCacheKey(it);if(!key)return;
+  const cache=srLedgerCacheRead();cache[key]={savedAt:new Date().toISOString(),payload};
+  const recent=Object.entries(cache).sort((a,b)=>String(b[1].savedAt).localeCompare(String(a[1].savedAt))).slice(0,12);
+  try{localStorage.setItem(SR_LEDGER_CACHE_KEY,JSON.stringify(Object.fromEntries(recent)))}catch(_){}
+}
+function srLedgerCacheGet(it){return srLedgerCacheRead()[srLedgerCacheKey(it)]||null}
+async function srCloudLedgerCacheRead(){
+  if(!srCloudLedgerCachePromise)srCloudLedgerCachePromise=fetch("/item-ledgers-cache.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?srReadJsonResponse(r,"Item ledger cache"):null).catch(()=>null);
+  return srCloudLedgerCachePromise;
+}
+async function srCloudLedgerCacheGet(it){
+  const ledgers=(await srCloudLedgerCacheRead())?.ledgers||{};
+  for(const key of [it?.ProductID,it?.productId,it?.barcode,it?.alias,it?.name].map(v=>String(v||"").trim().toLowerCase()).filter(Boolean)){
+    if(ledgers[key])return {payload:ledgers[key]};
+  }
+  return null;
+}
+function srRenderItemLedger(it,payload,fromCache=false){
+  srCurrentItemLedgerPayload=payload;
+  const [items=[],summaryRows=[],sales=[],purchases=[]]=Array.isArray(payload)?payload:[];
+  const db=items[0]||{},sum=summaryRows[0]||{};
+  const title=escq(db.ProductName||it.name||"Item Ledger");
+  const code=[db.ProductCode||it.alias,db.ProductBarcode||it.barcode].filter(Boolean).join(" / ");
+  const saleRows=sales.map(r=>`<button class="sr-ledger-row" onclick="srLedgerOpenBill('${escq(r.VchCode)}')"><span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.VchCode)}</b><strong>${money(r.Amount)}</strong></span><small>${srDate(r.Date)} · ${escq(r.CustomerName||"Cash")}</small><span class="sr-ledger-row-grid"><span>Qty<b>${escq(r.Qty)}</b></span><span>Sold/pc<b>${money(r.Rate)}</b></span><span>Cost/pc<b>${srUnitCost(r.CostAmount,r.Qty)}</b></span><span>Total cost<b>${money(r.CostAmount)}</b></span><span>Profit<b>${money(r.ProfitAmount)}</b></span></span></button>`).join("");
+  const purchaseRows=purchases.map(r=>{const body=`<span class="sr-ledger-row-top"><b>${escq(r.VchNo||r.MovementType||"Purchase")}</b><strong>+${escq(r.Qty||0)}</strong></span><small>${srDate(r.Date)} · ${escq(r.PartyName||r.SupplierInvoiceNo||r.Barcode||code||"")}</small><span class="sr-ledger-row-grid"><span>Purchase<b>${money(r.PurchasePrice)}</b></span><span>Sale<b>${money(r.SalePrice)}</b></span><span>Wholesale<b>${money(r.WholesalePrice)}</b></span><span>MRP<b>${money(r.MRP)}</b></span></span>`;return +r.CanOpen?`<button class="sr-ledger-row" onclick="srLedgerOpenPurchase('${escq(r.RowCode)}')">${body}</button>`:`<div class="sr-ledger-row">${body}</div>`}).join("");
+  srLedgerShow(title,code||"Live item history",`
+    ${fromCache?`<div class="sr-ledger-note">Showing the most recent saved ledger because live BUSY history is unavailable.</div>`:""}
+    ${srLedgerKpis([["MRP",money(db.MRP||it.mrp)],["Sale",money(db.SalePrice||it.sale)],["Wholesale",money(db.WholesalePrice||it.wholesale)],["Purchase",money(db.PurchasePrice||it.purchase)],["Stock",String(db.CurrentStock??it.stock??"-")],["Invoices",String(sum.invoiceCount||0)],["Sold Qty",String(sum.soldQty||0)],["Sales",money(sum.saleAmount)],["Profit",money(sum.profitAmount)]])}
+    <section><b style="display:block;margin:4px 0 8px">Purchase / opening</b>${purchaseRows||"<div class='sr-ledger-note'>No purchase or opening entry found.</div>"}</section>
+    <section><b style="display:block;margin:4px 0 8px">Sale invoices</b>${saleRows||"<div class='sr-ledger-note'>No sale invoice found for this item.</div>"}</section>`);
+}
+function srOpenPendingLedger(){
+  if(srPendingLedgerRi!==null){const ri=srPendingLedgerRi;srPendingLedgerRi=null;openItemLedger(ri);return}
+  if(srPendingLedgerSearch){srPendingLedgerSearch=false;openItemLedgerSearch()}
+}
+async function openItemLedger(ri,e){
+  e&&e.stopPropagation();
+  if(!isAdmin){srPendingLedgerRi=ri;openAdm();toast("Admin login required for item ledger");return}
+  const it=raw[ri];if(!it)return toast("Item not found");
+  const requestToken=++srLedgerRequestToken;
+  srNextView("ledger",{ri});drawer(false);
+  srLedgerShow(escq(it.name||"Item Ledger"),"Loading live history...","<div class='sr-ledger-note'>Checking BUSY sale and purchase records...</div>");
+  try{
+    const q=new URLSearchParams();if(it.ProductID)q.set("productId",it.ProductID);if(it.barcode)q.set("barcode",it.barcode);if(it.name)q.set("name",it.name);
+    const payload=await srLedgerApi("/api/item-history?"+q.toString());if(requestToken!==srLedgerRequestToken)return;
+    srLedgerCacheWrite(it,payload);srRenderItemLedger(it,payload,false);
+  }catch(err){
+    if(requestToken!==srLedgerRequestToken)return;
+    const saved=srLedgerCacheGet(it)||(await srCloudLedgerCacheGet(it));
+    if(saved?.payload)return srRenderItemLedger(it,saved.payload,true);
+    srLedgerShow(escq(it.name||"Item Ledger"),"History unavailable",`<div class="sr-ledger-note">Could not reach live BUSY history and no saved ledger exists for this item.</div><div class="sr-ledger-actions"><button class="gold" onclick="openItemLedger(${ri})">Retry</button></div>`);
+  }
+}
+function openItemLedgerSearch(){
+  if(!isAdmin){srPendingLedgerSearch=true;openAdm();toast("Admin login required for item ledger");return}
+  srLedgerRequestToken++;srNextView("ledger");drawer(false);
+  srLedgerShow("Item Ledger","Search by barcode, code, or item name",`<div style="display:flex;gap:8px"><input id="sr-ledger-search" placeholder="Barcode / item name"><button id="sr-ledger-search-go" onclick="srLedgerSearchGo()">Search</button></div><div id="sr-ledger-suggestions"></div><div class="sr-ledger-note">Type at least two characters, then choose a product.</div>`);
+  setTimeout(()=>{const x=$("sr-ledger-search");if(x){x.focus();x.oninput=()=>srLedgerSuggest(x.value)}},80);
+}
+function srLedgerSuggest(term){
+  const box=$("sr-ledger-suggestions");if(!box)return;
+  const q=String(term||"").trim().toLowerCase();if(q.length<2){box.innerHTML="";return}
+  const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>srItemMatchesTerm(it,q)).slice(0,20);
+  box.innerHTML=rows.length?`<div class="sr-report-list" style="margin-top:10px">${rows.map(([it,ri])=>`<button class="sr-report-item" onclick="openItemLedger(${ri})"><span class="sr-report-item-top"><b>${escq(it.name||"")}</b><strong>${money(it.sale)}</strong></span><small>${escq([it.alias,it.barcode,it.group||it.PartGroup].filter(Boolean).join(" · "))}</small></button>`).join("")}</div>`:`<div class="sr-ledger-note">No matching product found.</div>`;
+}
+function srLedgerSearchGo(){
+  const term=($("sr-ledger-search")?.value||"").trim();if(!term)return toast("Enter barcode or item name");
+  const idx=srFindItemIndex(term);if(idx>=0)return openItemLedger(idx);
+  srLedgerShow("Item Ledger","No matching product",`<div class="sr-ledger-note">No item matched “${escq(term)}”. Refresh stock and try again.</div>`);
+}
 function srNormCode(v){return String(v??"").trim().toLowerCase().replace(/[^a-z0-9]/g,"").replace(/^0+(?=\d)/,"")}
 function srItemIsInStock(it){return Number(it?.stock||0)>0}
 function srItemSearchHay(it){return [it?.name,it?.alias,it?.barcode,it?.group,it?.PartGroup,it?.Category,it?.SubCategory,it?.size,it?.Size,it?.colour,it?.color,it?.Colour,it?.Color].join(" ").toLowerCase()}

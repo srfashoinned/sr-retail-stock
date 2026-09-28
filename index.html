@@ -4572,9 +4572,12 @@ function srDate(v){
 }
 async function srLedgerApi(path){
   let lastErr=null;
-  for(const base of ITEM_LEDGER_API_BASES){
+  const bases=location.protocol==="https:"
+    ? [...ITEM_LEDGER_API_BASES].sort((a,b)=>(a.startsWith("https://")?0:1)-(b.startsWith("https://")?0:1))
+    : ITEM_LEDGER_API_BASES;
+  for(const base of bases){
     try{
-      const r=await fetch(base+path,{cache:"no-store",headers:adminToken?{"x-sr-admin-token":adminToken}:{}});
+      const r=await fetch(base+path,{cache:"no-store",headers:adminToken?{"x-sr-admin-token":adminToken}:{},signal:AbortSignal.timeout(5000)});
       return await srReadJsonResponse(r, "Item ledger API");
     }catch(e){lastErr=e}
   }

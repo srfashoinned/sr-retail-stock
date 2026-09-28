@@ -1615,7 +1615,6 @@ body{
 <button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="owner-email"><span class="sr-ico">✉</span><span>Owner Email<small>Today sale, receivables and payables</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="collect-upi"><span class="sr-ico">▣</span><span>Collect UPI<small>Bill QR and payment sound</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>BUSY live dashboard</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="profit-loss"><span class="sr-ico">₹</span><span>Profit / Loss<small>Bill and item profit</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="scanner-qa"><span class="sr-ico">▣</span><span>Scanner QA<small>iPhone camera test</small></span></button>
@@ -4543,7 +4542,7 @@ function srRestoreNav(state){
     else if(view==="price-changes")srOpenPriceChangesReport();
     else if(view==="health")srOpenHealthCheck();
     else if(view==="control-center")srOpenControlCenter();
-    else if(view==="collect-upi")srOpenCollectUpi();
+    else if(view==="collect-upi")srNextView("home");
     else if(view==="home"){srNavHome(false);const saved=JSON.parse(localStorage.getItem(SR_NAV_KEY)||"null");srRestoreFilters(saved);}
     else srNavHome(false);
   }catch(e){srNavHome(false)}
@@ -6104,7 +6103,7 @@ document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
   if(v==="control-center")return srOpenControlCenter();
   if(v==="ledger")return openItemLedgerSearch();
   if(v==="owner-email")return srOpenOwnerEmailReport();
-  if(v==="collect-upi")return srOpenCollectUpi();
+  if(v==="collect-upi")return srNextView("home");
   if(v==="receivables")return srOpenReceivables();
   if(v==="profit-loss"){drawer(false); window.location.href="https://receivables.srfashionned.in/profit.html"; return;}
   if(v==="scanner-qa")return srOpenScannerQa();

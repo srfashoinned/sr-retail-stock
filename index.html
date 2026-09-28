@@ -1620,7 +1620,6 @@ body{
 <button class="sr-navbtn sr-admin-only" data-view="profit-loss"><span class="sr-ico">₹</span><span>Profit / Loss<small>Bill and item profit</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="scanner-qa"><span class="sr-ico">▣</span><span>Scanner QA<small>iPhone camera test</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="stock-issues"><span class="sr-ico">🛠</span><span>Stock Issues<small>Negative stock, missing codes, prices</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="price-changes"><span class="sr-ico">₹</span><span>Price Changes<small>Recent saved price difference</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="health"><span class="sr-ico">●</span><span>Health Check<small>APIs, images and live data</small></span></button>
 </div>
@@ -4516,7 +4515,9 @@ function srRestoreNav(state){
     else if(view==="voice-mode")srOpenVoiceMode();
     else if(view==="offline-center")srOpenOfflineCenter();
     else if(view==="reorder")srOpenSmartReorderReport();
-    else if(view==="price-changes")srOpenPriceChangesReport();
+    else if(view==="stock-issues")srOpenStockIssuesReport();
+    else if(view==="barcode-sheet")srOpenBarcodeSheet();
+    else if(view==="scanner-qa")srOpenScannerQa();
     else if(view==="health")srOpenHealthCheck();
     else if(view==="control-center")srOpenControlCenter();
     else if(view==="collect-upi")srNextView("home");
@@ -4933,6 +4934,7 @@ function srOpenAgeBucket(label){
   srShowReport("Stock Ageing: "+label,`${rows.length} items in this age bucket`,rows,"No stock found in this age bucket.");
 }
 function srOpenCompleteStockReport(){
+  if(!isAdmin && !isStaff){openAdm();toast("Admin or staff login required");return}
   srNextView("complete-stock");
   const rows=raw.map((it,ri)=>[it,ri]).sort((a,b)=>String(a[0].group||"").localeCompare(String(b[0].group||"")) || String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,800);
   srShowReport("Complete Stock",`${raw.length} total items. Showing first ${rows.length} compact rows.`,rows,"No stock loaded.",{navView:"complete-stock"});
@@ -4974,6 +4976,7 @@ function srRunCompleteFilters(){
   window.srLastReportTitle="Complete Filters";
 }
 function srOpenStockIssuesReport(){
+  if(!isAdmin){openAdm();toast("Admin login required for stock issues");return}
   const rows=raw.map((it,ri)=>[it,ri]).filter(([it])=>{
     const stock=Number(it.stock||0), sale=Number(it.sale||0), mrp=Number(it.mrp||0);
     return stock<0 || !String(it.barcode||it.alias||"").trim() || sale<=0 || mrp<=0;
@@ -4985,16 +4988,6 @@ function srOpenTagFilter(tag){
   const s=document.getElementById("search"); if(s)s.value="";
   drawer(false);
   applyAll();
-}
-function srOpenPriceChangesReport(){
-  let prev=[];
-  try{prev=JSON.parse(localStorage.getItem(SR_PREV_STOCK_KEY)||"[]")}catch(e){}
-  const byKey=new Map(prev.map(it=>[srItemKey(it),it]));
-  const rows=raw.map((it,ri)=>[it,ri,byKey.get(srItemKey(it))]).filter(([it,ri,old])=>{
-    if(!old)return false;
-    return ["mrp","sale","wholesale","purchase","stock"].some(k=>Number(it[k]||0)!==Number(old[k]||0));
-  }).sort((a,b)=>String(a[0].name||"").localeCompare(String(b[0].name||""))).slice(0,250);
-  srShowReport("Price Changes",`${rows.length} items changed since the previous saved stock`,rows,"No recent browser-saved price change found yet.",{navView:"price-changes"});
 }
 function srOpenBarcodeSheet(){
   if(!isAdmin){ openAdm(); toast("Unlock admin to print labels"); return; }
@@ -5010,14 +5003,21 @@ async function srOpenHealthCheck(){
   drawer(false);
   srLedgerShow("Health Check","Testing live services...","<div class='sr-ledger-note'>Checking stock, receivables, and image upload path.</div>");
   const checks=[
-    ["Stock API",LIVE_STOCK_API],
-    ["Receivables API",ITEM_LEDGER_API_BASES[0]+"/api/kpis"],
-    ["Image API",IMAGE_API_BASE+"/list?alias=health-check"]
+    ["Stock API",[LIVE_STOCK_API]],
+    ["BUSY reports",ITEM_LEDGER_API_BASES.map(base=>base+"/api/kpis")],
+    ["Image storage",IMAGE_API_BASES.map(base=>base+"/list?alias=health-check")]
   ];
   const rows=[];
-  for(const [name,url] of checks){
-    try{const r=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store"});rows.push([name,r.ok?"Online":"Error "+r.status,r.ok])}
-    catch(e){rows.push([name,"Offline",false])}
+  for(const [name,urls] of checks){
+    let status="Offline",ok=false;
+    for(const url of urls){
+      try{
+        const r=await fetch(url+(url.includes("?")?"&":"?")+"t="+Date.now(),{cache:"no-store",headers:adminToken?{"x-sr-admin-token":adminToken}:{}});
+        if(r.ok){ok=true;status="Online";break}
+        status="Error "+r.status;
+      }catch(e){}
+    }
+    rows.push([name,status,ok]);
   }
   srLedgerShow("Health Check","Live service status",`<div class="sr-ledger-grid">${rows.map(([n,v,ok])=>`<div class="sr-ledger-kpi"><small>${escq(n)}</small><b style="color:${ok?"#22c55e":"#f87171"}">${escq(v)}</b></div>`).join("")}</div><div class="sr-ledger-note">If Cloudflare tunnel or shop PC is off, live BUSY features cannot update, but browser/file cache can still show saved stock.</div>`);
 }
@@ -5028,8 +5028,9 @@ function srShareCatalog(){
   if(activeBrand)params.set("brand",activeBrand);
   if(activeTag)params.set("tag",activeTag);
   const url=location.origin+location.pathname+(params.toString()?"?"+params.toString():"");
-  if(navigator.share)navigator.share({title:"SR Fashion Catalog",url}).catch(()=>{});
-  else navigator.clipboard?.writeText(url).then(()=>toast("Catalog link copied"));
+  const copy=()=>navigator.clipboard?.writeText(url).then(()=>toast("Catalog link copied")).catch(()=>toast("Could not share catalog"));
+  if(navigator.share)navigator.share({title:"SR Fashion Catalog",url}).catch(err=>{if(err?.name!=="AbortError")copy()});
+  else copy();
 }
 function srOpenReceivables(){
   if(!isAdmin){ openAdm(); toast("Receivables is admin only"); return; }
@@ -5312,7 +5313,7 @@ function srOpenControlCenter(){
       <button class="sr-ledger-kpi" onclick="srOpenStockIssuesReport()"><small>Data issues</small><b>${negative.length+noCode.length+noPrice.length}</b><span>fix codes/prices</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenScannerQa()"><small>Scanner QA</small><b>iPhone</b><span>camera test</span></button>
     </div>
-    <div class="sr-ledger-actions"><button class="gold" onclick="srOpenHealthCheck()">Health Check</button><button onclick="srOpenStockAgeingReport()">Stock Ageing</button><button onclick="srOpenSmartReorderReport()">Reorder</button><button onclick="srOpenPriceChangesReport()">Price Changes</button></div>
+    <div class="sr-ledger-actions"><button class="gold" onclick="srOpenHealthCheck()">Health Check</button><button onclick="srOpenStockAgeingReport()">Stock Ageing</button><button onclick="srOpenSmartReorderReport()">Reorder</button><button onclick="srOpenStockIssuesReport()">Stock Issues</button></div>
     <div class="sr-ledger-note">Estimated margin from loaded stock: ${money(saleValue-purchaseValue)}. Use this screen first when checking the shop from mobile.</div>
   `);
 }
@@ -5763,7 +5764,6 @@ Object.assign(window,{
   srSetItemTag,
   srShareCatalog,
   srOpenTagFilter,
-  srOpenPriceChangesReport,
   srOpenReceivables,
   srOpenBarcodeSheet,
   srOpenHealthCheck,
@@ -6066,7 +6066,6 @@ document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
   if(v==="profit-loss"){drawer(false); window.location.href="https://receivables.srfashionned.in/profit.html"; return;}
   if(v==="scanner-qa")return srOpenScannerQa();
   if(v==="stock-issues")return srOpenStockIssuesReport();
-  if(v==="price-changes")return srOpenPriceChangesReport();
   if(v==="barcode-sheet")return srOpenBarcodeSheet();
   if(v==="health")return srOpenHealthCheck();
 });

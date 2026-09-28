@@ -6,6 +6,8 @@ const { execFile } = require("child_process");
 const { promisify } = require("util");
 const sharp = require("sharp");
 const sql = require("mssql");
+const QRCode = require("qrcode");
+const PaytmChecksum = require("paytmchecksum");
 
 const ROOT = __dirname;
 const PORT = Number(process.env.STOCK_API_PORT || 3030);
@@ -15,6 +17,8 @@ const PRIVATE_DIR = path.join(ROOT, "private");
 const IMAGE_KEY_FILE = path.join(PRIVATE_DIR, "image-upload-key.txt");
 const ACCESS_KEY_FILE = path.join(PRIVATE_DIR, "access-keys.json");
 const UPLOAD_SESSION_FILE = path.join(PRIVATE_DIR, "upload-sessions.json");
+const PAYMENT_CONFIG_FILE = path.join(PRIVATE_DIR, "payment-config.json");
+const PAYMENT_ORDERS_FILE = path.join(PRIVATE_DIR, "payment-orders.json");
 const config = require("./config.json");
 const execFileAsync = promisify(execFile);
 const imageTypes = {
@@ -156,6 +160,287 @@ function authSessionAllowed(token) {
   if (!token) return false;
   const row = readAuthSessions()[token];
   return !!row && Number(row.expiresAt || 0) > Date.now();
+}
+
+function requireAdminSession(req, res) {
+  const token = req.headers["x-sr-image-key"] || req.headers["x-sr-admin-token"] || "";
+  if (!authSessionAllowed(token)) {
+    sendJson(res, 403, { ok: false, error: "Admin unlock required" });
+    return false;
+  }
+  return true;
+}
+
+function cleanPaymentConfig(config) {
+  const data = config && typeof config === "object" ? config : {};
+  return {
+    provider: String(data.provider || "upi").toLowerCase() === "paytm" ? "paytm" : "upi",
+    upiId: String(data.upiId || process.env.SR_UPI_ID || "").trim(),
+    payeeName: String(data.payeeName || process.env.SR_UPI_PAYEE_NAME || "SR FASHION PSD").trim(),
+    paytmMid: String(data.paytmMid || process.env.PAYTM_MID || "").trim(),
+    paytmMerchantKeySet: !!(data.paytmMerchantKey || process.env.PAYTM_MERCHANT_KEY),
+    paytmPosId: String(data.paytmPosId || process.env.PAYTM_POS_ID || "SRPSD_POS1").trim(),
+    paytmEnv: String(data.paytmEnv || process.env.PAYTM_ENV || "production").toLowerCase() === "staging" ? "staging" : "production",
+    paytmCreateQrUrl: String(data.paytmCreateQrUrl || process.env.PAYTM_CREATE_QR_URL || "").trim(),
+    webhookSecretSet: !!(data.webhookSecret || process.env.SR_PAYMENT_WEBHOOK_SECRET)
+  };
+}
+
+function readPaymentConfigRaw() {
+  const data = readJsonFile(PAYMENT_CONFIG_FILE, {});
+  return {
+    provider: String(data.provider || "upi").toLowerCase() === "paytm" ? "paytm" : "upi",
+    upiId: String(data.upiId || process.env.SR_UPI_ID || "").trim(),
+    payeeName: String(data.payeeName || process.env.SR_UPI_PAYEE_NAME || "SR FASHION PSD").trim(),
+    paytmMid: String(data.paytmMid || process.env.PAYTM_MID || "").trim(),
+    paytmMerchantKey: String(data.paytmMerchantKey || process.env.PAYTM_MERCHANT_KEY || "").trim(),
+    paytmPosId: String(data.paytmPosId || process.env.PAYTM_POS_ID || "SRPSD_POS1").trim(),
+    paytmEnv: String(data.paytmEnv || process.env.PAYTM_ENV || "production").toLowerCase() === "staging" ? "staging" : "production",
+    paytmCreateQrUrl: String(data.paytmCreateQrUrl || process.env.PAYTM_CREATE_QR_URL || "").trim(),
+    webhookSecret: String(data.webhookSecret || process.env.SR_PAYMENT_WEBHOOK_SECRET || "").trim()
+  };
+}
+
+function savePaymentConfig(next) {
+  const current = readJsonFile(PAYMENT_CONFIG_FILE, {});
+  const merged = {
+    provider: String(next.provider || current.provider || "upi").toLowerCase() === "paytm" ? "paytm" : "upi",
+    upiId: String(next.upiId ?? current.upiId ?? "").trim(),
+    payeeName: String(next.payeeName ?? current.payeeName ?? "SR FASHION PSD").trim(),
+    paytmMid: String(next.paytmMid ?? current.paytmMid ?? "").trim(),
+    paytmMerchantKey: String(next.paytmMerchantKey || current.paytmMerchantKey || "").trim(),
+    paytmPosId: String(next.paytmPosId ?? current.paytmPosId ?? "SRPSD_POS1").trim(),
+    paytmEnv: String(next.paytmEnv || current.paytmEnv || "production").toLowerCase() === "staging" ? "staging" : "production",
+    paytmCreateQrUrl: String(next.paytmCreateQrUrl || current.paytmCreateQrUrl || "").trim(),
+    webhookSecret: String(next.webhookSecret || current.webhookSecret || crypto.randomBytes(18).toString("hex")).trim()
+  };
+  fs.mkdirSync(PRIVATE_DIR, { recursive: true });
+  fs.writeFileSync(PAYMENT_CONFIG_FILE, JSON.stringify(merged, null, 2));
+  return merged;
+}
+
+function readPaymentOrders() {
+  return readJsonFile(PAYMENT_ORDERS_FILE, {});
+}
+
+function savePaymentOrders(orders) {
+  fs.mkdirSync(PRIVATE_DIR, { recursive: true });
+  fs.writeFileSync(PAYMENT_ORDERS_FILE, JSON.stringify(orders, null, 2));
+}
+
+function paymentOrderId() {
+  const stamp = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+  return `SRP${stamp}${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+}
+
+function paymentAmount(value) {
+  const amount = Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter valid bill amount");
+  return amount.toFixed(2);
+}
+
+function upiQrData({ upiId, payeeName, amount, orderId, note }) {
+  const params = new URLSearchParams({
+    pa: upiId,
+    pn: payeeName || "SR FASHION PSD",
+    am: amount,
+    cu: "INR",
+    tn: note || `SR Fashion ${orderId}`,
+    tr: orderId
+  });
+  return `upi://pay?${params.toString()}`;
+}
+
+function paytmCreateQrUrl(cfg) {
+  if (cfg.paytmCreateQrUrl) return cfg.paytmCreateQrUrl;
+  return cfg.paytmEnv === "staging"
+    ? "https://securestage.paytmpayments.com/paymentservices/qr/create"
+    : "https://secure.paytmpayments.com/paymentservices/qr/create";
+}
+
+async function createPaytmDynamicQr(cfg, { amount, orderId, note }) {
+  const body = {
+    mid: cfg.paytmMid,
+    orderId,
+    amount,
+    businessType: "UPI_QR_CODE",
+    posId: cfg.paytmPosId,
+    orderDetails: note,
+    invoiceDetails: note,
+    displayName: cfg.payeeName || "SR FASHION PSD"
+  };
+  const signature = await PaytmChecksum.generateSignature(JSON.stringify(body), cfg.paytmMerchantKey);
+  const request = {
+    body,
+    head: {
+      clientId: "C11",
+      version: "v1",
+      requestTimestamp: String(Math.floor(Date.now() / 1000)),
+      channelId: "WEB",
+      signature
+    }
+  };
+  const response = await fetch(paytmCreateQrUrl(cfg), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request)
+  });
+  const text = await response.text();
+  let payload = {};
+  try { payload = JSON.parse(text); } catch { payload = { raw: text }; }
+  const result = payload.body?.resultInfo || payload.resultInfo || {};
+  const status = String(result.resultStatus || "").toUpperCase();
+  if (!response.ok || status !== "SUCCESS") {
+    const message = result.resultMsg || payload.body?.resultMsg || payload.message || `Paytm QR failed (${response.status})`;
+    const error = new Error(message);
+    error.paytmPayload = payload;
+    throw error;
+  }
+  const paytmBody = payload.body || payload;
+  return {
+    qrData: paytmBody.qrData || paytmBody.qrCodeData || "",
+    qrCodeId: paytmBody.qrCodeId || "",
+    image: paytmBody.image || "",
+    raw: payload
+  };
+}
+
+async function createPaymentOrder(body) {
+  const cfg = readPaymentConfigRaw();
+  if (!cfg.upiId && cfg.provider !== "paytm") throw new Error("Set UPI ID first");
+  const amount = paymentAmount(body.amount);
+  const orderId = String(body.orderId || paymentOrderId()).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40) || paymentOrderId();
+  const note = String(body.note || body.billNo || `SR Fashion ${orderId}`).slice(0, 80);
+  let provider = cfg.provider;
+  let qrData = cfg.upiId ? upiQrData({ upiId: cfg.upiId, payeeName: cfg.payeeName, amount, orderId, note }) : "";
+  let providerStatus = "upi-fallback";
+  let providerMessage = "Free UPI QR generated. Manual confirm is available until Paytm API credentials are active.";
+
+  if (cfg.provider === "paytm") {
+    if (cfg.paytmMid && cfg.paytmMerchantKey) {
+      try {
+        const paytm = await createPaytmDynamicQr(cfg, { amount, orderId, note });
+        if (paytm.qrData) qrData = paytm.qrData;
+        providerStatus = "paytm-dynamic";
+        providerMessage = "Paytm Dynamic QR generated. Waiting for Paytm webhook/status confirmation.";
+        body.paytmQrCodeId = paytm.qrCodeId;
+        body.rawPaytmCreate = paytm.raw;
+      } catch (error) {
+        providerStatus = "paytm-fallback";
+        providerMessage = `Paytm QR failed: ${error.message}. Showing free UPI fallback QR.`;
+        body.rawPaytmCreateError = error.paytmPayload || { message: error.message };
+      }
+    } else {
+      providerStatus = "paytm-needs-keys";
+      providerMessage = "Paytm mode selected, but MID/Merchant Key are not saved yet. Showing UPI fallback QR.";
+    }
+    if (!qrData && !cfg.upiId) throw new Error("Set UPI ID for fallback while Paytm keys are pending");
+  }
+
+  const qrSvg = await QRCode.toString(qrData, { type: "svg", errorCorrectionLevel: "M", margin: 2, width: 360 });
+  const orders = readPaymentOrders();
+  const now = new Date().toISOString();
+  orders[orderId] = {
+    orderId,
+    amount,
+    note,
+    provider,
+    providerStatus,
+    status: "PENDING",
+    qrData,
+    paytmQrCodeId: body.paytmQrCodeId || "",
+    paytmTxnId: "",
+    bankTxnId: "",
+    rawPaytmCreate: body.rawPaytmCreate || null,
+    rawPaytmCreateError: body.rawPaytmCreateError || null,
+    createdAt: now,
+    updatedAt: now,
+    source: String(body.source || "admin-panel").slice(0, 60)
+  };
+  savePaymentOrders(orders);
+  return { ok: true, order: orders[orderId], qrSvg, providerMessage, webhookUrl: "/api/payments/paytm-webhook" };
+}
+
+function updatePaymentOrder(orderId, patch) {
+  const orders = readPaymentOrders();
+  const row = orders[orderId];
+  if (!row) return null;
+  orders[orderId] = { ...row, ...patch, updatedAt: new Date().toISOString() };
+  savePaymentOrders(orders);
+  return orders[orderId];
+}
+
+async function handlePaymentsApi(req, res, url) {
+  if (url.pathname === "/api/payments/config" && req.method === "GET") {
+    if (!requireAdminSession(req, res)) return;
+    return sendJson(res, 200, { ok: true, config: cleanPaymentConfig(readPaymentConfigRaw()) });
+  }
+
+  if (url.pathname === "/api/payments/config" && req.method === "POST") {
+    if (!requireAdminSession(req, res)) return;
+    const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");
+    const saved = savePaymentConfig(body);
+    return sendJson(res, 200, { ok: true, config: cleanPaymentConfig(saved) });
+  }
+
+  if (url.pathname === "/api/payments/create" && req.method === "POST") {
+    if (!requireAdminSession(req, res)) return;
+    const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");
+    return sendJson(res, 200, await createPaymentOrder(body));
+  }
+
+  if (url.pathname === "/api/payments/status" && req.method === "GET") {
+    const orderId = String(url.searchParams.get("orderId") || "").replace(/[^a-zA-Z0-9_-]/g, "");
+    const order = readPaymentOrders()[orderId];
+    if (!order) return sendJson(res, 404, { ok: false, error: "Payment order not found" });
+    return sendJson(res, 200, { ok: true, order });
+  }
+
+  if (url.pathname === "/api/payments/manual-paid" && req.method === "POST") {
+    if (!requireAdminSession(req, res)) return;
+    const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");
+    const orderId = String(body.orderId || "").replace(/[^a-zA-Z0-9_-]/g, "");
+    const order = updatePaymentOrder(orderId, {
+      status: "SUCCESS",
+      manual: true,
+      paidAt: new Date().toISOString(),
+      bankTxnId: String(body.bankTxnId || "manual-confirm").slice(0, 80)
+    });
+    if (!order) return sendJson(res, 404, { ok: false, error: "Payment order not found" });
+    return sendJson(res, 200, { ok: true, order });
+  }
+
+  if (url.pathname === "/api/payments/recent" && req.method === "GET") {
+    if (!requireAdminSession(req, res)) return;
+    const rows = Object.values(readPaymentOrders()).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, 30);
+    return sendJson(res, 200, { ok: true, rows });
+  }
+
+  if (url.pathname === "/api/payments/paytm-webhook" && req.method === "POST") {
+    const cfg = readPaymentConfigRaw();
+    const bodyText = (await readBody(req, 1024 * 1024)).toString("utf8");
+    const contentType = req.headers["content-type"] || "";
+    let body = {};
+    if (contentType.includes("application/json")) body = JSON.parse(bodyText || "{}");
+    else body = Object.fromEntries(new URLSearchParams(bodyText));
+    const secret = String(url.searchParams.get("secret") || req.headers["x-sr-payment-secret"] || "");
+    if (cfg.webhookSecret && secret !== cfg.webhookSecret) return sendJson(res, 403, { ok: false, error: "Bad webhook secret" });
+    const orderId = String(body.ORDERID || body.ORDER_ID || body.orderId || body.merchantOrderId || "").replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!orderId) return sendJson(res, 400, { ok: false, error: "Missing order id" });
+    const statusText = String(body.STATUS || body.status || body.resultStatus || body.RESPMSG || "").toUpperCase();
+    const success = ["TXN_SUCCESS", "SUCCESS", "S"].includes(statusText) || String(body.RESPCODE || "") === "01";
+    const order = updatePaymentOrder(orderId, {
+      status: success ? "SUCCESS" : "FAILED",
+      paytmTxnId: String(body.TXNID || body.txnId || body.paytmTxnId || "").slice(0, 80),
+      bankTxnId: String(body.BANKTXNID || body.rrn || body.bankTxnId || "").slice(0, 80),
+      paidAt: success ? new Date().toISOString() : "",
+      rawPaytm: body
+    });
+    if (!order) return sendJson(res, 404, { ok: false, error: "Payment order not found" });
+    return sendJson(res, 200, { ok: true, order });
+  }
+
+  return sendJson(res, 404, { ok: false, error: "Payment API not found" });
 }
 
 async function handleAuth(req, res, url) {
@@ -1068,10 +1353,13 @@ const server = http.createServer(async (req, res) => {
 
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname.startsWith("/auth/")) {
-      return handleAuth(req, res, url);
+      return await handleAuth(req, res, url);
     }
     if (url.pathname.startsWith("/image-api/")) {
-      return handleImageApi(req, res, url);
+      return await handleImageApi(req, res, url);
+    }
+    if (url.pathname.startsWith("/api/payments/")) {
+      return await handlePaymentsApi(req, res, url);
     }
     if (url.pathname.startsWith("/images/products/")) {
       return sendImageFile(res, url.pathname);

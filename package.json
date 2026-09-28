@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mssql": "^12.7.0"
+    "mssql": "^12.7.0",
+    "paytmchecksum": "^1.5.1",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.35.5"
   }
 }

@@ -1615,6 +1615,7 @@ body{
 <button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="ledger"><span class="sr-ico">📒</span><span>Item Ledger<small>Sale and purchase history</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="owner-email"><span class="sr-ico">✉</span><span>Owner Email<small>Today sale, receivables and payables</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="collect-upi"><span class="sr-ico">▣</span><span>Collect UPI<small>Bill QR and payment sound</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>BUSY live dashboard</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="profit-loss"><span class="sr-ico">₹</span><span>Profit / Loss<small>Bill and item profit</small></span></button>
 <button class="sr-navbtn sr-admin-only" data-view="scanner-qa"><span class="sr-ico">▣</span><span>Scanner QA<small>iPhone camera test</small></span></button>
@@ -4524,6 +4525,7 @@ function srRestoreNav(state){
     else if(view==="price-changes")srOpenPriceChangesReport();
     else if(view==="health")srOpenHealthCheck();
     else if(view==="control-center")srOpenControlCenter();
+    else if(view==="collect-upi")srOpenCollectUpi();
     else if(view==="home"){srNavHome(false);const saved=JSON.parse(localStorage.getItem(SR_NAV_KEY)||"null");srRestoreFilters(saved);}
     else srNavHome(false);
   }catch(e){srNavHome(false)}
@@ -5321,6 +5323,167 @@ function srOpenControlCenter(){
     <div class="sr-ledger-note">Estimated margin from loaded stock: ${money(saleValue-purchaseValue)}. Use this screen first when checking the shop from mobile.</div>
   `);
 }
+async function srPaymentApi(path,opts={}){
+  if(!pimToken){ openAdm(); throw new Error("Admin unlock needed once"); }
+  let lastErr=null;
+  for(const base of ITEM_LEDGER_API_BASES){
+    try{
+      const r=await fetch(base+path,{
+        method:opts.method||"GET",
+        cache:"no-store",
+        headers:{"Content-Type":"application/json","x-sr-image-key":pimToken},
+        body:opts.body?JSON.stringify(opts.body):undefined
+      });
+      return await srReadJsonResponse(r,"Payment API");
+    }catch(e){lastErr=e}
+  }
+  throw lastErr||new Error("Payment API not available");
+}
+function srPaymentBeep(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const now=ctx.currentTime;
+    [880,1175,1568].forEach((freq,i)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.frequency.value=freq;
+      osc.type="sine";
+      gain.gain.setValueAtTime(0.0001,now+i*.13);
+      gain.gain.exponentialRampToValueAtTime(0.18,now+i*.13+.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+i*.13+.12);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now+i*.13);
+      osc.stop(now+i*.13+.14);
+    });
+    setTimeout(()=>ctx.close&&ctx.close(),900);
+  }catch(e){
+    try{sound("refresh")}catch(_){}
+  }
+}
+function srPaymentConfigHtml(config={}){
+  return `<div style="display:grid;gap:8px">
+    <select id="sr-pay-provider" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+      <option value="upi" ${config.provider!=="paytm"?"selected":""}>Free UPI QR now</option>
+      <option value="paytm" ${config.provider==="paytm"?"selected":""}>Paytm Dynamic QR</option>
+    </select>
+    <input id="sr-pay-upi" placeholder="UPI ID, example srPSD@paytm" value="${escq(config.upiId||"")}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+    <input id="sr-pay-name" placeholder="Payee name" value="${escq(config.payeeName||"SR FASHION PSD")}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+    <input id="sr-paytm-mid" placeholder="Paytm MID" value="${escq(config.paytmMid||"")}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+    <input id="sr-paytm-key" placeholder="${config.paytmMerchantKeySet?"Merchant Key saved - leave blank to keep":"Paytm Merchant Key"}" type="password" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+    <input id="sr-paytm-pos" placeholder="Paytm POS ID" value="${escq(config.paytmPosId||"SRPSD_POS1")}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+    <select id="sr-paytm-env" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><option value="production" ${config.paytmEnv!=="staging"?"selected":""}>Paytm Production</option><option value="staging" ${config.paytmEnv==="staging"?"selected":""}>Paytm Staging</option></select>
+    <input id="sr-paytm-url" placeholder="Optional Paytm Create QR URL" value="${escq(config.paytmCreateQrUrl||"")}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+    <button class="gold" onclick="srSavePaymentSetup()">Save Payment Setup</button>
+  </div>`;
+}
+async function srOpenCollectUpi(){
+  if(!isAdmin){ openAdm(); toast("Unlock admin for payments"); return; }
+  drawer(false);
+  srNextView("collect-upi");
+  let setup="";
+  try{
+    const cfg=await srPaymentApi("/api/payments/config");
+    setup=`<details style="border:1px solid #26303b;border-radius:12px;padding:10px;background:#08090b"><summary style="color:#ffd35c;font-weight:900">Payment setup</summary>${srPaymentConfigHtml(cfg.config||{})}</details>`;
+  }catch(e){
+    setup=`<div class="sr-ledger-note">Unlock admin once if setup does not load. ${escq(e.message)}</div>`;
+  }
+  srLedgerShow("Collect UPI","Dynamic bill QR with payment sound",`
+    <div class="sr-ledger-actions" style="grid-template-columns:1fr 1fr">
+      <input id="sr-pay-amount" inputmode="decimal" placeholder="Bill amount" style="min-height:50px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;font-size:20px;font-weight:900">
+      <input id="sr-pay-note" placeholder="Bill no / note" style="min-height:50px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit">
+      <button class="gold" onclick="srCreatePaymentQr()">Generate QR</button>
+      <button onclick="srOpenPaymentHistory()">Recent Payments</button>
+    </div>
+    <div id="sr-payment-live"></div>
+    ${setup}
+    <div class="sr-ledger-note">Free UPI QR works now. Full auto YES DONE needs Paytm Dynamic QR access, MID and Merchant Key from Paytm.</div>
+  `);
+}
+async function srSavePaymentSetup(){
+  try{
+    const body={
+      provider:$("sr-pay-provider")?.value||"upi",
+      upiId:($("sr-pay-upi")?.value||"").trim(),
+      payeeName:($("sr-pay-name")?.value||"SR FASHION PSD").trim(),
+      paytmMid:($("sr-paytm-mid")?.value||"").trim(),
+      paytmMerchantKey:($("sr-paytm-key")?.value||"").trim(),
+      paytmPosId:($("sr-paytm-pos")?.value||"SRPSD_POS1").trim(),
+      paytmEnv:$("sr-paytm-env")?.value||"production",
+      paytmCreateQrUrl:($("sr-paytm-url")?.value||"").trim()
+    };
+    await srPaymentApi("/api/payments/config",{method:"POST",body});
+    toast("Payment setup saved");
+    srOpenCollectUpi();
+  }catch(e){toast("Setup failed · "+e.message)}
+}
+async function srCreatePaymentQr(){
+  const amount=($("sr-pay-amount")?.value||"").replace(/,/g,"").trim();
+  const note=($("sr-pay-note")?.value||"").trim() || "Counter bill";
+  if(!amount || !(+amount>0))return toast("Enter bill amount");
+  const box=$("sr-payment-live");
+  if(box)box.innerHTML=`<div class="sr-ledger-note">Creating QR...</div>`;
+  try{
+    const payload=await srPaymentApi("/api/payments/create",{method:"POST",body:{amount,note,billNo:note,source:"main-admin"}});
+    const order=payload.order||{};
+    window.srActivePaymentOrder=order.orderId;
+    if(box)box.innerHTML=`
+      <div style="display:grid;gap:10px;justify-items:center;border:1px solid #334155;background:#f8fafc;color:#020617;border-radius:12px;padding:12px;margin:10px 0">
+        <div style="font-size:12px;font-weight:900;color:#475569">${escq(order.orderId)}</div>
+        <div style="font-size:28px;font-weight:1000;color:#020617">${money(order.amount)}</div>
+        <div style="width:min(82vw,360px);background:#fff;padding:10px;border-radius:10px">${payload.qrSvg||""}</div>
+        <div id="sr-payment-status" style="font-weight:1000;color:#b45309">Waiting for payment...</div>
+      </div>
+      <div class="sr-ledger-actions"><button class="gold" onclick="srManualPaymentDone('${escq(order.orderId)}')">Mark Paid</button><button onclick="navigator.clipboard.writeText('${escq(order.qrData||"")}').then(()=>toast('UPI link copied'))">Copy UPI Link</button></div>
+      <div class="sr-ledger-note">${escq(payload.providerMessage||"")}</div>`;
+    toast("QR ready");
+    srWatchPayment(order.orderId);
+  }catch(e){
+    if(box)box.innerHTML=`<div class="sr-ledger-note">Payment QR failed: ${escq(e.message)}. Open Payment setup and save UPI ID.</div>`;
+    toast("QR failed · "+e.message);
+  }
+}
+async function srWatchPayment(orderId){
+  const started=Date.now();
+  let lastStatus="";
+  while(window.srActivePaymentOrder===orderId && Date.now()-started<5*60*1000){
+    try{
+      const payload=await srPaymentApi("/api/payments/status?orderId="+encodeURIComponent(orderId));
+      const order=payload.order||{};
+      const status=String(order.status||"PENDING");
+      if(status!==lastStatus){
+        lastStatus=status;
+        const el=$("sr-payment-status");
+        if(el)el.textContent=status==="SUCCESS"?"YES DONE":status==="FAILED"?"FAILED":"Waiting for payment...";
+      }
+      if(status==="SUCCESS"){
+        const el=$("sr-payment-status");
+        if(el){el.style.color="#16a34a";el.textContent="YES DONE";}
+        srPaymentBeep();
+        toast("Payment done");
+        return;
+      }
+      if(status==="FAILED"){toast("Payment failed");return;}
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,2500));
+  }
+}
+async function srManualPaymentDone(orderId){
+  try{
+    const payload=await srPaymentApi("/api/payments/manual-paid",{method:"POST",body:{orderId}});
+    window.srActivePaymentOrder=orderId;
+    const el=$("sr-payment-status");
+    if(el){el.style.color="#16a34a";el.textContent="YES DONE";}
+    srPaymentBeep();
+    toast("Marked paid");
+  }catch(e){toast("Could not mark paid · "+e.message)}
+}
+async function srOpenPaymentHistory(){
+  try{
+    const payload=await srPaymentApi("/api/payments/recent");
+    const rows=payload.rows||[];
+    srLedgerShow("Recent Payments","Last QR payment orders",`<div class="sr-ledger-actions"><button class="gold" onclick="srOpenCollectUpi()">New QR</button></div><div class="sr-report-list">${rows.map(r=>`<div class="sr-report-item"><span class="sr-report-item-top"><b>${escq(r.note||r.orderId)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.status)} · ${escq((r.updatedAt||r.createdAt||"").replace("T"," ").slice(0,19))} · ${escq(r.orderId)}</small></div>`).join("")||"<div class='sr-ledger-note'>No payments yet.</div>"}</div>`);
+  }catch(e){toast("History failed · "+e.message)}
+}
 function srIsoToday(){return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function srOwnerReportEmail(){
   return (localStorage.getItem("srFashionOwnerReportEmail")||"").trim() || "srfashionned@gmail.com";
@@ -5922,6 +6085,7 @@ document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
   if(v==="control-center")return srOpenControlCenter();
   if(v==="ledger")return openItemLedgerSearch();
   if(v==="owner-email")return srOpenOwnerEmailReport();
+  if(v==="collect-upi")return srOpenCollectUpi();
   if(v==="receivables")return srOpenReceivables();
   if(v==="profit-loss"){drawer(false); window.location.href="https://receivables.srfashionned.in/profit.html"; return;}
   if(v==="scanner-qa")return srOpenScannerQa();

@@ -5502,6 +5502,7 @@ async function srOpenPaymentHistory(){
     srLedgerShow("Recent Payments","Last QR payment orders",`<div class="sr-ledger-actions"><button class="gold" onclick="srOpenCollectUpi()">New QR</button></div><div class="sr-report-list">${rows.map(r=>`<div class="sr-report-item"><span class="sr-report-item-top"><b>${escq(r.note||r.orderId)}</b><strong>${money(r.amount)}</strong></span><small>${escq(r.status)} · ${escq((r.updatedAt||r.createdAt||"").replace("T"," ").slice(0,19))} · ${escq(r.orderId)}</small></div>`).join("")||"<div class='sr-ledger-note'>No payments yet.</div>"}</div>`);
   }catch(e){toast("History failed · "+e.message)}
 }
+Object.assign(window,{srOpenCollectUpi,srSavePaymentSetup,srCreatePaymentQr,srWatchPayment,srManualPaymentDone,srOpenPaymentHistory});
 function srIsoToday(){return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function srOwnerReportEmail(){
   return (localStorage.getItem("srFashionOwnerReportEmail")||"").trim() || "srfashionned@gmail.com";

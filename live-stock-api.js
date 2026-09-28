@@ -1063,6 +1063,37 @@ WHERE ABS(ISNULL(B.RawBalance,0)) > 0.01
 ORDER BY ABS(ISNULL(B.RawBalance,0)) DESC, M.Name;`;
 }
 
+function busyCustomerMovementsQuery() {
+  const today = todayIso();
+  return `
+SET NOCOUNT ON;
+SELECT
+  CONVERT(varchar(20), T.MasterCode1) + CHAR(9)
+  + REPLACE(ISNULL(M.Name,''), CHAR(9), ' ') + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(CASE WHEN T.Value1 < 0 THEN ABS(T.Value1) ELSE 0 END) AS decimal(18,2))) AS ReportLine
+FROM Tran2 T
+JOIN Tran1 H ON H.VchCode = T.VchCode
+JOIN Master1 M ON M.Code = T.MasterCode1
+WHERE T.RecType = 1
+  AND H.Date >= CONVERT(date, '${today}')
+  AND H.Date < CONVERT(date, '${addOneDayIso(today)}')
+  AND ISNULL(H.VchCancelled,0) = 0
+  AND ISNULL(H.Cancelled,0) = 0
+  AND M.MasterType = 2
+GROUP BY T.MasterCode1, M.Name
+HAVING SUM(CASE WHEN T.Value1 < 0 THEN ABS(T.Value1) ELSE 0 END) > 0
+ORDER BY T.MasterCode1;`;
+}
+
+async function busyCustomerMovements() {
+  const lines = await runBusyProfitLines(busyCustomerMovementsQuery());
+  return parseTabbedObjects(lines, ["customerCode", "customerName", "todaySales"]).map(row => ({
+    ...row,
+    customerCode: Number(row.customerCode || 0),
+    todaySales: Number(row.todaySales || 0)
+  }));
+}
+
 async function busyPayables() {
   const lines = await runBusyProfitLines(busyPayablesQuery());
   const rows = parseTabbedObjects(lines, ["supplierCode", "supplierName", "alias", "rawBalance", "payableAmount"]).map(row => ({
@@ -1421,6 +1452,10 @@ const server = http.createServer(async (req, res) => {
 
     if (url.pathname === "/api/payables") {
       return sendJson(res, 200, await busyPayables());
+    }
+
+    if (url.pathname === "/api/customer-movements") {
+      return sendJson(res, 200, await busyCustomerMovements());
     }
 
     if (url.pathname === "/api/items") {

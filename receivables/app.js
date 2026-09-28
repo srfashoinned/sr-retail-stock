@@ -611,8 +611,20 @@ async function loadKpis() {
 
 async function loadCustomers() {
   const [customers] = await api("/api/customers");
-  applyCustomers(customers);
-  saveLocalDashboardCache({ customerRows: customers });
+  let liveCustomers = customers || [];
+  try {
+    const response = await fetch("https://live-stock.srfashionned.in/api/customer-movements?t=" + Date.now(), { cache: "no-store" });
+    if (response.ok) {
+      const movements = await response.json();
+      const byCode = new Map((movements || []).map(row => [String(row.customerCode), amount(row.todaySales)]));
+      liveCustomers = liveCustomers.map(customer => {
+        const todaySales = byCode.get(String(customer.customerCode)) || 0;
+        return todaySales ? { ...customer, balance: amount(customer.balance) + todaySales, todaySales } : customer;
+      });
+    }
+  } catch (_) {}
+  applyCustomers(liveCustomers);
+  saveLocalDashboardCache({ customerRows: liveCustomers });
 }
 
 async function loadCachedDashboard(error) {

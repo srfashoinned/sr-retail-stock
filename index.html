@@ -5386,7 +5386,7 @@ function srOpenFestivalPlanner(){
   if(!isAdmin){ openAdm(); toast("Unlock admin"); return; }
   srNextView("festival");
   drawer(false);
-  srLedgerShow("Season Plan","Ready-made selling collections",`<div class="sr-ledger-actions"><button class="gold" onclick="srFestivalRun('eid suit dupatta')">Eid</button><button onclick="srFestivalRun('wedding suit')">Wedding</button><button onclick="srFestivalRun('diwali suit dress')">Diwali</button></div><div class="sr-ledger-note">After opening any collection, use Share Catalog to send that filtered product list.</div>`);
+  srLedgerShow("Season Plan","Ready-made selling collections",`<div class="sr-ledger-actions"><button class="gold" onclick="srFestivalRun('eid suit dupatta')">Eid</button><button onclick="srFestivalRun('wedding suit')">Wedding</button><button onclick="srFestivalRun('diwali suit dress')">Diwali</button></div>`);
 }
 function srFestivalRun(term){
   const rows=srSmartRows(term);

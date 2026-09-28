@@ -1899,6 +1899,8 @@ const SHOP_PHONE   = "7588756668";
 /* Image storage config */
 const MAX_IMAGES = 10;
 const IMAGE_API_BASES = [
+  'http://127.0.0.1:3030/image-api',
+  'http://localhost:3030/image-api',
   'https://live-stock.srfashionned.in/image-api',
   'https://dashboard.srfashionned.in/image-api',
   'https://srfashionned.in/image-api',
@@ -2094,7 +2096,12 @@ let imgTryIdx   = 0;
    LOAD DATA
 ═══════════════════════════════════════════ */
 const LIVE_STOCK_API = "https://live-stock.srfashionned.in/api/items";
-const LOCAL_STOCK_API = "http://localhost:3030/api/items";
+const LOCAL_STOCK_API = "http://127.0.0.1:3030/api/items";
+const STOCK_API_URLS = [
+  "http://127.0.0.1:3030/api/items",
+  "http://localhost:3030/api/items",
+  "https://live-stock.srfashionned.in/api/items"
+];
 const STOCK_CACHE_KEY = "sr_live_stock_cache_v1";
 const STOCK_CACHE_TIME_KEY = "sr_live_stock_cache_time_v1";
 const STOCK_VERSION_KEY = "sr_live_stock_version_v1";
@@ -2139,13 +2146,22 @@ async function fetchStockJson(url) {
 }
 
 async function getStockData(forceLive = false) {
-  const apiUrl = location.hostname === "localhost" || location.hostname === "127.0.0.1"
-    ? LOCAL_STOCK_API
-    : LIVE_STOCK_API;
-
+  const apiUrls = location.hostname === "localhost" || location.hostname === "127.0.0.1"
+    ? [LOCAL_STOCK_API, LIVE_STOCK_API]
+    : STOCK_API_URLS;
+  let lastErr = null;
   try {
-    const versionUrl = remoteStockVersion ? `${apiUrl}?version=${encodeURIComponent(remoteStockVersion)}` : apiUrl;
-    const payload = await fetchStockJson(versionUrl);
+    let payload = null;
+    for (const apiUrl of apiUrls) {
+      try {
+        const versionUrl = remoteStockVersion ? `${apiUrl}?version=${encodeURIComponent(remoteStockVersion)}` : apiUrl;
+        payload = await fetchStockJson(versionUrl);
+        break;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (!payload) throw lastErr || new Error("Live stock unavailable");
     if (payload.unchanged) {
       return { source: "live", items: raw.length ? raw : (getBrowserStockCache()?.items || []), updatedAt: payload.updatedAt, version: payload.version, unchanged: true };
     }
@@ -4552,7 +4568,7 @@ setTimeout(()=>{try{srStackLoad();srEnsureHistoryBase();const saved=JSON.parse(l
 function money(n){return "₹"+Math.round(+n||0).toLocaleString("en-IN")}
 function srUnitCost(cost,qty){qty=+qty||0;return qty?money((+cost||0)/qty):money(0)}
 function escq(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-const ITEM_LEDGER_API_BASES=["https://live-stock.srfashionned.in","https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
+const ITEM_LEDGER_API_BASES=["http://127.0.0.1:3030","http://localhost:3030","https://live-stock.srfashionned.in","https://receivables.srfashionned.in","https://dashboard.srfashionned.in","http://localhost:3020"];
 let srCurrentLedgerBill=null;
 let srCurrentItemLedgerPayload=null;
 let srPendingLedgerRi=null;

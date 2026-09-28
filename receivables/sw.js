@@ -1,4 +1,4 @@
-const CACHE_NAME = "sr-receivables-v40";
+const CACHE_NAME = "sr-receivables-v41";
 const APP_SHELL = [
   "/",
   "/index.html",

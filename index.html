@@ -2257,14 +2257,25 @@ async function refreshLiveStockInBackground() {
 async function loadData(){
   registerStockServiceWorker();
   let painted = false;
-  try{
-    const filePayload = await fetchStockJson("items.json");
-    const fileItems = filePayload.items || filePayload || [];
-    if(Array.isArray(fileItems) && fileItems.length){
-      applyStockPayload({ source: "file-cache", items: fileItems }, "cache");
-      localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(fileItems));
-      localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
+  // Prefer the BUSY-backed endpoint on startup. The bundled file is only an
+  // offline fallback; showing it first can leave a stale quantity on screen.
+  try {
+    const livePayload = await getStockData(true);
+    if (livePayload && Array.isArray(livePayload.items) && livePayload.items.length) {
+      applyStockPayload(livePayload, "live");
       painted = true;
+    }
+  } catch (e) {}
+  try{
+    if (!painted) {
+      const filePayload = await fetchStockJson("items.json");
+      const fileItems = filePayload.items || filePayload || [];
+      if(Array.isArray(fileItems) && fileItems.length){
+        applyStockPayload({ source: "file-cache", items: fileItems }, "cache");
+        localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(fileItems));
+        localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
+        painted = true;
+      }
     }
   }catch(e){
     try{
@@ -2281,7 +2292,7 @@ async function loadData(){
   initBiometric();
   pimInitToken();
   setAdminUi(false);
-  refreshLiveStockInBackground();
+  if (!painted || stockStatusState.source !== "live") refreshLiveStockInBackground();
   startStockAutoRefresh();
 }
 

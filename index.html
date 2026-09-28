@@ -4419,7 +4419,6 @@ document.addEventListener("pointerdown",e=>{if(e.target.closest("button,.chip,.s
 
 function drawer(on){$("sr-drawer")?.classList.toggle("open",on);$("sr-overlay")?.classList.toggle("open",on)}
 $("sr-hamb").onclick=()=>drawer(true);$("sr-real-back").onclick=()=>srGoPreviousPage();$("sr-x").onclick=$("sr-overlay").onclick=()=>drawer(false);
-document.addEventListener("click",e=>{if(e.target.closest("#sr-real-back")){e.preventDefault();e.stopImmediatePropagation();srGoPreviousPage()}},true);
 function setActive(v){document.querySelectorAll(".sr-navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===v))}
 function srSaveNav(view,payload={}){
   srLastView=view||"home";
@@ -5641,7 +5640,7 @@ function srOpenScannerQa(){
       <div class="sr-ledger-kpi"><small>Last scan</small><b>${escq(localStorage.getItem("srLastScanCode")||"-")}</b><span>saved on device</span></div>
     </div>
     <div class="sr-ledger-actions"><button class="gold" onclick="openScanner()">Start Live Scanner</button><button onclick="scanFromPhoto()">Take Photo Scan</button><button onclick="srOpenHealthCheck()">Health Check</button></div>
-    <div class="sr-ledger-note">On iPhone use Safari/Chrome with camera permission allowed. If live camera struggles, Photo Scan is the fallback.</div>
+    <div class="sr-ledger-note">On iPhone use Safari or Brave with camera permission allowed. If live camera struggles, Photo Scan is the fallback.</div>
   `);
 }
 function srOpenFestivalPlanner(){

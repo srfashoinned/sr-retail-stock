@@ -19,6 +19,11 @@ const ACCESS_KEY_FILE = path.join(PRIVATE_DIR, "access-keys.json");
 const UPLOAD_SESSION_FILE = path.join(PRIVATE_DIR, "upload-sessions.json");
 const PAYMENT_CONFIG_FILE = path.join(PRIVATE_DIR, "payment-config.json");
 const PAYMENT_ORDERS_FILE = path.join(PRIVATE_DIR, "payment-orders.json");
+const OWNER_EMAIL_SECRET_FILE = path.join(PRIVATE_DIR, "owner-email-script-secret.txt");
+const OWNER_EMAIL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyt9tQp_Uk98tb-3jSecC-zPdK939l_p0F9c5Ma-tAecnGa4EMfA_NPMJBZg4jQkKM/exec";
+const AUTH_SESSION_TTL_MS = 2 * 60 * 60 * 1000;
+const AUTH_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_MAX_FAILURES = 5;
 const config = require("./config.json");
 const execFileAsync = promisify(execFile);
 const imageTypes = {
@@ -35,6 +40,7 @@ let memoryCache = {
   version: null,
   loading: null
 };
+const authFailures = new Map();
 
 function stockVersion(items) {
   return crypto.createHash("sha1").update(JSON.stringify(items || [])).digest("hex").slice(0, 16);
@@ -151,24 +157,49 @@ function makeAuthSession(role) {
     if (!row || Number(row.expiresAt || 0) <= now) delete sessions[token];
   }
   const token = `${role}.${crypto.randomBytes(24).toString("hex")}`;
-  sessions[token] = { role, expiresAt: now + 12 * 60 * 60 * 1000 };
+  sessions[token] = { role, expiresAt: now + AUTH_SESSION_TTL_MS };
   saveAuthSessions(sessions);
   return token;
 }
 
-function authSessionAllowed(token) {
+function authSessionAllowed(token, requiredRole = "") {
   if (!token) return false;
   const row = readAuthSessions()[token];
-  return !!row && Number(row.expiresAt || 0) > Date.now();
+  return !!row && Number(row.expiresAt || 0) > Date.now() && (!requiredRole || row.role === requiredRole);
 }
 
 function requireAdminSession(req, res) {
   const token = req.headers["x-sr-image-key"] || req.headers["x-sr-admin-token"] || "";
-  if (!authSessionAllowed(token)) {
+  if (!authSessionAllowed(token, "admin")) {
     sendJson(res, 403, { ok: false, error: "Admin unlock required" });
     return false;
   }
   return true;
+}
+
+function authClientKey(req) {
+  return String(req.headers["cf-connecting-ip"] || req.socket.remoteAddress || "unknown").slice(0, 120);
+}
+
+function authAttemptState(req) {
+  const key = authClientKey(req);
+  const now = Date.now();
+  const current = authFailures.get(key);
+  if (!current || now - current.startedAt > AUTH_FAILURE_WINDOW_MS) {
+    const fresh = { count: 0, startedAt: now };
+    authFailures.set(key, fresh);
+    return { key, row: fresh };
+  }
+  return { key, row: current };
+}
+
+function revokeAuthSession(token) {
+  if (!token) return;
+  const sessions = readAuthSessions();
+  if (sessions[token]) {
+    delete sessions[token];
+    saveAuthSessions(sessions);
+  }
 }
 
 function cleanPaymentConfig(config) {
@@ -445,14 +476,51 @@ async function handlePaymentsApi(req, res, url) {
 
 async function handleAuth(req, res, url) {
   if ((url.pathname === "/auth/login" || url.pathname === "/auth/login.php") && req.method === "POST") {
+    const attempt = authAttemptState(req);
+    if (attempt.row.count >= AUTH_MAX_FAILURES) {
+      return sendJson(res, 429, { ok: false, error: "Too many attempts. Wait 15 minutes." });
+    }
     const body = JSON.parse((await readBody(req, 1024 * 1024)).toString("utf8") || "{}");
     const pin = String(body.pin || "").trim();
-    if (pin.length < 3) return sendJson(res, 400, { ok: false, error: "PIN required" });
+    if (!/^\d{4,8}$/.test(pin)) return sendJson(res, 400, { ok: false, error: "Valid PIN required" });
     const role = authRole(pin);
-    if (!role) return sendJson(res, 403, { ok: false, error: "Wrong PIN" });
-    return sendJson(res, 200, { ok: true, role, imageKey: makeAuthSession(role) });
+    if (!role) {
+      attempt.row.count += 1;
+      authFailures.set(attempt.key, attempt.row);
+      return sendJson(res, 403, { ok: false, error: "Wrong PIN", attemptsRemaining: Math.max(0, AUTH_MAX_FAILURES - attempt.row.count) });
+    }
+    authFailures.delete(attempt.key);
+    const sessionToken = makeAuthSession(role);
+    return sendJson(res, 200, { ok: true, role, sessionToken, imageKey: sessionToken, expiresIn: AUTH_SESSION_TTL_MS / 1000 });
+  }
+  if (url.pathname === "/auth/session" && req.method === "GET") {
+    const token = String(req.headers["x-sr-admin-token"] || "");
+    const row = readAuthSessions()[token];
+    if (!row || Number(row.expiresAt || 0) <= Date.now()) return sendJson(res, 401, { ok: false, error: "Session expired" });
+    return sendJson(res, 200, { ok: true, role: row.role, expiresAt: row.expiresAt });
+  }
+  if (url.pathname === "/auth/logout" && req.method === "POST") {
+    const token = String(req.headers["x-sr-admin-token"] || req.headers["x-sr-image-key"] || "");
+    revokeAuthSession(token);
+    return sendJson(res, 200, { ok: true });
   }
   return sendJson(res, 404, { ok: false, error: "Auth not found" });
+}
+
+async function handleOwnerEmail(req, res, url) {
+  if (url.pathname !== "/api/owner-email/send" || req.method !== "POST") return false;
+  if (!requireAdminSession(req, res)) return true;
+  const body = JSON.parse((await readBody(req, 64 * 1024)).toString("utf8") || "{}");
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(String(body.from || "")) ? String(body.from) : new Date().toISOString().slice(0, 10);
+  const toDate = /^\d{4}-\d{2}-\d{2}$/.test(String(body.toDate || "")) ? String(body.toDate) : from;
+  const recipient = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.to || "")) ? String(body.to).trim() : "srfashionned@gmail.com";
+  let secret = "";
+  try { secret = fs.readFileSync(OWNER_EMAIL_SECRET_FILE, "utf8").trim(); } catch {}
+  if (!secret) return sendJson(res, 503, { ok: false, error: "Owner email is not configured on the server" });
+  const form = new URLSearchParams({ key: secret, from, to: recipient, toDate });
+  const response = await fetch(OWNER_EMAIL_WEBAPP_URL, { method: "POST", body: form, redirect: "follow" });
+  if (!response.ok) return sendJson(res, 502, { ok: false, error: "Email service rejected the request" });
+  return sendJson(res, 200, { ok: true, to: recipient, from, toDate });
 }
 
 function readBody(req, limit = 9 * 1024 * 1024) {
@@ -1391,6 +1459,9 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname.startsWith("/api/payments/")) {
       return await handlePaymentsApi(req, res, url);
+    }
+    if (url.pathname.startsWith("/api/owner-email/")) {
+      return await handleOwnerEmail(req, res, url);
     }
     if (url.pathname.startsWith("/images/products/")) {
       return sendImageFile(res, url.pathname);

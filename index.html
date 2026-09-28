@@ -1713,7 +1713,7 @@ body{
 <div id="adm-ov">
   <div id="adm-box">
     <div id="adm-title">ADMIN</div>
-    <div id="adm-sub">Unlock with fingerprint or PIN</div>
+    <div id="adm-sub">Secure server-verified PIN</div>
     <button id="adm-bio-btn" onclick="doBiometric()" class="hidden">
       <span style="font-size:22px">👆</span>
       <span>Use Fingerprint / Face ID</span>
@@ -2167,8 +2167,6 @@ async function getStockData(forceLive = false) {
     }
     const items = payload.items || [];
     if (!Array.isArray(items)) throw new Error("Bad stock response");
-    const oldStock = localStorage.getItem(STOCK_CACHE_KEY);
-    if (oldStock) localStorage.setItem(SR_PREV_STOCK_KEY, oldStock);
     localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(items));
     localStorage.setItem(STOCK_CACHE_TIME_KEY, new Date().toISOString());
     if (payload.version) {
@@ -2538,7 +2536,6 @@ document.getElementById("sort-row").addEventListener("click",function(e){
 /* ═══ FILTER + SORT ═══ */
 function pn(v){ return v==null||v===''?0:parseFloat(String(v).replace(/[^0-9.]/g,''))||0; }
 const SR_TAG_KEY = "sr_item_tags_v1";
-const SR_PREV_STOCK_KEY = "sr_previous_stock_snapshot_v1";
 const SR_IMAGE_SEEN_KEY = "sr_image_seen_v1";
 function srItemKey(it){return String(it.ProductID||it.alias||it.barcode||it.name||"").trim()}
 function srTags(){try{return JSON.parse(localStorage.getItem(SR_TAG_KEY)||"{}")}catch(e){return {}}}
@@ -3330,7 +3327,7 @@ async function decodeScanFile(file){
 async function openScanner(){
   document.getElementById("scan-ov").classList.add("show");
   document.getElementById("scan-btn").classList.add("on");
-  const isIOSScanner = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+  const isIOSScanner = srIsIOSDevice();
   document.getElementById("scan-code").textContent=isIOSScanner?'Starting iPhone scanner...':'';
   try{
     if(isIOSScanner){
@@ -3344,7 +3341,10 @@ async function openScanner(){
         { facingMode: "environment" },
         {
           fps: 12,
-          qrbox: { width: 280, height: 160 },
+          qrbox: (viewWidth,viewHeight) => {
+            const width=Math.max(180,Math.min(300,viewWidth-40));
+            return {width,height:Math.max(90,Math.min(160,Math.round(width*.52),viewHeight-80))};
+          },
           aspectRatio: 1.7777778,
           formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
@@ -3360,6 +3360,11 @@ async function openScanner(){
         decodedText => onScanResult(decodedText),
         () => {}
       );
+      document.querySelectorAll('#html5-reader video').forEach(video=>{
+        video.setAttribute('playsinline','');
+        video.setAttribute('webkit-playsinline','');
+        video.muted=true;
+      });
       document.getElementById("scan-code").textContent='Scanning... keep barcode inside the box';
       return;
     }
@@ -3396,9 +3401,14 @@ async function openScanner(){
     }
   }catch(e){
     toast("Camera: "+e.message);
-    if(/iPhone|iPad|iPod/i.test(navigator.userAgent || "")) scanFromPhoto();
+    if(srIsIOSDevice()) scanFromPhoto();
     else closeScanner();
   }
+}
+
+function srIsIOSDevice(){
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent||"") ||
+    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
 }
 
 function onScanResult(code){
@@ -3443,16 +3453,12 @@ function shareItem(ri,e){
 /* ═══════════════════════════════════════════
    ADMIN — BIOMETRIC + PIN
 ═══════════════════════════════════════════ */
-const BIO_KEY = 'sr_adm_bio_cred';
 const SR_ADMIN_SESSION_KEY = 'sr_admin_unlocked_session';
+let adminToken = '';
 
 function setAdminUi(on){
   document.body.classList.toggle('admin-on', !!on);
   document.body.classList.toggle('staff-on', !!isStaff);
-  try{
-    if(on) sessionStorage.setItem(SR_ADMIN_SESSION_KEY, '1');
-    else if(!isStaff) sessionStorage.removeItem(SR_ADMIN_SESSION_KEY);
-  }catch(e){}
   const label = on ? 'Logout' : 'Admin';
   ['admin-btn','sr-top-admin'].forEach(id=>{
     const btn = document.getElementById(id);
@@ -3465,22 +3471,8 @@ function setAdminUi(on){
 async function initBiometric(){
   const bioBtn = document.getElementById('adm-bio-btn');
   const divider = document.getElementById('adm-divider');
-  const bioBtnText = document.querySelector('#adm-bio-btn span:last-child');
-  if(bioBtnText){
-    bioBtnText.textContent = /iPhone|iPad|iPod/i.test(navigator.userAgent || "") ? 'Use Face ID / Passcode' : 'Use Fingerprint / Face ID';
-  }
-  if(bioBtn) bioBtn.classList.remove('hidden');
-  if(divider) divider.classList.remove('hidden');
-  if(!window.PublicKeyCredential || !window.isSecureContext){
-    if(bioBtn) bioBtn.disabled = true;
-    return;
-  }
-  try{
-    await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    if(bioBtn) bioBtn.disabled = false;
-  }catch(_){
-    if(bioBtn) bioBtn.disabled = false;
-  }
+  if(bioBtn) bioBtn.classList.add('hidden');
+  if(divider) divider.classList.add('hidden');
 }
 
 function openAdm(){
@@ -3567,6 +3559,7 @@ async function doLogin(){
     if(auth.role==="staff"){
       m.textContent='✓ Photo saving ready'; m.className='g';
       isAdmin=false; isStaff=true;
+      adminToken='';
       try{ sessionStorage.removeItem(SR_ADMIN_SESSION_KEY); }catch(e){}
       setTimeout(()=>{ closeAdm(); setAdminUi(false); toast("Photo saving ready"); },450);
       return;
@@ -3574,6 +3567,8 @@ async function doLogin(){
     if(auth.role!=="admin") throw new Error("Admin PIN only");
     m.textContent='✓ Granted'; m.className='g';
     isAdmin=true; isStaff=false;
+    adminToken=String(auth.sessionToken||auth.imageKey||'');
+    sessionStorage.setItem(SR_ADMIN_SESSION_KEY,adminToken);
     setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("Admin on"); srOpenPendingLedger(); },550);
   }catch(err){
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
@@ -3582,87 +3577,30 @@ async function doLogin(){
     setTimeout(()=>{ pw.value=''; pw.className=''; m.textContent=''; [0,1,2,3].forEach(i=>dot(i,'')); },900);
   }
 }
-function logout(){
+async function logout(){
+  const token=adminToken;
   isAdmin=false;
   isStaff=false;
+  adminToken='';
+  pimToken='';
   try{ sessionStorage.removeItem(SR_ADMIN_SESSION_KEY); }catch(e){}
+  try{ sessionStorage.removeItem('sr_image_upload_key'); }catch(e){}
+  if(token){
+    for(const base of AUTH_API_BASES){
+      try{await fetch(base+'/auth/logout',{method:'POST',headers:{'x-sr-admin-token':token},cache:'no-store'});break}catch(e){}
+    }
+  }
   setAdminUi(false);
   measureCardHeight();
   rebuildOffsets();
   vsRender(true);
-  toast("Public mode");
+  toast("Securely logged out");
 }
 
 async function doBiometric(){
   const msg = document.getElementById('adm-msg');
-  msg.textContent = ''; msg.className = '';
-  try{
-    const savedCred = localStorage.getItem(BIO_KEY);
-    if(!savedCred){
-      msg.textContent = 'Setting up biometric…'; msg.className = '';
-      const challenge = crypto.getRandomValues(new Uint8Array(32));
-      const userId    = crypto.getRandomValues(new Uint8Array(16));
-      const credential = await navigator.credentials.create({
-        publicKey:{
-          challenge,
-          rp:{ name: SHOP_NAME, id: location.hostname || 'localhost' },
-          user:{ id: userId, name:'admin', displayName:'Admin' },
-          pubKeyCredParams:[
-            { type:'public-key', alg:-7  },
-            { type:'public-key', alg:-257}
-          ],
-          authenticatorSelection:{
-            authenticatorAttachment:'platform',
-            userVerification:'required'
-          },
-          timeout:60000
-        }
-      });
-      const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-      localStorage.setItem(BIO_KEY, credId);
-      grantAdmin('👆 Biometric registered & unlocked');
-      return;
-    }
-    msg.textContent = 'Waiting for fingerprint…'; msg.className = '';
-    const challenge  = crypto.getRandomValues(new Uint8Array(32));
-    const rawId      = Uint8Array.from(atob(savedCred), c=>c.charCodeAt(0));
-    await navigator.credentials.get({
-      publicKey:{
-        challenge,
-        allowCredentials:[{ type:'public-key', id: rawId }],
-        userVerification:'required',
-        timeout:60000
-      }
-    });
-    grantAdmin('👆 Fingerprint verified');
-  }catch(err){
-    if(err.name === 'NotAllowedError'){
-      msg.textContent = 'Biometric cancelled'; msg.className = 'e';
-    } else if(err.name === 'InvalidStateError'){
-      localStorage.removeItem(BIO_KEY);
-      msg.textContent = 'Credential reset — tap again to re-register'; msg.className = 'e';
-    } else {
-      msg.textContent = 'Biometric error — use PIN'; msg.className = 'e';
-    }
-  }
-}
-
-function grantAdmin(toastMsg){
-  isAdmin = true;
-  isStaff = false;
-  try{ sessionStorage.setItem(SR_ADMIN_SESSION_KEY, '1'); }catch(e){}
-  const m = document.getElementById('adm-msg');
-  m.textContent = '✓ Granted'; m.className = 'g';
-  [0,1,2,3].forEach(i=>dot(i,'g'));
-  setTimeout(()=>{
-    closeAdm();
-    setAdminUi(true);
-    measureCardHeight();
-    rebuildOffsets();
-    vsRender(true);
-    toast(toastMsg || "🔓 Admin on");
-    srOpenPendingLedger();
-  }, 500);
+  msg.textContent = 'Use the server-verified PIN. Biometric unlock is disabled until secure server enrollment is available.';
+  msg.className = 'e';
 }
 
 /* ═══ TOAST ═══ */
@@ -4172,14 +4110,30 @@ function pimBuildAiPrompt(){
   return `Use the uploaded product photo${multi ? 's as exact references from multiple views' : ' as the exact reference'} for ${parts}. Create one photorealistic SR Fashion catalogue image of a young adult female model wearing the exact same garment. Scene: ${scene}. Pose: ${pose}. Camera style: ${camera}. The model must hide her face with a mobile phone held in front of her face. Preserve the exact fabric, colour, print, embroidery, neckline, sleeve length, border, dupatta/trouser details, fit, proportions, stitching and fall. Do not redesign the product, do not add new patterns, do not change colours, and do not make the cloth look more expensive than the reference. Keep full body visible, sharp fabric detail, realistic hands, natural Indian retail styling, clean lighting, no text, no watermark, no logo, no extra accessories unless visible in the reference. ${multi ? 'Combine all uploaded views consistently: front photo controls front design, back or side photos control those parts, close-up photos control texture and embroidery.' : 'If any part is not visible, keep it simple and consistent with the visible garment instead of inventing heavy details.'}`;
 }
 
-function srRestoreAdminSession(){
-  try{
-    if(sessionStorage.getItem(SR_ADMIN_SESSION_KEY)==='1'){
-      isAdmin = true;
-      isStaff = false;
-      setAdminUi(true);
-    }
-  }catch(e){}
+async function srRestoreAdminSession(){
+  const token=sessionStorage.getItem(SR_ADMIN_SESSION_KEY)||'';
+  if(!token)return;
+  for(const base of AUTH_API_BASES){
+    try{
+      const r=await fetch(base+'/auth/session',{headers:{'x-sr-admin-token':token},cache:'no-store'});
+      const data=await srReadJsonResponse(r,'Admin session');
+      if(r.ok&&data.ok&&data.role==='admin'){
+        adminToken=token;
+        isAdmin=true;
+        isStaff=false;
+        pimSetToken(token,false);
+        setAdminUi(true);
+        return;
+      }
+    }catch(e){}
+  }
+  sessionStorage.removeItem(SR_ADMIN_SESSION_KEY);
+  sessionStorage.removeItem('sr_image_upload_key');
+  adminToken='';
+  pimToken='';
+  isAdmin=false;
+  isStaff=false;
+  setAdminUi(false);
 }
 window.addEventListener('pageshow', srRestoreAdminSession);
 function pimRenderAiPrompt(){
@@ -4353,6 +4307,9 @@ spacer   = document.getElementById("spacer");
 stage    = document.getElementById("stage");
 scrollEl.addEventListener("scroll", onScroll, {passive:true});
 window.addEventListener("resize",()=>{ measureCardHeight(); rebuildOffsets(); vsRender(true); });
+for(const legacyKey of ["sr_previous_stock_snapshot_v1","sr_adm_bio_cred","sr_owner_email_secret","sr_owner_email_webapp_url"]){
+  try{localStorage.removeItem(legacyKey)}catch(_){}
+}
 loadData();
 </script>
 <script>
@@ -4447,7 +4404,7 @@ loadData();
 (function(){
 const $=id=>document.getElementById(id);
 let ac=null,quoteOpen=false,cart=[],quoteSearch="",scannerForQuote=false,scannerForImageWork=false,qtyPick=null;
-const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1",SR_OWNER_EMAIL_WEBAPP_KEY="sr_owner_email_webapp_url",SR_OWNER_EMAIL_SECRET_KEY="sr_owner_email_secret",SR_OWNER_EMAIL_DEFAULT_WEBAPP_URL="https://script.google.com/macros/s/AKfycbyt9tQp_Uk98tb-3jSecC-zPdK939l_p0F9c5Ma-tAecnGa4EMfA_NPMJBZg4jQkKM/exec",SR_OWNER_EMAIL_DEFAULT_SECRET="doxtDw4GauCg87bMvnlVhpXI3W1yPqH0";
+const CART_KEY="sr_quote_draft_v5",HELD_KEY="sr_quote_held_v5",SAVED_KEY="sr_quote_saved_v5",PARTY_KEY="sr_quote_party_v1",STATE_KEY2="sr_psd_saved_state_v1",SR_NAV_KEY="sr_psd_resume_nav_v2",SR_STACK_KEY="sr_psd_back_stack_v1";
 let srNavRestoring=false,srLastView="home",srLastPayload={},srNextNav=null,srLedgerRequestToken=0,srNavFromDrawer=false,srViewStack=[];
 
 function sound(kind="tap"){
@@ -4629,7 +4586,7 @@ async function srLedgerApi(path){
   let lastErr=null;
   for(const base of ITEM_LEDGER_API_BASES){
     try{
-      const r=await fetch(base+path,{cache:"no-store"});
+      const r=await fetch(base+path,{cache:"no-store",headers:adminToken?{"x-sr-admin-token":adminToken}:{}});
       return await srReadJsonResponse(r, "Item ledger API");
     }catch(e){lastErr=e}
   }
@@ -4675,7 +4632,7 @@ function srLedgerCacheWrite(it,payload){
   if(!key)return;
   const cache=srLedgerCacheRead();
   cache[key]={savedAt:new Date().toISOString(),payload};
-  const entries=Object.entries(cache).sort((a,b)=>String(b[1].savedAt).localeCompare(String(a[1].savedAt))).slice(0,80);
+  const entries=Object.entries(cache).sort((a,b)=>String(b[1].savedAt).localeCompare(String(a[1].savedAt))).slice(0,12);
   localStorage.setItem(SR_LEDGER_CACHE_KEY,JSON.stringify(Object.fromEntries(entries)));
 }
 function srLedgerCacheGet(it){
@@ -5297,11 +5254,10 @@ function srOpenOfflineCenter(){
   const ledgerCount=Object.keys(srLedgerCacheRead()).length;
   const online=navigator.onLine?"Online":"Offline";
   const savedAge=stockTime?srDate(stockTime):"Not saved yet";
-  srLedgerShow("Offline Center","Saved data for laptop-off and weak-network use",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>Network</small><b>${online}</b><span>${navigator.onLine?"live can update":"saved mode"}</span></div><div class="sr-ledger-kpi"><small>Saved stock</small><b>${stockCount.toLocaleString("en-IN")}</b><span>${savedAge}</span></div><div class="sr-ledger-kpi"><small>Saved ledgers</small><b>${ledgerCount}</b><span>opened item histories</span></div><div class="sr-ledger-kpi"><small>Install</small><b>PWA</b><span>home screen app</span></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srTrueRefresh()">Sync Now</button><button onclick="srRetryStockSync()">Retry Failed Upload</button><button onclick="srRestorePreviousStock()">Restore Previous Copy</button><button onclick="srDownloadEmergencyStockBackup()">Download Emergency Backup</button><button onclick="srOpenStaffTasks()">Staff Queue</button><button onclick="srOpenHealthCheck()">Health Check</button></div><div class="sr-ledger-note">Stock search, filters, quotation draft, saved item ledgers, and cached app files can keep opening from this device. Live BUSY history still needs the dashboard connection unless that ledger was opened once and saved.</div>`);
+  srLedgerShow("Offline Center","Saved data for laptop-off and weak-network use",`<div class="sr-ledger-grid"><div class="sr-ledger-kpi"><small>Network</small><b>${online}</b><span>${navigator.onLine?"live can update":"saved mode"}</span></div><div class="sr-ledger-kpi"><small>Saved stock</small><b>${stockCount.toLocaleString("en-IN")}</b><span>${savedAge}</span></div><div class="sr-ledger-kpi"><small>Saved ledgers</small><b>${ledgerCount}</b><span>recent item histories</span></div><div class="sr-ledger-kpi"><small>Install</small><b>PWA</b><span>home screen app</span></div></div><div class="sr-ledger-actions"><button class="gold" onclick="srTrueRefresh()">Sync Now</button><button onclick="srRetryStockSync()">Retry Failed Upload</button><button onclick="srDownloadEmergencyStockBackup()">Download Emergency Backup</button><button onclick="srOpenStaffTasks()">Staff Queue</button><button onclick="srOpenHealthCheck()">Health Check</button></div><div class="sr-ledger-note">One compact stock copy, quotation drafts, and twelve recent item ledgers are kept for weak-network use.</div>`);
 }
 
 async function srRetryStockSync(){toast("Retrying live stock...");await autoRefreshLiveStock()}
-function srRestorePreviousStock(){try{const previous=JSON.parse(localStorage.getItem(SR_PREV_STOCK_KEY)||"[]");if(!Array.isArray(previous)||!previous.length)throw new Error("No previous copy saved");applyStockPayload({source:"file-cache",items:previous,updatedAt:new Date().toISOString()},"cache");if(typeof applyAll==="function")applyAll();toast("Previous stock copy restored on this device")}catch(e){toast(e.message)}}
 function srDownloadEmergencyStockBackup(){const payload={downloadedAt:new Date().toISOString(),source:stockStatusState,products:raw};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`sr-fashion-stock-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast("Emergency stock backup downloaded")}
 function srOpenStaffTasks(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock staff/admin tools"); return; }
@@ -5361,14 +5317,14 @@ function srOpenControlCenter(){
   `);
 }
 async function srPaymentApi(path,opts={}){
-  if(!pimToken){ openAdm(); throw new Error("Admin unlock needed once"); }
+  if(!adminToken){ openAdm(); throw new Error("Admin login required"); }
   let lastErr=null;
   for(const base of ITEM_LEDGER_API_BASES){
     try{
       const r=await fetch(base+path,{
         method:opts.method||"GET",
         cache:"no-store",
-        headers:{"Content-Type":"application/json","x-sr-image-key":pimToken},
+        headers:{"Content-Type":"application/json","x-sr-admin-token":adminToken},
         body:opts.body?JSON.stringify(opts.body):undefined
       });
       return await srReadJsonResponse(r,"Payment API");
@@ -5608,7 +5564,7 @@ async function srOpenOwnerEmailReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner email"); return; }
   drawer(false);
   const today=srIsoToday();
-  srLedgerShow("Owner Email","Select date range for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr 1fr auto"><input id="sr-owner-report-from" type="date" value="${today}" aria-label="From date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><input id="sr-owner-report-to" type="date" value="${today}" aria-label="To date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-from').value,document.getElementById('sr-owner-report-to').value)">Generate</button></div><div class="sr-ledger-actions"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button onclick="srOpenOwnerEmailSetup()">Email Setup</button></div><div class="sr-ledger-note">Default send-to email remains srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Website share works now; silent email works after one-time Google Apps Script setup.</div>`);
+  srLedgerShow("Owner Email","Select date range for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr 1fr auto"><input id="sr-owner-report-from" type="date" value="${today}" aria-label="From date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><input id="sr-owner-report-to" type="date" value="${today}" aria-label="To date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-from').value,document.getElementById('sr-owner-report-to').value)">Generate</button></div><div class="sr-ledger-actions"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"></div><div class="sr-ledger-note">Default send-to email is srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Email is sent through the secured server.</div>`);
 }
 async function srRunOwnerEmailReport(fromDate,toDate){
   let from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();
@@ -5627,7 +5583,7 @@ async function srRunOwnerEmailReport(fromDate,toDate){
     const purchaseRows=(purchases&&purchases[1])||[];
     try{await navigator.clipboard.writeText(msg.text)}catch(e){}
     const emailTo=($("sr-owner-email-to")?.value||"").trim();
-    srLedgerShow("Owner Email Report",`${period} report copied. Use Share now, or Send Email after one-time setup.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srSendOwnerEmailSilent('${from}','${to}','${String(emailTo).replace(/'/g,"\\'")}')">Send Email</button><button onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills for ${period}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
+    srLedgerShow("Owner Email Report",`${period} report is ready.`,`<div class="sr-ledger-actions"><button class="gold" onclick="srSendOwnerEmailSilent('${from}','${to}','${String(emailTo).replace(/'/g,"\\'")}')">Send Email</button><button onclick="srShareOwnerReport()">Share</button><button onclick="navigator.clipboard.writeText(window.srOwnerReportText||'').then(()=>toast('Copied'))">Copy</button><button onclick="srOpenOwnerEmailReport()">Change Date</button></div><h3 style="margin:10px 0 6px;color:#ffd35c;font-size:14px">Purchase bills for ${period}</h3>${srPurchaseRowsHtml(purchaseRows)}<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;color:#e5e7eb;background:#08090b;border:1px solid #26303b;border-radius:12px;padding:12px">${escq(msg.text)}</pre>`);
     window.srOwnerReportText=msg.text;
     window.srOwnerReportSubject=msg.subject;
     toast("Owner report copied");
@@ -5646,45 +5602,29 @@ async function srShareOwnerReport(){
     try{await navigator.clipboard.writeText(text); toast("Copied");}catch(_){toast("Could not share");}
   }
 }
-function srOpenOwnerEmailSetup(){
-  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||SR_OWNER_EMAIL_DEFAULT_WEBAPP_URL;
-  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||SR_OWNER_EMAIL_DEFAULT_SECRET;
-  srLedgerShow("Silent Email Setup","Paste Google Apps Script Web App URL once",`<div class="sr-ledger-note">Use the Apps Script file saved on this laptop: E:\\New Website\\google-apps-script-owner-email.gs. Deploy it from the Gmail account that should send the mail, then paste the Web App URL here.</div><div style="display:grid;gap:8px"><input id="sr-email-webapp-url" placeholder="Apps Script Web App URL" value="${escq(url)}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><input id="sr-email-secret" placeholder="Secret key" value="${escq(key)}" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button class="gold" onclick="srSaveOwnerEmailSetup()">Save Setup</button></div>`);
-}
-function srSaveOwnerEmailSetup(){
-  const url=($("sr-email-webapp-url")?.value||"").trim();
-  const key=($("sr-email-secret")?.value||"").trim();
-  if(!/^https:\/\/script\.google\.com\/macros\/s\//.test(url))return toast("Paste Apps Script Web App URL");
-  if(!key)return toast("Paste secret key");
-  localStorage.setItem(SR_OWNER_EMAIL_WEBAPP_KEY,url);
-  localStorage.setItem(SR_OWNER_EMAIL_SECRET_KEY,key);
-  toast("Silent email setup saved");
-  srOpenOwnerEmailReport();
-}
 async function srSendOwnerEmailSilent(fromDate,toDate,to){
-  const url=localStorage.getItem(SR_OWNER_EMAIL_WEBAPP_KEY)||SR_OWNER_EMAIL_DEFAULT_WEBAPP_URL;
-  const key=localStorage.getItem(SR_OWNER_EMAIL_SECRET_KEY)||SR_OWNER_EMAIL_DEFAULT_SECRET;
-  if(!url||!key){srOpenOwnerEmailSetup();toast("Setup silent email once");return;}
+  if(!adminToken){openAdm();return toast("Admin login required");}
   const target=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to||"")?to:"srfashionned@gmail.com";
   const from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();
   const toDay=/^\d{4}-\d{2}-\d{2}$/.test(toDate||"")?toDate:from;
-  const body=new URLSearchParams({key,from,to:target,toDate:toDay});
-  body.set("to",target);
-  body.set("from",from);
-  body.set("toDate",toDay);
-  try{
-    await fetch(url,{method:"POST",mode:"no-cors",body});
-    toast("Silent email request sent");
-  }catch(e){
-    toast("Silent email failed · "+e.message);
+  let lastErr=null;
+  for(const base of ITEM_LEDGER_API_BASES){
+    try{
+      const r=await fetch(base+"/api/owner-email/send",{method:"POST",headers:{"Content-Type":"application/json","x-sr-admin-token":adminToken},body:JSON.stringify({from,toDate:toDay,to:target})});
+      const data=await srReadJsonResponse(r,"Owner email");
+      if(!r.ok||!data.ok)throw new Error(data.error||"Email failed");
+      toast("Owner email sent");
+      return;
+    }catch(e){lastErr=e}
   }
+  toast("Owner email failed · "+(lastErr?.message||"server unavailable"));
 }
 function srOpenScannerQa(){
   if(!isAdmin && !isStaff){ openAdm(); toast("Unlock staff/admin for scanner QA"); return; }
   srNextView("scanner-qa");
   drawer(false);
   const ua=navigator.userAgent||"";
-  const isIOS=/iPhone|iPad|iPod/i.test(ua);
+  const isIOS=srIsIOSDevice();
   const secure=location.protocol==="https:" || location.hostname==="localhost";
   const camera=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
   const detector="BarcodeDetector" in window;
@@ -5861,8 +5801,6 @@ Object.assign(window,{
   srOpenOwnerEmailReport,
   srRunOwnerEmailReport,
   srShareOwnerReport,
-  srOpenOwnerEmailSetup,
-  srSaveOwnerEmailSetup,
   srSendOwnerEmailSilent,
   srOpenFestivalPlanner,
   srFestivalRun,

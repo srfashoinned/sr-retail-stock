@@ -2146,8 +2146,10 @@ async function getStockData(forceLive = false) {
     let payload = null;
     for (const apiUrl of apiUrls) {
       try {
-        const versionUrl = remoteStockVersion ? `${apiUrl}?version=${encodeURIComponent(remoteStockVersion)}` : apiUrl;
-        payload = await fetchStockJson(versionUrl);
+        // Always receive the current BUSY-backed payload. A stale browser
+        // version token can produce an "unchanged" response while the local
+        // card still contains an older quantity.
+        payload = await fetchStockJson(apiUrl);
         break;
       } catch (err) {
         lastErr = err;

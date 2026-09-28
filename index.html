@@ -2818,6 +2818,7 @@ function cardHTML(it, ri, topPx, q){
       ${isAdmin&&it.purchase?`<div class="drow"><span>Purchase</span><span style="color:var(--purple)">${fmt(it.purchase)}</span></div>`:''}
       <div class="act">
         <button class="ab ig" onclick="openPim(${ri},event)">Photos</button>
+        ${isAdmin?`<button class="ab cp" onclick="openItemLedger(${ri},event)">Item Ledger</button>`:''}
       </div>
     </div>`:'';
 

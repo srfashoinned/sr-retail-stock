@@ -154,8 +154,8 @@ function registerServiceWorker() {
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
 
-const API_BASES = ["https://dashboard.srfashionned.in", ""];
 const BUSY_API_BASE = "https://live-stock.srfashionned.in";
+const API_BASES = [BUSY_API_BASE, ""];
 async function api(path) {
   let lastError = null;
   for (const base of API_BASES) {

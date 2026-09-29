@@ -1162,6 +1162,74 @@ GROUP BY T.MasterCode1, M.Name
 ORDER BY T.MasterCode1;`;
 }
 
+function busyCustomersQuery() {
+  return `
+SET NOCOUNT ON;
+SELECT
+  CONVERT(varchar(20), M.Code) + CHAR(9)
+  + REPLACE(M.Name, CHAR(9), ' ') + CHAR(9)
+  + REPLACE(ISNULL(M.Alias,''), CHAR(9), ' ') + CHAR(9)
+  + REPLACE(ISNULL(A.Mobile,''), CHAR(9), ' ') + CHAR(9)
+  + REPLACE(ISNULL(A.WhatsAppNo,''), CHAR(9), ' ') + CHAR(9)
+  + REPLACE(CONCAT(ISNULL(A.Address1,''), CASE WHEN ISNULL(A.Address2,'')='' THEN '' ELSE ', '+A.Address2 END), CHAR(9), ' ') + CHAR(9)
+  + CONVERT(varchar(40), CAST(-(ISNULL(F.D1,0) + ISNULL(T.Movement,0)) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(20), ISNULL(S.BillCount,0)) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ISNULL(S.SalesAmount,0) AS decimal(18,2))) + CHAR(9)
+  + ISNULL(CONVERT(varchar(10), S.LastSaleDate, 120),'') + CHAR(9)
+  + ISNULL(CONVERT(varchar(10), T.LastReceiptDate, 120),'') AS ReportLine
+FROM Master1 M
+LEFT JOIN Folio1 F ON F.MasterCode=M.Code AND F.MasterType=2
+LEFT JOIN MasterAddressInfo A ON A.MasterCode=M.Code
+OUTER APPLY (
+  SELECT SUM(ISNULL(X.Value1,0)) Movement,
+         MAX(CASE WHEN X.VchType=14 THEN X.Date END) LastReceiptDate
+  FROM Tran2 X
+  JOIN Tran1 H ON H.VchCode=X.VchCode
+  WHERE X.RecType=1 AND X.MasterCode1=M.Code
+    AND ISNULL(H.VchCancelled,0)=0 AND ISNULL(H.Cancelled,0)=0
+) T
+OUTER APPLY (
+  SELECT COUNT(DISTINCT H.VchCode) BillCount,
+         SUM(ISNULL(H.VchSalePurcAmt,0)) SalesAmount,
+         MAX(H.Date) LastSaleDate
+  FROM Tran1 H
+  WHERE H.VchType=9 AND H.MasterCode1=M.Code
+    AND ISNULL(H.VchCancelled,0)=0 AND ISNULL(H.Cancelled,0)=0
+) S
+WHERE M.MasterType=2 AND M.ParentGrp=116
+  AND (ABS(ISNULL(F.D1,0)+ISNULL(T.Movement,0))>0.004 OR ISNULL(S.BillCount,0)>0)
+ORDER BY -(ISNULL(F.D1,0)+ISNULL(T.Movement,0)) DESC, M.Name;`;
+}
+
+async function busyCustomers() {
+  const rows = parseTabbedObjects(await runBusyProfitLines(busyCustomersQuery()), ["customerCode", "customerName", "alias", "mobile", "whatsapp", "address", "balance", "billCount", "ledgerSalesMovement", "lastPurchaseDate", "lastPaymentDate"]);
+  return rows.map(row => ({
+    ...row,
+    customerCode: Number(row.customerCode || 0),
+    balance: Number(row.balance || 0),
+    billCount: Number(row.billCount || 0),
+    ledgerSalesMovement: Number(row.ledgerSalesMovement || 0),
+    oldestDueDate: Number(row.balance || 0) > 0 ? (row.lastPurchaseDate || null) : null
+  }));
+}
+
+async function busyReceivableKpis() {
+  const customers = await busyCustomers();
+  const debt = customers.filter(row => row.balance > 0);
+  const advance = customers.filter(row => row.balance < 0);
+  const month = todayIso().slice(0, 7);
+  const sales = await busyProfitReport("bill", `${month}-01`, todayIso());
+  return [[{
+    totalCustomers: customers.length,
+    customersWithAdvance: advance.length,
+    customersOwing: debt.length,
+    totalReceivable: debt.reduce((sum, row) => sum + row.balance, 0),
+    totalAdvance: advance.reduce((sum, row) => sum + Math.abs(row.balance), 0),
+    activeCustomers: customers.filter(row => row.billCount > 0).length,
+    newCustomersThisMonth: customers.filter(row => String(row.lastPurchaseDate || "").startsWith(month)).length
+  }], [{ month, sales: sales.totals.saleAmount }]];
+}
+
 async function busyCustomerMovements() {
   const lines = await runBusyProfitLines(busyCustomerMovementsQuery());
   return parseTabbedObjects(lines, ["customerCode", "customerName", "receiptDelta", "todaySales", "lastActivityDate"]).map(row => ({
@@ -1569,6 +1637,14 @@ const server = http.createServer(async (req, res) => {
 
     if (url.pathname === "/api/customer-movements") {
       return sendJson(res, 200, await busyCustomerMovements());
+    }
+
+    if (url.pathname === "/api/customers") {
+      return sendJson(res, 200, await busyCustomers());
+    }
+
+    if (url.pathname === "/api/kpis") {
+      return sendJson(res, 200, await busyReceivableKpis());
     }
 
     if (url.pathname === "/api/customer-ledger") {

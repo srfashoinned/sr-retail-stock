@@ -136,7 +136,10 @@ async function openRowDetails(index) {
   els.detailBody.innerHTML = `<div class="detail-note">Loading live BUSY details...</div>`;
   try {
     if (mode === "bill") {
-      const [headers = [], items = []] = await liveJson(`/api/bill?billNo=${encodeURIComponent(row.billNo || "")}`);
+      const billLookup = row.vchCode
+        ? `vchCode=${encodeURIComponent(row.vchCode)}`
+        : `billNo=${encodeURIComponent(row.billNo || "")}`;
+      const [headers = [], items = []] = await liveJson(`/api/bill?${billLookup}`);
       renderBillDetails(headers[0] || row, items);
     } else {
       const [items = [], summary = [], sales = []] = await liveJson(`/api/item-history?productId=${encodeURIComponent(row.itemCode || "")}`);

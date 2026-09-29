@@ -744,7 +744,8 @@ ORDER BY MAX(H.Date) DESC, MAX(H.VchCode) DESC`;
   return `
 SET NOCOUNT ON;
 SELECT
-  CONVERT(varchar(10), H.Date, 120) + CHAR(9)
+  CONVERT(varchar(20), H.VchCode) + CHAR(9)
+  + CONVERT(varchar(10), H.Date, 120) + CHAR(9)
   + LTRIM(RTRIM(H.VchNo)) + CHAR(9)
   + REPLACE(ISNULL(B.PartyName, Party.Name), CHAR(9), ' ') + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value1)) AS decimal(18,2))) + CHAR(9)
@@ -780,8 +781,8 @@ function parseProfitRows(mode, lines) {
       const [itemCode, itemName, qtySold, lastSoldDate, lastSoldTime, saleAmount, cost, profit, profitPercent] = parts;
       return { itemCode, itemName: itemName || "", qtySold: Number(qtySold || 0), lastSoldDate: formatBusyDate(lastSoldDate), lastSoldTime: lastSoldTime || "", saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
     }
-    const [billDate, billNo, partyName, qtySold, billTime, saleAmount, cost, profit, profitPercent] = parts;
-    return { billDate: formatBusyDate(billDate), billNo, partyName: partyName || "", qtySold: Number(qtySold || 0), billTime: billTime || "", saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
+    const [vchCode, billDate, billNo, partyName, qtySold, billTime, saleAmount, cost, profit, profitPercent] = parts;
+    return { vchCode, billDate: formatBusyDate(billDate), billNo, partyName: partyName || "", qtySold: Number(qtySold || 0), billTime: billTime || "", saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
   });
 }
 

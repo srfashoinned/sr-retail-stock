@@ -55,6 +55,10 @@ async function init() {
   els.detailClose.addEventListener("click", closeDetails);
   els.profitBack.addEventListener("click", () => {
     if (!els.detailModal.hidden) return closeDetails();
+    if (params.get("return") === "close") {
+      window.close();
+      return setTimeout(() => location.assign("https://srfashionned.in/"), 250);
+    }
     if (params.get("source") === "admin") {
       if (document.referrer.startsWith("https://srfashionned.in/") && history.length > 1) return history.back();
       return location.assign("https://srfashionned.in/");

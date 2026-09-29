@@ -27,6 +27,7 @@ const state = {
 
 const isFileMode = window.location.protocol === "file:";
 const launchedFromAdmin = new URLSearchParams(window.location.search).get("from") === "admin";
+const closeOnBack = new URLSearchParams(window.location.search).get("return") === "close";
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
@@ -357,6 +358,11 @@ function goAppBack() {
     return;
   }
   if (state.lastView === "dashboard" && launchedFromAdmin) {
+    if (closeOnBack) {
+      window.close();
+      setTimeout(() => window.location.assign("https://srfashionned.in/"), 250);
+      return;
+    }
     if (document.referrer.startsWith("https://srfashionned.in/") && history.length > 1) {
       history.back();
     } else {

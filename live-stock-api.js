@@ -936,7 +936,8 @@ SELECT TOP 1 @VchCode = H.VchCode
 FROM Tran1 H
 WHERE H.VchType = 9
   AND (CONVERT(varchar(20), H.VchCode) = '${code}' OR LTRIM(RTRIM(H.VchNo)) = '${code}')
-ORDER BY H.Date DESC, H.VchCode DESC;
+ORDER BY CASE WHEN CONVERT(varchar(20), H.VchCode) = '${code}' THEN 0 ELSE 1 END,
+         H.Date DESC, H.VchCode DESC;
 
 SELECT
   'HEADER' + CHAR(9)
@@ -1133,33 +1134,67 @@ ORDER BY ABS(ISNULL(B.RawBalance,0)) DESC, M.Name;`;
 
 function busyCustomerMovementsQuery() {
   const today = todayIso();
+  const year = Number(today.slice(0, 4));
+  const month = Number(today.slice(5, 7));
+  const fyStart = `${month < 4 ? year - 1 : year}-04-01`;
   return `
 SET NOCOUNT ON;
 SELECT
   CONVERT(varchar(20), T.MasterCode1) + CHAR(9)
   + REPLACE(ISNULL(M.Name,''), CHAR(9), ' ') + CHAR(9)
-  + CONVERT(varchar(40), CAST(SUM(CASE WHEN T.Value1 < 0 THEN ABS(T.Value1) ELSE 0 END) AS decimal(18,2))) AS ReportLine
+  + CONVERT(varchar(40), CAST(SUM(CASE WHEN H.VchType = 14 THEN -ISNULL(T.Value1,0) ELSE 0 END) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(CASE WHEN H.VchType = 9 AND H.Date >= CONVERT(date, '${today}') THEN ABS(T.Value1) ELSE 0 END) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(10), MAX(H.Date), 120) AS ReportLine
 FROM Tran2 T
 JOIN Tran1 H ON H.VchCode = T.VchCode
 JOIN Master1 M ON M.Code = T.MasterCode1
 WHERE T.RecType = 1
-  AND H.Date >= CONVERT(date, '${today}')
-  AND H.Date < CONVERT(date, '${addOneDayIso(today)}')
+  AND H.Date >= CONVERT(date, '${fyStart}')
   AND ISNULL(H.VchCancelled,0) = 0
   AND ISNULL(H.Cancelled,0) = 0
   AND M.MasterType = 2
 GROUP BY T.MasterCode1, M.Name
-HAVING SUM(CASE WHEN T.Value1 < 0 THEN ABS(T.Value1) ELSE 0 END) > 0
 ORDER BY T.MasterCode1;`;
 }
 
 async function busyCustomerMovements() {
   const lines = await runBusyProfitLines(busyCustomerMovementsQuery());
-  return parseTabbedObjects(lines, ["customerCode", "customerName", "todaySales"]).map(row => ({
+  return parseTabbedObjects(lines, ["customerCode", "customerName", "receiptDelta", "todaySales", "lastActivityDate"]).map(row => ({
     ...row,
     customerCode: Number(row.customerCode || 0),
+    receiptDelta: Number(row.receiptDelta || 0),
     todaySales: Number(row.todaySales || 0)
   }));
+}
+
+function busyCustomerLedgerQuery(customerCode) {
+  const code = Number(customerCode || 0);
+  const today = todayIso();
+  const year = Number(today.slice(0, 4));
+  const month = Number(today.slice(5, 7));
+  const fyStart = `${month < 4 ? year - 1 : year}-04-01`;
+  return `
+SET NOCOUNT ON;
+SELECT
+  CONVERT(varchar(10), H.Date, 120) + CHAR(9)
+  + CASE H.VchType WHEN 9 THEN 'Sale' WHEN 14 THEN 'Rcpt' ELSE 'Voucher ' + CONVERT(varchar(10), H.VchType) END + CHAR(9)
+  + LTRIM(RTRIM(ISNULL(H.VchNo,''))) + CHAR(9)
+  + CONVERT(varchar(20), H.VchCode) + CHAR(9)
+  + CONVERT(varchar(40), CAST(-ISNULL(T.Value1,0) AS decimal(18,2))) + CHAR(9)
+  + REPLACE(ISNULL(T.ShortNar,''), CHAR(9), ' ') AS ReportLine
+FROM Tran2 T
+JOIN Tran1 H ON H.VchCode = T.VchCode
+WHERE T.RecType = 1
+  AND T.MasterCode1 = ${code}
+  AND H.Date >= CONVERT(date, '${fyStart}')
+  AND ISNULL(H.VchCancelled,0) = 0
+  AND ISNULL(H.Cancelled,0) = 0
+ORDER BY H.Date,H.VchCode,T.SrNo;`;
+}
+
+async function busyCustomerLedger(customerCode) {
+  const rows = parseTabbedObjects(await runBusyProfitLines(busyCustomerLedgerQuery(customerCode)), ["Date", "VchType", "VchNo", "VchCode", "amount", "narration"]);
+  return rows.map(row => ({ ...row, amount: Number(row.amount || 0) }));
 }
 
 async function busyPayables() {
@@ -1527,6 +1562,12 @@ const server = http.createServer(async (req, res) => {
 
     if (url.pathname === "/api/customer-movements") {
       return sendJson(res, 200, await busyCustomerMovements());
+    }
+
+    if (url.pathname === "/api/customer-ledger") {
+      const customerCode = Number(url.searchParams.get("code") || 0);
+      if (!customerCode) return sendJson(res, 400, { error: "Missing customer code" });
+      return sendJson(res, 200, await busyCustomerLedger(customerCode));
     }
 
     if (url.pathname === "/api/items") {

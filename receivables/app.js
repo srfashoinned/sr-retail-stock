@@ -29,7 +29,7 @@ const isFileMode = window.location.protocol === "file:";
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
-const APP_VERSION = "43";
+const APP_VERSION = "44";
 const APP_VERSION_KEY = "srReceivablesAppVersion";
 let restoringNavigation = false;
 const qs = selector => document.querySelector(selector);
@@ -153,6 +153,7 @@ function registerServiceWorker() {
 }
 
 const API_BASES = ["https://dashboard.srfashionned.in", ""];
+const BUSY_API_BASE = "https://live-stock.srfashionned.in";
 async function api(path) {
   let lastError = null;
   for (const base of API_BASES) {
@@ -580,12 +581,13 @@ function applyKpis(kpiRows = [], trendRows = []) {
   state.trendRows = trendRows || [];
   const k = kpiRows[0] || {};
   const debts = debtCustomers();
+  const liveReceivable = debts.reduce((sum, customer) => sum + Math.max(0, amount(customer.balance)), 0);
   const overdue = overdueCustomers();
   const held = debts.filter(c => customerFollowup(c.customerCode).hold);
   qs("#kpis").innerHTML = [
-    debtCard(k.customersOwing, k.totalReceivable),
+    debtCard(debts.length || k.customersOwing, state.customers.length ? liveReceivable : k.totalReceivable),
     card("Call Today", overdue.length || debts.length, overdue.length ? "danger" : "", "debt"),
-    card("Customers", amount(k.totalCustomers || state.customers.length).toLocaleString("en-IN"), "", "all"),
+    card("Customers", amount(state.customers.length || k.totalCustomers).toLocaleString("en-IN"), "", "all"),
     card("On Hold", held.length, held.length ? "danger" : "")
   ].join("");
 
@@ -613,18 +615,32 @@ async function loadCustomers() {
   const [customers] = await api("/api/customers");
   let liveCustomers = customers || [];
   try {
-    const response = await fetch("https://live-stock.srfashionned.in/api/customer-movements?t=" + Date.now(), { cache: "no-store" });
-    if (response.ok) {
-      const movements = await response.json();
-      const byCode = new Map((movements || []).map(row => [String(row.customerCode), amount(row.todaySales)]));
-      liveCustomers = liveCustomers.map(customer => {
-        const todaySales = byCode.get(String(customer.customerCode)) || 0;
-        return todaySales ? { ...customer, balance: amount(customer.balance) + todaySales, todaySales } : customer;
-      });
-    }
+    const movements = await busyApi("/api/customer-movements");
+    const byCode = new Map((movements || []).map(row => [String(row.customerCode), row]));
+    liveCustomers = liveCustomers.map(customer => {
+      const movement = byCode.get(String(customer.customerCode));
+      if (!movement) return customer;
+      const todaySales = amount(movement.todaySales);
+      const receiptCorrection = amount(customer.balance) > 0 && !customer.lastPaymentDate
+        ? amount(movement.receiptDelta)
+        : 0;
+      return {
+        ...customer,
+        balance: amount(customer.balance) + todaySales + receiptCorrection,
+        todaySales,
+        liveBalanceDelta: todaySales + receiptCorrection,
+        lastBusyActivity: movement.lastActivityDate || ""
+      };
+    });
   } catch (_) {}
   applyCustomers(liveCustomers);
   saveLocalDashboardCache({ customerRows: liveCustomers });
+}
+
+async function busyApi(path) {
+  const separator = path.includes("?") ? "&" : "?";
+  const response = await fetch(`${BUSY_API_BASE}${path}${separator}t=${Date.now()}`, { cache: "no-store" });
+  return readJsonResponse(response, "Live BUSY data");
 }
 
 async function loadCachedDashboard(error) {
@@ -1096,9 +1112,26 @@ async function openCustomer(code) {
     if (!tables) throw error;
     toast("Showing saved ledger because live server is offline.");
   }
-  const [summary, ledger, bills, payments, outstanding, items] = tables;
+  let [summary, ledger, bills, payments, outstanding, items] = tables;
   const listRow = state.customers.find(c => String(c.customerCode) === String(code)) || {};
-  state.profile = { summary: { ...summary[0], oldestDueDate: listRow.oldestDueDate, lastPaymentDate: listRow.lastPaymentDate }, ledger, bills, payments, outstanding, items };
+  try {
+    const busyRows = await busyApi(`/api/customer-ledger?code=${encodeURIComponent(code)}`);
+    const seen = new Set((ledger || []).map(row => `${clean(row.VchCode)}|${clean(row.VchType)}|${amount(row.amount)}`));
+    const recent = (busyRows || []).filter(row => !seen.has(`${clean(row.VchCode)}|${clean(row.VchType)}|${amount(row.amount)}`));
+    ledger = [...(ledger || []), ...recent].sort((a, b) => {
+      const dateDiff = (parseDate(a.Date)?.getTime() || 0) - (parseDate(b.Date)?.getTime() || 0);
+      return dateDiff || amount(a.VchCode) - amount(b.VchCode);
+    });
+    let running = 0;
+    ledger = ledger.map(row => ({ ...row, runningBalance: (running += amount(row.amount)) }));
+  } catch (_) {}
+  const currentSummary = {
+    ...(summary[0] || {}),
+    currentBalance: Number.isFinite(Number(listRow.balance)) ? amount(listRow.balance) : amount(summary[0]?.currentBalance),
+    oldestDueDate: listRow.oldestDueDate,
+    lastPaymentDate: listRow.lastPaymentDate
+  };
+  state.profile = { summary: currentSummary, ledger, bills, payments, outstanding, items };
   state.salesReport = null;
   state.activeTab = "ledger";
   state.cashPeriod = "";
@@ -1147,6 +1180,7 @@ function renderProfile() {
 }
 
 function billCodeForLedger(row) {
+  if (clean(row.VchCode) && /sale/i.test(clean(row.VchType))) return clean(row.VchCode);
   const no = clean(row.VchNo);
   const bill = state.profile.bills.find(b => clean(b.VchNo) === no);
   return bill ? bill.VchCode : "";
@@ -1341,12 +1375,16 @@ async function openBill(vchCode) {
   let tables;
   let fromCache = false;
   try {
-    tables = await api(`/api/bill?vchCode=${vchCode}`);
+    tables = await busyApi(`/api/bill?vchCode=${encodeURIComponent(vchCode)}`);
   } catch (error) {
-    tables = cachedBillTables(vchCode);
-    fromCache = !!tables;
-    if (!tables) throw error;
-    toast((tables?.[1] || []).length ? "Showing saved bill item/profit details." : "Showing saved bill summary because live bill detail is offline.");
+    try {
+      tables = await api(`/api/bill?vchCode=${encodeURIComponent(vchCode)}`);
+    } catch (_) {
+      tables = cachedBillTables(vchCode);
+      fromCache = !!tables;
+      if (!tables) throw error;
+      toast((tables?.[1] || []).length ? "Showing saved bill item/profit details." : "Showing saved bill summary because live bill detail is offline.");
+    }
   }
   const [headers, items = []] = tables;
   const h = headers[0] || {};
@@ -2474,17 +2512,21 @@ async function init() {
     qs("#customerRows").innerHTML = "";
     return;
   }
-  qs("#dbStatus").textContent = "Loading live Retail Daddy data...";
+  qs("#dbStatus").textContent = "Loading live BUSYWin data...";
   try {
     await loadKpis();
     qs("#dbStatus").textContent = "Loading customers and receivables...";
     await loadCustomers();
-    qs("#dbStatus").textContent = `Connected to Retail Daddy on ${new Date().toLocaleString("en-IN")}`;
-    await restoreSavedNavigation();
+    qs("#dbStatus").textContent = `Live BUSYWin · updated ${new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`;
+    state.viewStack = [];
+    showView("dashboard", false);
+    try { history.replaceState({ srReceivables: true, view: "dashboard" }, "", location.href); } catch (_) {}
     welcomeSound();
   } catch (error) {
     await loadCachedDashboard(error);
-    await restoreSavedNavigation();
+    state.viewStack = [];
+    showView("dashboard", false);
+    try { history.replaceState({ srReceivables: true, view: "dashboard" }, "", location.href); } catch (_) {}
     openSound();
   }
 }

@@ -1607,15 +1607,15 @@ body{
 <div id="sr-appbar"><button id="sr-real-back" onclick="srGoPreviousPage()" title="Back" aria-label="Back">←</button><button id="sr-hamb">☰</button><div id="sr-brand" onclick="home()" title="Home">SR PSD</div><div id="sr-spacer"></div><button id="sr-top-admin" onclick="openAdm()" title="Admin unlock" aria-label="Admin unlock">Admin</button><div class="sr-pill" id="sr-count">Inventory</div><button id="sr-refresh" title="Refresh">↻</button></div>
 <div id="sr-overlay"></div>
 <aside id="sr-drawer"><div id="sr-dhead"><div class="sr-dlogo">SR PSD</div><button class="sr-x" id="sr-x">✕</button></div><nav class="sr-nav">
-<button class="sr-navbtn active" data-view="home"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
-<button class="sr-navbtn sr-staff-tool" data-view="missing-images"><span class="sr-ico">▧</span><span>Image Work<small>Upload and manage product photos</small></span></button>
-<button class="sr-navbtn" data-view="quote"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
+<button class="sr-navbtn active" data-view="home" onclick="home()"><span class="sr-ico">⌂</span><span>Home<small>Product search & prices</small></span></button>
+<button class="sr-navbtn sr-staff-tool" data-view="missing-images" onclick="srOpenMissingImagesReport('all')"><span class="sr-ico">▧</span><span>Image Work<small>Upload and manage product photos</small></span></button>
+<button class="sr-navbtn" data-view="quote" onclick="renderQuoteScreen()"><span class="sr-ico">🧾</span><span>Quotation<small>Create, hold, save, print & share</small></span></button>
 <div class="sr-drawer-tools">
-<button class="sr-navbtn sr-admin-only" data-view="control-center"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="owner-email"><span class="sr-ico">✉</span><span>Owner Email<small>Today sale, receivables and payables</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="receivables"><span class="sr-ico">₹</span><span>Receivables<small>BUSY live dashboard</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="profit-loss"><span class="sr-ico">₹</span><span>Profit / Loss<small>Bill and item profit</small></span></button>
-<button class="sr-navbtn sr-admin-only" data-view="barcode-sheet"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="control-center" onclick="srOpenControlCenter()"><span class="sr-ico">▣</span><span>Control Center<small>All owner tools in one place</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="owner-email" onclick="srOpenOwnerEmailReport()"><span class="sr-ico">✉</span><span>Owner Email<small>Today sale, receivables and payables</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="receivables" onclick="srOpenReceivables()"><span class="sr-ico">₹</span><span>Receivables<small>BUSY live dashboard</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="profit-loss" onclick="drawer(false);window.location.assign('https://srfashionned.in/profit.html?source=admin')"><span class="sr-ico">₹</span><span>Profit / Loss<small>Bill and item profit</small></span></button>
+<button class="sr-navbtn sr-admin-only" data-view="barcode-sheet" onclick="srOpenBarcodeSheet()"><span class="sr-ico">▦</span><span>Barcode Sheet<small>Printable selected labels</small></span></button>
 </div>
 </nav><div id="sr-drawer-section"></div></aside>
 <section id="sr-screen"></section><button id="sr-cartbadge">🛒 0 · ₹0</button><div id="sr-quote-mode">⚡ QUOTATION MODE · TAP ANY PRICE</div>
@@ -2114,7 +2114,7 @@ function stockAgeLabel(value) {
 function registerStockServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    const key = "sr_shell_reloaded_v77";
+    const key = "sr_shell_reloaded_v79";
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
     location.reload();

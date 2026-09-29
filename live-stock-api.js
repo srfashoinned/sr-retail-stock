@@ -1640,7 +1640,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (url.pathname === "/api/customers") {
-      return sendJson(res, 200, await busyCustomers());
+      return sendJson(res, 200, [await busyCustomers()]);
     }
 
     if (url.pathname === "/api/kpis") {

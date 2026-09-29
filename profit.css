@@ -14,6 +14,9 @@ h1 { font-size: 19px; line-height: 1.15; }
 h2 { font-size: 17px; }
 .topbar p:last-child { color: #667085; margin-top: 4px; }
 .back, button { border: 1px solid #2558d4; background: #2558d4; color: #fff; border-radius: 6px; min-height: 34px; padding: 0 10px; font-weight: 650; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.nav-actions { display: flex; gap: 5px; align-items: center; }
+.back.secondary { background: #fff; color: #2558d4; }
+.back.danger { border-color: #b42318; background: #fff; color: #b42318; }
 .toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: end; padding: 10px; margin-top: 10px; }
 .segmented { grid-column: 1 / -1; }
 .segmented { display: flex; gap: 5px; padding: 3px; border: 1px solid #c7ceda; border-radius: 8px; background: #f8fafc; }
@@ -70,7 +73,9 @@ th { background: #f8fafc; color: #475467; }
   .topbar, .toolbar { display: grid; }
   .summary { grid-template-columns: repeat(2, 1fr); }
   .shell { padding: 8px; }
-  .topbar { grid-template-columns: 1fr; }
+  .topbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .nav-actions { align-self: start; }
+  .nav-actions .back { min-width: 0; padding: 0 8px; font-size: 11px; }
   .topbar p:last-child { display: none; }
   .toolbar { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .toolbar label { grid-column: span 2; }

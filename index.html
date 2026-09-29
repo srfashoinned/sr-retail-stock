@@ -3593,7 +3593,7 @@ async function doLogin(){
     isAdmin=true; isStaff=false;
     adminToken=String(auth.sessionToken||auth.imageKey||'');
     sessionStorage.setItem(SR_ADMIN_SESSION_KEY,adminToken);
-    setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("Admin on"); srOpenPendingLedger(); },550);
+    setTimeout(()=>{ closeAdm(); setAdminUi(true); measureCardHeight(); rebuildOffsets(); vsRender(true); toast("Admin on"); srOpenControlCenter(); },550);
   }catch(err){
     pw.classList.add('err'); [0,1,2,3].forEach(i=>dot(i,'e'));
     m.textContent=String(err?.message||"").includes("reachable") ? 'Login service not reachable' : '✗ Wrong PIN';
@@ -3615,6 +3615,10 @@ async function logout(){
     }
   }
   setAdminUi(false);
+  drawer(false);
+  closeAdm();
+  try{ closePim(); closePimFs(); closeScanner(); }catch(e){}
+  srNavHome(false);
   measureCardHeight();
   rebuildOffsets();
   vsRender(true);
@@ -4135,6 +4139,14 @@ function pimBuildAiPrompt(){
 }
 
 async function srRestoreAdminSession(){
+  const logoutRequested=new URLSearchParams(location.search).get('logout')==='1';
+  if(logoutRequested){
+    sessionStorage.removeItem(SR_ADMIN_SESSION_KEY);
+    sessionStorage.removeItem('sr_image_upload_key');
+    adminToken='';pimToken='';isAdmin=false;isStaff=false;setAdminUi(false);
+    try{const clean=new URL(location.href);clean.searchParams.delete('logout');history.replaceState(history.state,'',clean.pathname+clean.search+clean.hash)}catch(e){}
+    return;
+  }
   const token=sessionStorage.getItem(SR_ADMIN_SESSION_KEY)||'';
   if(!token)return;
   for(const base of AUTH_API_BASES){
@@ -4913,7 +4925,7 @@ function srOpenBarcodeSheet(){
 function srOpenReceivables(){
   if(!isAdmin){ openAdm(); toast("Receivables is admin only"); return; }
   drawer(false);
-  window.location.href = "https://receivables.srfashionned.in/?home=1";
+  window.location.href = "https://receivables.srfashionned.in/?from=admin";
 }
 function srMissingImageFilter(mode){
   if(mode==="in")return it=>Number(it.stock||0)>0;
@@ -5175,7 +5187,7 @@ function srOpenControlCenter(){
   const purchaseValue=inRows.reduce((s,it)=>s+pn(it.purchase)*Number(it.stock||0),0);
   srLedgerShow("Control Center","Fast mobile admin home for BUSY live work",`
     <div class="sr-ledger-grid">
-      <button class="sr-ledger-kpi" onclick="window.location.href='https://receivables.srfashionned.in/?home=1'"><small>Daily Closing</small><b>Today</b><span>sales and profit</span></button>
+      <button class="sr-ledger-kpi" onclick="window.location.href='https://receivables.srfashionned.in/?from=admin'"><small>Daily Closing</small><b>Today</b><span>sales and profit</span></button>
       <button class="sr-ledger-kpi" onclick="window.location.assign('https://srfashionned.in/profit.html?source=admin')"><small>Profit</small><b>Live</b><span>bill and item</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenReceivables()"><small>Receivables</small><b>BUSY</b><span>customer dena</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenOwnerEmailReport()"><small>Email</small><b>Owner</b><span>sale, receivable, payable</span></button>

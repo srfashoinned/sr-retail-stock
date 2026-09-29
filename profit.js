@@ -21,7 +21,9 @@ const els = {
   detailTitle: qs("#detailTitle"),
   detailSub: qs("#detailSub"),
   detailBody: qs("#detailBody"),
-  detailClose: qs("#detailClose")
+  detailClose: qs("#detailClose"),
+  profitBack: qs("#profitBack"),
+  profitLogout: qs("#profitLogout")
 };
 let mode = "bill";
 let cache = null;
@@ -33,8 +35,8 @@ async function init() {
   const requestedMode = params.get("mode");
   if (requestedMode === "item") mode = "item";
   const fallbackDate = todayIso();
-  els.fromDate.value = params.get("fromDate") || cache.defaultFrom || fallbackDate;
-  els.toDate.value = params.get("toDate") || cache.defaultTo || els.fromDate.value;
+  els.fromDate.value = params.get("fromDate") || fallbackDate;
+  els.toDate.value = params.get("toDate") || els.fromDate.value;
   setMode(mode, false);
   els.billWiseBtn.addEventListener("click", () => setMode("bill"));
   els.itemWiseBtn.addEventListener("click", () => setMode("item"));
@@ -51,8 +53,21 @@ async function init() {
     if (row) openRowDetails(Number(row.dataset.rowIndex));
   });
   els.detailClose.addEventListener("click", closeDetails);
+  els.profitBack.addEventListener("click", () => {
+    if (!els.detailModal.hidden) return closeDetails();
+    if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back();
+    location.href = "https://srfashionned.in/";
+  });
+  els.profitLogout.addEventListener("click", () => {
+    sessionStorage.removeItem("sr_admin_unlocked_session");
+    sessionStorage.removeItem("sr_image_upload_key");
+    location.replace("https://srfashionned.in/?logout=1");
+  });
   els.detailModal.addEventListener("click", event => {
     if (event.target === els.detailModal) closeDetails();
+  });
+  window.addEventListener("popstate", () => {
+    if (!els.detailModal.hidden) closeDetails(true);
   });
   runReport();
 }
@@ -129,6 +144,7 @@ async function openRowDetails(index) {
   const row = currentRows[index];
   if (!row) return;
   els.detailModal.hidden = false;
+  if (!history.state?.profitDetail) history.pushState({ profitDetail: true }, "", location.href);
   els.detailTitle.textContent = mode === "bill" ? `Bill ${row.billNo || "-"}` : row.itemName || "Item Ledger";
   els.detailSub.textContent = mode === "bill"
     ? `${row.billDate || ""} ${row.billTime || ""} · Qty ${num(row.qtySold)}`
@@ -206,8 +222,9 @@ function renderItemLedger(item, summary, sales) {
       `).join("") : `<div class="detail-note">No sale invoice found for this item.</div>`}
     </div>`;
 }
-function closeDetails() {
+function closeDetails(fromHistory = false) {
   els.detailModal.hidden = true;
+  if (!fromHistory && history.state?.profitDetail) history.back();
 }
 async function openProfitBillFromDetail(vchCode) {
   els.detailTitle.textContent = `Bill ${vchCode || "-"}`;

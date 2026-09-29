@@ -1,9 +1,9 @@
-const CACHE_NAME = "sr-receivables-v44";
+const CACHE_NAME = "sr-receivables-v45";
 const APP_SHELL = [
   "/",
   "/index.html",
-  "/styles.css?v=39",
-  "/app.js?v=46",
+  "/styles.css?v=40",
+  "/app.js?v=47",
   "/cache-data.json",
   "/sr-fashion-logo.png",
   "/site.webmanifest",

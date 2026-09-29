@@ -357,7 +357,11 @@ function goAppBack() {
     return;
   }
   if (state.lastView === "dashboard" && launchedFromAdmin) {
-    window.location.assign("https://srfashionned.in/?resume=admin");
+    if (document.referrer.startsWith("https://srfashionned.in/") && history.length > 1) {
+      history.back();
+    } else {
+      window.location.assign("https://srfashionned.in/");
+    }
     return;
   }
   const previous = state.viewStack.pop() || "dashboard";

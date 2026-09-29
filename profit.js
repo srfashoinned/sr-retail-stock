@@ -55,7 +55,10 @@ async function init() {
   els.detailClose.addEventListener("click", closeDetails);
   els.profitBack.addEventListener("click", () => {
     if (!els.detailModal.hidden) return closeDetails();
-    if (params.get("source") === "admin") return location.assign("https://srfashionned.in/?resume=admin");
+    if (params.get("source") === "admin") {
+      if (document.referrer.startsWith("https://srfashionned.in/") && history.length > 1) return history.back();
+      return location.assign("https://srfashionned.in/");
+    }
     if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back();
     location.href = "https://srfashionned.in/";
   });

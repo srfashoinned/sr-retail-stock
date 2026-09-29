@@ -26,6 +26,7 @@ const state = {
 };
 
 const isFileMode = window.location.protocol === "file:";
+const launchedFromAdmin = new URLSearchParams(window.location.search).get("from") === "admin";
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
@@ -271,7 +272,7 @@ function updateBackButton() {
   const back = qs("#appBack");
   if (!back) return;
   const hasOverlay = !qs("#billModal")?.hidden || !qs("#whatsappModal")?.hidden || document.body.classList.contains("sidebar-open");
-  back.hidden = !hasOverlay && state.lastView === "dashboard";
+  back.hidden = !hasOverlay && state.lastView === "dashboard" && !launchedFromAdmin;
 }
 
 function saveNavigation(extra = {}) {
@@ -353,6 +354,10 @@ function goAppBack() {
   }
   if (document.body.classList.contains("sidebar-open")) {
     closeMenu();
+    return;
+  }
+  if (state.lastView === "dashboard" && launchedFromAdmin) {
+    window.location.assign("https://srfashionned.in/?resume=admin");
     return;
   }
   const previous = state.viewStack.pop() || "dashboard";

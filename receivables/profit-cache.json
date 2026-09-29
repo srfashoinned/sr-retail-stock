@@ -1,0 +1,364 @@
+{
+  "savedAt": "2026-09-27T13:58:31.0725205+05:30",
+  "defaultFrom": "2026-09-27",
+  "defaultTo": "2026-09-27",
+  "billWise": {
+    "rows": [
+      {
+        "billDate": "27/09/2026",
+        "billNo": "14",
+        "partyName": "Cash",
+        "saleAmount": 1710,
+        "cost": 1467,
+        "profit": 243,
+        "profitPercent": 14.21
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "15",
+        "partyName": "Cash",
+        "saleAmount": 830,
+        "cost": 690,
+        "profit": 140,
+        "profitPercent": 16.87
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "16",
+        "partyName": "Cash",
+        "saleAmount": 500,
+        "cost": 330,
+        "profit": 170,
+        "profitPercent": 34
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "17",
+        "partyName": "Cash",
+        "saleAmount": 650,
+        "cost": 525,
+        "profit": 125,
+        "profitPercent": 19.23
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "18",
+        "partyName": "Cash",
+        "saleAmount": 750,
+        "cost": 465,
+        "profit": 285,
+        "profitPercent": 38
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "19",
+        "partyName": "Cash",
+        "saleAmount": 530,
+        "cost": 425,
+        "profit": 105,
+        "profitPercent": 19.81
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "20",
+        "partyName": "Cash",
+        "saleAmount": 2140,
+        "cost": 1920,
+        "profit": 220,
+        "profitPercent": 10.28
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "21",
+        "partyName": "Cash",
+        "saleAmount": 60,
+        "cost": 40,
+        "profit": 20,
+        "profitPercent": 33.33
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "22",
+        "partyName": "Cash",
+        "saleAmount": 400,
+        "cost": 345,
+        "profit": 55,
+        "profitPercent": 13.75
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "23",
+        "partyName": "Cash",
+        "saleAmount": 1450,
+        "cost": 0,
+        "profit": 1450,
+        "profitPercent": 100
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "24",
+        "partyName": "Cash",
+        "saleAmount": 480,
+        "cost": 380,
+        "profit": 100,
+        "profitPercent": 20.83
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "25",
+        "partyName": "Cash",
+        "saleAmount": 450,
+        "cost": 370,
+        "profit": 80,
+        "profitPercent": 17.78
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "26",
+        "partyName": "Cash",
+        "saleAmount": 250,
+        "cost": 218,
+        "profit": 32,
+        "profitPercent": 12.8
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "27",
+        "partyName": "Cash",
+        "saleAmount": 400,
+        "cost": 313,
+        "profit": 87,
+        "profitPercent": 21.75
+      },
+      {
+        "billDate": "27/09/2026",
+        "billNo": "28",
+        "partyName": "Cash",
+        "saleAmount": 3100,
+        "cost": 2085,
+        "profit": 1015,
+        "profitPercent": 32.74
+      }
+    ],
+    "totals": {
+      "saleAmount": 13700,
+      "cost": 9573,
+      "profit": 4127,
+      "profitPercent": 30.124087591240876
+    },
+    "fromDate": "2026-09-27",
+    "toDate": "2026-09-27",
+    "source": "live-busywin"
+  },
+  "itemWise": {
+    "rows": [
+      {
+        "itemCode": "4910",
+        "itemName": "Towel Winner",
+        "qtySold": 1,
+        "saleAmount": 30,
+        "cost": 25,
+        "profit": 5,
+        "profitPercent": 16.67
+      },
+      {
+        "itemCode": "1329",
+        "itemName": "Activa Astar",
+        "qtySold": 2,
+        "saleAmount": 60,
+        "cost": 40,
+        "profit": 20,
+        "profitPercent": 33.33
+      },
+      {
+        "itemCode": "4861",
+        "itemName": "Sultan",
+        "qtySold": 6,
+        "saleAmount": 270,
+        "cost": 240,
+        "profit": 30,
+        "profitPercent": 11.11
+      },
+      {
+        "itemCode": "4797",
+        "itemName": "SRT SATMOLA",
+        "qtySold": 1,
+        "saleAmount": 250,
+        "cost": 218,
+        "profit": 32,
+        "profitPercent": 12.8
+      },
+      {
+        "itemCode": "3341",
+        "itemName": "Kkc Masoom",
+        "qtySold": 1,
+        "saleAmount": 300,
+        "cost": 265,
+        "profit": 35,
+        "profitPercent": 11.67
+      },
+      {
+        "itemCode": "4378",
+        "itemName": "SHAWL 100 NO",
+        "qtySold": 20,
+        "saleAmount": 500,
+        "cost": 460,
+        "profit": 40,
+        "profitPercent": 8
+      },
+      {
+        "itemCode": "1317",
+        "itemName": "Aarti Turkish Towel",
+        "qtySold": 4,
+        "saleAmount": 240,
+        "cost": 192,
+        "profit": 48,
+        "profitPercent": 20
+      },
+      {
+        "itemCode": "3676",
+        "itemName": "MT TOTAL DHAMAAL",
+        "qtySold": 1,
+        "saleAmount": 550,
+        "cost": 490,
+        "profit": 60,
+        "profitPercent": 10.91
+      },
+      {
+        "itemCode": "4381",
+        "itemName": "Shawl Priya",
+        "qtySold": 4,
+        "saleAmount": 280,
+        "cost": 220,
+        "profit": 60,
+        "profitPercent": 21.43
+      },
+      {
+        "itemCode": "3972",
+        "itemName": "PASHMINA",
+        "qtySold": 8,
+        "saleAmount": 280,
+        "cost": 200,
+        "profit": 80,
+        "profitPercent": 28.57
+      },
+      {
+        "itemCode": "4061",
+        "itemName": "REYON PRINCES",
+        "qtySold": 1,
+        "saleAmount": 450,
+        "cost": 370,
+        "profit": 80,
+        "profitPercent": 17.78
+      },
+      {
+        "itemCode": "2059",
+        "itemName": "JMD MIX SUIT",
+        "qtySold": 1,
+        "saleAmount": 400,
+        "cost": 313,
+        "profit": 87,
+        "profitPercent": 21.75
+      },
+      {
+        "itemCode": "3775",
+        "itemName": "OG GALAXY",
+        "qtySold": 1,
+        "saleAmount": 350,
+        "cost": 260,
+        "profit": 90,
+        "profitPercent": 25.71
+      },
+      {
+        "itemCode": "3989",
+        "itemName": "PC LAADLI",
+        "qtySold": 1,
+        "saleAmount": 450,
+        "cost": 355,
+        "profit": 95,
+        "profitPercent": 21.11
+      },
+      {
+        "itemCode": "5077",
+        "itemName": "WELCOME MAKHAN MALAI",
+        "qtySold": 1,
+        "saleAmount": 530,
+        "cost": 425,
+        "profit": 105,
+        "profitPercent": 19.81
+      },
+      {
+        "itemCode": "1355",
+        "itemName": "AHD DUPATTA",
+        "qtySold": 20,
+        "saleAmount": 1360,
+        "cost": 1240,
+        "profit": 120,
+        "profitPercent": 8.82
+      },
+      {
+        "itemCode": "3880",
+        "itemName": "OM NAYNTARA",
+        "qtySold": 1,
+        "saleAmount": 500,
+        "cost": 330,
+        "profit": 170,
+        "profitPercent": 34
+      },
+      {
+        "itemCode": "3486",
+        "itemName": "MASTI CHUNRI",
+        "qtySold": 4,
+        "saleAmount": 1600,
+        "cost": 1380,
+        "profit": 220,
+        "profitPercent": 13.75
+      },
+      {
+        "itemCode": "5145",
+        "itemName": "KC PANT MIX 1",
+        "qtySold": 1,
+        "saleAmount": 1350,
+        "cost": 1100,
+        "profit": 250,
+        "profitPercent": 18.52
+      },
+      {
+        "itemCode": "3794",
+        "itemName": "OM ASHRIKA",
+        "qtySold": 1,
+        "saleAmount": 750,
+        "cost": 465,
+        "profit": 285,
+        "profitPercent": 38
+      },
+      {
+        "itemCode": "5142",
+        "itemName": "GNA READY MADE 6",
+        "qtySold": 1,
+        "saleAmount": 1750,
+        "cost": 985,
+        "profit": 765,
+        "profitPercent": 43.71
+      },
+      {
+        "itemCode": "4825",
+        "itemName": "SUITE",
+        "qtySold": 1,
+        "saleAmount": 1450,
+        "cost": 0,
+        "profit": 1450,
+        "profitPercent": 100
+      }
+    ],
+    "totals": {
+      "saleAmount": 13700,
+      "cost": 9573,
+      "profit": 4127,
+      "profitPercent": 30.124087591240876
+    },
+    "fromDate": "2026-09-27",
+    "toDate": "2026-09-27",
+    "source": "live-busywin"
+  }
+}

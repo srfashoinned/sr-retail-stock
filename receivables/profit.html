@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SR Fashion Profit / Loss</title>
+    <link rel="stylesheet" href="profit.css?v=8">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">SR Fashion Pusad</p>
+          <h1>Profit / Loss</h1>
+          <p>Bill-wise or item-wise report using BUSY Item Master purchase price.</p>
+        </div>
+        <a class="back" href="https://srfashionned.in/">Main site</a>
+      </header>
+
+      <section class="toolbar">
+        <div class="segmented">
+          <button id="billWiseBtn" class="active" type="button">Date-wise Bills</button>
+          <button id="itemWiseBtn" type="button">Item-wise</button>
+        </div>
+        <label>From <input id="fromDate" type="date"></label>
+        <label>To <input id="toDate" type="date"></label>
+        <button id="todayBtn" type="button">Today</button>
+        <button id="runBtn" type="button">Run</button>
+      </section>
+
+      <section class="summary">
+        <div><span>Sales</span><b id="totalSales">₹0.00</b></div>
+        <div><span>Cost</span><b id="totalCost">₹0.00</b></div>
+        <div><span>Profit</span><b id="totalProfit">₹0.00</b></div>
+        <div><span>Profit %</span><b id="totalMargin">0.00%</b></div>
+      </section>
+
+      <section class="panel">
+        <div class="panelHead">
+          <h2 id="reportTitle">Date-wise Bills</h2>
+          <button id="csvBtn" type="button">CSV</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th id="col1">Bill Date</th>
+              <th id="col2">Bill No</th>
+              <th id="col3">Party Name</th>
+              <th class="num">Sale</th>
+              <th class="num">Cost</th>
+              <th class="num">Profit</th>
+              <th class="num">Profit %</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="7" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p id="status" class="status"></p>
+    </main>
+    <div id="detailModal" class="detail-modal" hidden>
+      <div class="detail-sheet">
+        <div class="detail-head">
+          <div>
+            <b id="detailTitle">Details</b>
+            <small id="detailSub"></small>
+          </div>
+          <button id="detailClose" type="button">Close</button>
+        </div>
+        <div id="detailBody" class="detail-body"></div>
+      </div>
+    </div>
+    <script src="profit.js?v=9"></script>
+  </body>
+</html>

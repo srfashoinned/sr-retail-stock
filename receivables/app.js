@@ -2207,7 +2207,7 @@ document.addEventListener("click", event => {
     renderCustomers();
   }
   if (event.target.closest("#cashMenuToggle")) {
-    qs("#cashSubmenu").hidden = !qs("#cashSubmenu").hidden;
+    window.location.href = "https://srfashionned.in/profit.html";
   }
   if (event.target.closest("#cashPartyDay")) {
     openCashParty("day");

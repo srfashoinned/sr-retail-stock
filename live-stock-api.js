@@ -928,17 +928,21 @@ async function busyItemHistory(params) {
   return [items, summary, sales, purchases];
 }
 
-function busyBillQuery(vchCode) {
-  const code = sqlText(vchCode);
+function busyBillQuery({ vchCode = "", billNo = "", billDate = "" }) {
+  const exactCode = /^\d+$/.test(String(vchCode)) ? String(vchCode) : "";
+  const number = sqlText(billNo);
+  const dateFilter = isIsoDate(billDate) ? ` AND CAST(H.Date AS date) = CONVERT(date, '${billDate}')` : "";
+  const lookup = exactCode
+    ? `H.VchCode = ${exactCode}`
+    : `LTRIM(RTRIM(H.VchNo)) = '${number}'${dateFilter}`;
   return `
 SET NOCOUNT ON;
 DECLARE @VchCode int;
 SELECT TOP 1 @VchCode = H.VchCode
 FROM Tran1 H
 WHERE H.VchType = 9
-  AND (CONVERT(varchar(20), H.VchCode) = '${code}' OR LTRIM(RTRIM(H.VchNo)) = '${code}')
-ORDER BY CASE WHEN CONVERT(varchar(20), H.VchCode) = '${code}' THEN 0 ELSE 1 END,
-         H.Date DESC, H.VchCode DESC;
+  AND ${lookup}
+ORDER BY H.Date DESC, H.VchCode DESC;
 
 SELECT
   'HEADER' + CHAR(9)
@@ -976,8 +980,8 @@ WHERE D.VchCode = @VchCode AND D.RecType = 2 AND Item.MasterType = 6
 ORDER BY D.SrNo;`;
 }
 
-async function busyBill(vchCode) {
-  const lines = await runBusyProfitLines(busyBillQuery(vchCode));
+async function busyBill(params) {
+  const lines = await runBusyProfitLines(busyBillQuery(params));
   const byType = { HEADER: [], LINE: [] };
   for (const line of lines) {
     const [type, ...rest] = line.split("\t");
@@ -1530,9 +1534,11 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (url.pathname === "/api/bill") {
-      const vchCode = url.searchParams.get("vchCode") || url.searchParams.get("billNo") || "";
-      if (!vchCode) return sendJson(res, 400, { error: "Missing bill code" });
-      return sendJson(res, 200, await busyBill(vchCode));
+      const vchCode = url.searchParams.get("vchCode") || "";
+      const billNo = url.searchParams.get("billNo") || "";
+      const billDate = url.searchParams.get("billDate") || "";
+      if (!vchCode && !billNo) return sendJson(res, 400, { error: "Missing bill code" });
+      return sendJson(res, 200, await busyBill({ vchCode, billNo, billDate }));
     }
 
     if (url.pathname === "/api/purchase-bill") {

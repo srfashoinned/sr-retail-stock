@@ -138,9 +138,15 @@ async function openRowDetails(index) {
     if (mode === "bill") {
       const billLookup = row.vchCode
         ? `vchCode=${encodeURIComponent(row.vchCode)}`
-        : `billNo=${encodeURIComponent(row.billNo || "")}`;
+        : `billNo=${encodeURIComponent(row.billNo || "")}&billDate=${encodeURIComponent(normalizeDate(row.billDate) || "")}`;
       const [headers = [], items = []] = await liveJson(`/api/bill?${billLookup}`);
-      renderBillDetails(headers[0] || row, items);
+      const header = headers[0];
+      if (!header || String(header.VchNo || "").trim() !== String(row.billNo || "").trim()
+        || (row.vchCode && String(header.VchCode || "") !== String(row.vchCode))) {
+        await runReport();
+        throw new Error("This bill changed in BUSY. The report was refreshed; tap the updated bill again.");
+      }
+      renderBillDetails(header, items);
     } else {
       const [items = [], summary = [], sales = []] = await liveJson(`/api/item-history?productId=${encodeURIComponent(row.itemCode || "")}`);
       renderItemLedger(items[0] || row, summary[0] || {}, sales);

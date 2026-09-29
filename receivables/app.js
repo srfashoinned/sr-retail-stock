@@ -29,7 +29,7 @@ const isFileMode = window.location.protocol === "file:";
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
-const APP_VERSION = "44";
+const APP_VERSION = "45";
 const APP_VERSION_KEY = "srReceivablesAppVersion";
 let restoringNavigation = false;
 const qs = selector => document.querySelector(selector);
@@ -340,7 +340,7 @@ function showView(id, push = true) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function goAppBack(useBrowser = true) {
+function goAppBack() {
   if (!qs("#billModal")?.hidden) {
     qs("#billModal").hidden = true;
     updateBackButton();
@@ -355,12 +355,11 @@ function goAppBack(useBrowser = true) {
     closeMenu();
     return;
   }
-  if (useBrowser && history.state?.srReceivables && state.viewStack.length > 0) {
-    history.back();
-    return;
-  }
   const previous = state.viewStack.pop() || "dashboard";
   showView(previous, false);
+  try {
+    history.replaceState({ srReceivables: true, view: previous, profileCode: previous === "profile" ? state.profile?.summary?.customerCode || "" : "" }, "", location.href);
+  } catch (_) {}
 }
 
 function openMenu() {
@@ -2137,7 +2136,7 @@ document.addEventListener("click", event => {
   const nav = event.target.closest(".nav-btn");
   if (nav?.dataset.view) showView(nav.dataset.view);
   if (event.target.closest("#menuToggle")) openMenu();
-  if (event.target.closest("#appBack")) goAppBack(true);
+  if (event.target.closest("#appBack")) goAppBack();
   if (event.target.closest("#sidebarShade")) closeMenu();
   if (event.target.closest(".homeBtn")) showView("dashboard");
   if (event.target.closest("#homeBrand") || event.target.closest(".brand")) showView("dashboard");

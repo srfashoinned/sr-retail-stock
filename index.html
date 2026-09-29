@@ -2113,6 +2113,12 @@ function stockAgeLabel(value) {
 
 function registerStockServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    const key = "sr_shell_reloaded_v77";
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    location.reload();
+  });
   navigator.serviceWorker.register("/sw.js").then(reg => {
     // Ask an already-open tab to pick up the newest stock shell without
     // requiring the owner to clear browser storage manually.
@@ -3573,7 +3579,13 @@ async function doLogin(){
       const staffToken=String(auth.sessionToken||auth.imageKey||'');
       pimSetToken(staffToken,false);
       try{ sessionStorage.setItem(SR_ADMIN_SESSION_KEY,staffToken); }catch(e){}
-      setTimeout(()=>{ closeAdm(); setAdminUi(false); toast("Staff panel opened"); srOpenMissingImagesReport("all"); },450);
+      setTimeout(()=>{
+        closeAdm();
+        setAdminUi(false);
+        home();
+        drawer(true);
+        toast("Staff access unlocked. Choose Image Work from the menu.");
+      },450);
       return;
     }
     if(auth.role!=="admin") throw new Error("Admin PIN only");
@@ -5164,7 +5176,7 @@ function srOpenControlCenter(){
   srLedgerShow("Control Center","Fast mobile admin home for BUSY live work",`
     <div class="sr-ledger-grid">
       <button class="sr-ledger-kpi" onclick="window.location.href='https://receivables.srfashionned.in/?home=1'"><small>Daily Closing</small><b>Today</b><span>sales and profit</span></button>
-      <button class="sr-ledger-kpi" onclick="window.location.href='https://srfashionned.in/profit.html'"><small>Profit</small><b>Live</b><span>bill and item</span></button>
+      <button class="sr-ledger-kpi" onclick="window.location.assign('https://srfashionned.in/profit.html?source=admin')"><small>Profit</small><b>Live</b><span>bill and item</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenReceivables()"><small>Receivables</small><b>BUSY</b><span>customer dena</span></button>
       <button class="sr-ledger-kpi" onclick="srOpenOwnerEmailReport()"><small>Email</small><b>Owner</b><span>sale, receivable, payable</span></button>
       <button class="sr-ledger-kpi" onclick="openItemLedgerSearch()"><small>Item ledger</small><b>${ledgerCached}</b><span>bill drill down</span></button>
@@ -5893,7 +5905,11 @@ document.querySelectorAll(".sr-navbtn").forEach(b=>b.onclick=()=>{
   if(v==="owner-email")return srOpenOwnerEmailReport();
   if(v==="collect-upi")return srNextView("home");
   if(v==="receivables")return srOpenReceivables();
-  if(v==="profit-loss"){drawer(false); window.location.href="https://srfashionned.in/profit.html"; return;}
+  if(v==="profit-loss"){
+    drawer(false);
+    window.location.assign("https://srfashionned.in/profit.html?source=admin");
+    return;
+  }
   if(v==="barcode-sheet")return srOpenBarcodeSheet();
 });
 

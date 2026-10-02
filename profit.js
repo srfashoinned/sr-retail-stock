@@ -132,9 +132,10 @@ function renderRows(rows) {
         <div class="profit-meta">
           <span>${when}</span>
           <span>${qty}</span>
-          <span>Sale ${money(row.saleAmount)}</span>
+          <span>Net sale ${money(row.saleAmount)}</span>
+          ${Number(row.billDiscount || 0) > 0.004 ? `<span>Discount ${money(row.billDiscount)} (${pct(percent(row.billDiscount, row.grossSaleAmount))})</span>` : ""}
           <span>Cost ${money(row.cost)}</span>
-          <span class="${profitClass}">${pct(row.profitPercent)}</span>
+          <span class="${profitClass}">Margin ${pct(row.profitPercent)}</span>
         </div>
       </div>
     </td></tr>`;
@@ -186,6 +187,8 @@ async function liveJson(path) {
 }
 function renderBillDetails(header, items) {
   const totalSale = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const grossSale = items.reduce((sum, item) => sum + Number(item.grossAmount || item.amount || 0), 0);
+  const billDiscount = items.reduce((sum, item) => sum + Number(item.discountAmount || 0), 0);
   const totalCost = items.reduce((sum, item) => sum + Number(item.costAmount || 0), 0);
   const totalProfit = items.reduce((sum, item) => sum + Number(item.profitAmount || 0), 0);
   const totalQty = items.reduce((sum, item) => sum + Number(item.qty || 0), 0);
@@ -194,9 +197,13 @@ function renderBillDetails(header, items) {
     <div class="detail-grid summary-grid">
       <span>Items <b>${items.length}</b></span>
       <span>Qty <b>${num(totalQty)}</b></span>
-      <span>Sale <b>${money(totalSale || header.VchAmtBaseCur)}</b></span>
+      <span>Gross sale <b>${money(grossSale || header.grossSaleAmount)}</b></span>
+      <span>Bill discount <b>${money(billDiscount || header.billDiscount)} (${pct(percent(billDiscount || header.billDiscount, grossSale || header.grossSaleAmount))})</b></span>
+      <span>Net sale <b>${money(totalSale || header.VchAmtBaseCur)}</b></span>
       <span>Cost <b>${money(totalCost)}</b></span>
       <span>Profit <b>${money(totalProfit)}</b></span>
+      <span>Profit margin <b>${pct(percent(totalProfit, totalSale || header.VchAmtBaseCur))}</b></span>
+      <span>Return on cost <b>${pct(percent(totalProfit, totalCost))}</b></span>
     </div>
     <div class="detail-list">
       ${items.map((item, i) => `
@@ -205,23 +212,29 @@ function renderBillDetails(header, items) {
           <small>${clean(item.barcode || item.itemGroup || "")}</small>
           <div class="detail-grid">
             <span>Qty <b>${num(item.qty)}</b></span>
-            <span>Sold/pc <b>${money(item.rate)}</b></span>
+            <span>Original/pc <b>${money(item.originalRate || item.rate)}</b></span>
+            ${Number(item.discountAmount || 0) > 0.004 ? `<span>Discount <b>${money(item.discountAmount)} (${pct(percent(item.discountAmount, item.grossAmount))})</b></span><span>Net/pc <b>${money(item.rate)}</b></span>` : ""}
             <span>Cost/pc <b>${unitCost(item.costAmount, item.qty)}</b></span>
             <span>Total cost <b>${money(item.costAmount)}</b></span>
             <span>Profit <b>${money(item.profitAmount)}</b></span>
+            <span>Margin <b>${pct(percent(item.profitAmount, item.amount))}</b></span>
+            <span>Return on cost <b>${pct(percent(item.profitAmount, item.costAmount))}</b></span>
           </div>
         </div>
       `).join("")}
     </div>` : `<div class="detail-note">No products found in this bill.</div>`;
 }
 function renderItemLedger(item, summary, sales) {
-  els.detailSub.textContent = `${clean(item.ProductBarcode || "")} · Stock ${num(item.CurrentStock)} · Profit ${money(summary.profitAmount)}`;
+  els.detailSub.textContent = `${clean(item.ProductBarcode || "")} · Stock ${num(item.CurrentStock)} · Profit ${money(summary.profitAmount)} · Margin ${pct(percent(summary.profitAmount, summary.saleAmount))}`;
   els.detailBody.innerHTML = `
     <div class="detail-grid summary-grid">
       <span>Sale <b>${money(item.SalePrice)}</b></span>
       <span>Purchase <b>${money(item.PurchasePrice)}</b></span>
       <span>Sold <b>${num(summary.soldQty)}</b></span>
       <span>Invoices <b>${num(summary.invoiceCount)}</b></span>
+      <span>Profit <b>${money(summary.profitAmount)}</b></span>
+      <span>Profit margin <b>${pct(percent(summary.profitAmount, summary.saleAmount))}</b></span>
+      <span>Return on cost <b>${pct(percent(summary.profitAmount, summary.costAmount))}</b></span>
     </div>
     <div class="detail-list">
       ${sales.length ? sales.map(sale => `
@@ -230,10 +243,13 @@ function renderItemLedger(item, summary, sales) {
           <small>${clean(formatDate(sale.Date))} · ${clean(sale.CustomerName || "Cash")}</small>
           <div class="detail-grid">
             <span>Qty <b>${num(sale.Qty)}</b></span>
-            <span>Sold/pc <b>${money(sale.Rate)}</b></span>
+            <span>Original/pc <b>${money(sale.OriginalRate || sale.Rate)}</b></span>
+            ${Number(sale.DiscountAmount || 0) > 0.004 ? `<span>Discount <b>${money(sale.DiscountAmount)} (${pct(percent(sale.DiscountAmount, sale.GrossAmount))})</b></span><span>Net/pc <b>${money(sale.Rate)}</b></span>` : ""}
             <span>Cost/pc <b>${unitCost(sale.CostAmount, sale.Qty)}</b></span>
             <span>Total cost <b>${money(sale.CostAmount)}</b></span>
             <span>Profit <b>${money(sale.ProfitAmount)}</b></span>
+            <span>Margin <b>${pct(percent(sale.ProfitAmount, sale.Amount))}</b></span>
+            <span>Return on cost <b>${pct(percent(sale.ProfitAmount, sale.CostAmount))}</b></span>
           </div>
         </button>
       `).join("") : `<div class="detail-note">No sale invoice found for this item.</div>`}
@@ -277,6 +293,10 @@ function exportCsv() {
 }
 function money(v) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2 }).format(Number(v || 0)); }
 function pct(v) { return `${Number(v || 0).toFixed(2)}%`; }
+function percent(value, base) {
+  const divisor = Number(base || 0);
+  return divisor ? Number(value || 0) * 100 / divisor : 0;
+}
 function num(v) { return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(Number(v || 0)); }
 function unitCost(cost, qty) {
   const q = Number(qty || 0);

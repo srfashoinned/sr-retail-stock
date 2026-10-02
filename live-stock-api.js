@@ -719,6 +719,8 @@ SELECT
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value1)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(10), MAX(H.Date), 120) + CHAR(9)
   + CONVERT(varchar(5), MAX(ISNULL(H.CreationTime,H.Date)), 108) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(ABS(D.D5)) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(ABS(D.D5)) - SUM(ABS(D.Value3)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value3)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value1) * Item.D4) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value3)) - SUM(ABS(D.Value1) * Item.D4) AS decimal(18,2))) + CHAR(9)
@@ -750,6 +752,8 @@ SELECT
   + REPLACE(ISNULL(B.PartyName, Party.Name), CHAR(9), ' ') + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value1)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(5), MAX(ISNULL(H.CreationTime,H.Date)), 108) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(ABS(D.D5)) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(ABS(D.D5)) - SUM(ABS(D.Value3)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value3)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value1) * Item.D4) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value3)) - SUM(ABS(D.Value1) * Item.D4) AS decimal(18,2))) + CHAR(9)
@@ -778,22 +782,26 @@ function parseProfitRows(mode, lines) {
   return lines.map(line => {
     const parts = line.split("\t");
     if (mode === "item") {
-      const [itemCode, itemName, qtySold, lastSoldDate, lastSoldTime, saleAmount, cost, profit, profitPercent] = parts;
-      return { itemCode, itemName: itemName || "", qtySold: Number(qtySold || 0), lastSoldDate: formatBusyDate(lastSoldDate), lastSoldTime: lastSoldTime || "", saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
+      const [itemCode, itemName, qtySold, lastSoldDate, lastSoldTime, grossSaleAmount, billDiscount, saleAmount, cost, profit, profitPercent] = parts;
+      return { itemCode, itemName: itemName || "", qtySold: Number(qtySold || 0), lastSoldDate: formatBusyDate(lastSoldDate), lastSoldTime: lastSoldTime || "", grossSaleAmount: Number(grossSaleAmount || 0), billDiscount: Number(billDiscount || 0), saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
     }
-    const [vchCode, billDate, billNo, partyName, qtySold, billTime, saleAmount, cost, profit, profitPercent] = parts;
-    return { vchCode, billDate: formatBusyDate(billDate), billNo, partyName: partyName || "", qtySold: Number(qtySold || 0), billTime: billTime || "", saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
+    const [vchCode, billDate, billNo, partyName, qtySold, billTime, grossSaleAmount, billDiscount, saleAmount, cost, profit, profitPercent] = parts;
+    return { vchCode, billDate: formatBusyDate(billDate), billNo, partyName: partyName || "", qtySold: Number(qtySold || 0), billTime: billTime || "", grossSaleAmount: Number(grossSaleAmount || 0), billDiscount: Number(billDiscount || 0), saleAmount: Number(saleAmount || 0), cost: Number(cost || 0), profit: Number(profit || 0), profitPercent: Number(profitPercent || 0) };
   });
 }
 
 function profitTotals(rows) {
   const totals = rows.reduce((acc, row) => {
+    acc.grossSaleAmount += row.grossSaleAmount;
+    acc.billDiscount += row.billDiscount;
     acc.saleAmount += row.saleAmount;
     acc.cost += row.cost;
     acc.profit += row.profit;
     return acc;
-  }, { saleAmount: 0, cost: 0, profit: 0 });
+  }, { grossSaleAmount: 0, billDiscount: 0, saleAmount: 0, cost: 0, profit: 0 });
   totals.profitPercent = totals.saleAmount ? totals.profit * 100 / totals.saleAmount : 0;
+  totals.returnOnCostPercent = totals.cost ? totals.profit * 100 / totals.cost : 0;
+  totals.discountPercent = totals.grossSaleAmount ? totals.billDiscount * 100 / totals.grossSaleAmount : 0;
   return totals;
 }
 
@@ -875,8 +883,11 @@ SELECT TOP 80
   + REPLACE(ISNULL(B.PartyName, Party.Name), CHAR(9), ' ') + CHAR(9)
   + REPLACE(ISNULL(Item.Alias,''), CHAR(9), ' ') + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value1) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ABS(D.D2) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(CASE WHEN ABS(D.Value1) = 0 THEN 0 ELSE ABS(D.Value3) / ABS(D.Value1) END AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ISNULL(Item.D2,0) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ABS(D.D5) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ABS(D.D5) - ABS(D.Value3) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value3) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ISNULL(Item.D4,0) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value1) * ISNULL(Item.D4,0) AS decimal(18,2))) + CHAR(9)
@@ -923,7 +934,7 @@ async function busyItemHistory(params) {
   }
   const items = parseTabbedObjects(byType.ITEM, ["ProductID", "ProductName", "ProductBarcode", "ItemGroup", "MRP", "SalePrice", "WholesalePrice", "PurchasePrice", "CurrentStock"]);
   const summary = parseTabbedObjects(byType.SUMMARY, ["ProductID", "invoiceCount", "soldQty", "saleAmount", "costAmount", "profitAmount"]);
-  const sales = parseTabbedObjects(byType.SALE, ["VchCode", "Date", "VchNo", "CustomerName", "Barcode", "Qty", "Rate", "MRP", "Amount", "PurchaseRate", "CostAmount", "ProfitAmount"]);
+  const sales = parseTabbedObjects(byType.SALE, ["VchCode", "Date", "VchNo", "CustomerName", "Barcode", "Qty", "OriginalRate", "Rate", "MRP", "GrossAmount", "DiscountAmount", "Amount", "PurchaseRate", "CostAmount", "ProfitAmount"]);
   const purchases = parseTabbedObjects(byType.PURCHASE, ["ProductID", "MovementType", "RowCode", "Date", "VchNo", "SupplierInvoiceNo", "PartyName", "Barcode", "Qty", "PurchasePrice", "WholesalePrice", "SalePrice", "MRP", "Amount", "CanOpen"]);
   return [items, summary, sales, purchases];
 }
@@ -950,8 +961,8 @@ SELECT
   + LTRIM(RTRIM(H.VchNo)) + CHAR(9)
   + CONVERT(varchar(10), H.Date, 120) + CHAR(9)
   + REPLACE(ISNULL(B.PartyName, Party.Name), CHAR(9), ' ') + CHAR(9)
-  + CONVERT(varchar(40), CAST(SUM(ABS(D.Value3)) AS decimal(18,2))) + CHAR(9)
-  + CONVERT(varchar(40), CAST(0 AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(ABS(D.D5)) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(SUM(ABS(D.D5)) - SUM(ABS(D.Value3)) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(SUM(ABS(D.Value3)) AS decimal(18,2))) AS ReportLine
 FROM Tran1 H
 JOIN Tran2 D ON D.VchCode = H.VchCode
@@ -968,8 +979,11 @@ SELECT
   + REPLACE(ISNULL(Item.Alias,''), CHAR(9), ' ') + CHAR(9)
   + REPLACE(ISNULL(G.Name,''), CHAR(9), ' ') + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value1) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ABS(D.D2) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(CASE WHEN ABS(D.Value1) = 0 THEN 0 ELSE ABS(D.Value3) / ABS(D.Value1) END AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ISNULL(Item.D2,0) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ABS(D.D5) AS decimal(18,2))) + CHAR(9)
+  + CONVERT(varchar(40), CAST(ABS(D.D5) - ABS(D.Value3) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value3) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value1) * ISNULL(Item.D4,0) AS decimal(18,2))) + CHAR(9)
   + CONVERT(varchar(40), CAST(ABS(D.Value3) - (ABS(D.Value1) * ISNULL(Item.D4,0)) AS decimal(18,2))) AS ReportLine
@@ -987,8 +1001,8 @@ async function busyBill(params) {
     const [type, ...rest] = line.split("\t");
     if (byType[type]) byType[type].push(rest.join("\t"));
   }
-  const headers = parseTabbedObjects(byType.HEADER, ["VchCode", "VchNo", "Date", "partyName", "VchAmtBaseCur", "FormRecAmt", "FormIssAmt"]);
-  const items = parseTabbedObjects(byType.LINE, ["itemCode", "itemName", "barcode", "itemGroup", "qty", "rate", "mrp", "amount", "costAmount", "profitAmount"]);
+  const headers = parseTabbedObjects(byType.HEADER, ["VchCode", "VchNo", "Date", "partyName", "grossSaleAmount", "billDiscount", "VchAmtBaseCur"]);
+  const items = parseTabbedObjects(byType.LINE, ["itemCode", "itemName", "barcode", "itemGroup", "qty", "originalRate", "rate", "mrp", "grossAmount", "discountAmount", "amount", "costAmount", "profitAmount"]);
   return [headers, items];
 }
 

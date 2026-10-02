@@ -64,6 +64,9 @@ function Send-FtpFile {
 
 $requiredFiles = @(
   "index.html",
+  "profit.html",
+  "profit.css",
+  "profit.js",
   "sw.js",
   "items.json",
   "CNAME"

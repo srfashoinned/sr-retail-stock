@@ -31,9 +31,11 @@ const closeOnBack = new URLSearchParams(window.location.search).get("return") ==
 const DASHBOARD_CACHE_KEY = "retailDaddyLastDashboardCache";
 const FOLLOWUP_KEY = "retailDaddyFollowupsV1";
 const NAV_KEY = "retailDaddyResumeNavV2";
-const APP_VERSION = "45";
+const APP_VERSION = "46";
 const APP_VERSION_KEY = "srReceivablesAppVersion";
 let restoringNavigation = false;
+let liveRefreshInFlight = false;
+let liveRefreshTimer = null;
 const qs = selector => document.querySelector(selector);
 const qsa = selector => [...document.querySelectorAll(selector)];
 
@@ -649,6 +651,24 @@ async function loadCustomers() {
   } catch (_) {}
   applyCustomers(liveCustomers);
   saveLocalDashboardCache({ customerRows: liveCustomers });
+}
+
+async function refreshLiveDashboard() {
+  if (liveRefreshInFlight || document.hidden || isFileMode) return;
+  liveRefreshInFlight = true;
+  try {
+    await Promise.all([loadKpis(), loadCustomers()]);
+    qs("#dbStatus").textContent = `Live BUSYWin · auto-updated ${new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+  } catch (_) {
+    qs("#dbStatus").textContent = "Live BUSYWin reconnecting automatically...";
+  } finally {
+    liveRefreshInFlight = false;
+  }
+}
+
+function startLiveDashboardRefresh() {
+  if (liveRefreshTimer) clearInterval(liveRefreshTimer);
+  liveRefreshTimer = setInterval(refreshLiveDashboard, 8000);
 }
 
 async function busyApi(path) {
@@ -2532,18 +2552,25 @@ async function init() {
     qs("#dbStatus").textContent = "Loading customers and receivables...";
     await loadCustomers();
     qs("#dbStatus").textContent = `Live BUSYWin · updated ${new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`;
+    startLiveDashboardRefresh();
     state.viewStack = [];
     showView("dashboard", false);
     try { history.replaceState({ srReceivables: true, view: "dashboard" }, "", location.href); } catch (_) {}
     welcomeSound();
   } catch (error) {
     await loadCachedDashboard(error);
+    startLiveDashboardRefresh();
     state.viewStack = [];
     showView("dashboard", false);
     try { history.replaceState({ srReceivables: true, view: "dashboard" }, "", location.href); } catch (_) {}
     openSound();
   }
 }
+
+window.addEventListener("online", refreshLiveDashboard);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refreshLiveDashboard();
+});
 
 init().catch(error => {
   qs("#dbStatus").textContent = `No live or saved Retail Daddy data found: ${error.message}`;

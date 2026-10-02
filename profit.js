@@ -28,6 +28,8 @@ const els = {
 let mode = "bill";
 let cache = null;
 let currentRows = [];
+let reportRefreshInFlight = false;
+let reportAutoRefreshTimer = null;
 init();
 async function init() {
   cache = await loadCache();
@@ -77,6 +79,13 @@ async function init() {
   window.addEventListener("popstate", () => {
     if (!els.detailModal.hidden) closeDetails(true);
   });
+  window.addEventListener("online", () => runReport({ silent: true }));
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) runReport({ silent: true });
+  });
+  reportAutoRefreshTimer = setInterval(() => {
+    if (!document.hidden) runReport({ silent: true });
+  }, 8000);
   runReport();
 }
 async function loadCache() {
@@ -86,12 +95,14 @@ async function loadCache() {
   } catch (_) {}
   return { defaultFrom: todayIso(), defaultTo: todayIso(), billWise: { rows: [], totals: {} }, itemWise: { rows: [], totals: {} } };
 }
-async function runReport() {
+async function runReport({ silent = false } = {}) {
+  if (reportRefreshInFlight) return;
+  reportRefreshInFlight = true;
   const liveUrl = `https://live-stock.srfashionned.in/api/profit/${mode === "bill" ? "bill-wise" : "item-wise"}?${new URLSearchParams({ fromDate: els.fromDate.value, toDate: els.toDate.value })}`;
   const liveController = new AbortController();
   const liveTimeout = setTimeout(() => liveController.abort(), 15000);
   try {
-    els.status.textContent = "Reading live BUSYWin data...";
+    if (!silent) els.status.textContent = "Reading live BUSYWin data...";
     const res = await fetch(liveUrl, { cache: "no-store", signal: liveController.signal });
     if (!res.ok) throw new Error("live BUSYWin server unavailable");
     const data = await res.json();
@@ -101,13 +112,15 @@ async function runReport() {
     render(data, `Saved backup only because live BUSYWin did not answer. Backup from ${cache.savedAt ? new Date(cache.savedAt).toLocaleString("en-IN") : "upload"}`);
   } finally {
     clearTimeout(liveTimeout);
+    reportRefreshInFlight = false;
   }
 }
 function render(data, sourceLabel) {
   currentRows = sortRowsNewest(data.rows || []);
   renderTotals(data.totals || {});
   renderRows(currentRows);
-  els.status.textContent = `${sourceLabel}. ${currentRows.length} ${mode === "bill" ? "bills" : "items"} loaded.`;
+  const refreshedAt = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  els.status.textContent = `${sourceLabel}. ${currentRows.length} ${mode === "bill" ? "bills" : "items"} · auto-updated ${refreshedAt}.`;
 }
 function renderRows(rows) {
   if (!rows.length) {

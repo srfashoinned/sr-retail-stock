@@ -5427,15 +5427,21 @@ function srOwnerReportText(salesPayload, receivablesCache, fromDate, toDate){
   }
   return {subject:"SR Fashion Owner Report - "+period,text:lines.join("\n")};
 }
-function srOwnerReportTextWithPurchase(salesPayload, receivablesCache, purchasePayload, payablesPayload, fromDate, toDate){
+function srOwnerReportTextWithPurchase(salesPayload, receivablesCache, purchasePayload, payablesPayload, receiptsPayload, fromDate, toDate){
   const base=srOwnerReportText(salesPayload,receivablesCache,fromDate,toDate);
   const [purchaseSummaryRows=[], purchaseRows=[]]=purchasePayload||[];
   const [payableSummaryRows=[], payableRows=[]]=payablesPayload||[];
+  const [receiptSummaryRows=[], receiptRows=[]]=receiptsPayload||[];
   const ps=purchaseSummaryRows[0]||{};
   const pays=payableSummaryRows[0]||{};
+  const rs=receiptSummaryRows[0]||{};
   let text=base.text.replace(
     "Payables Till Date\nLoading supplier payables...",
     [
+      "Payments Received",
+      `Receipts: ${Math.round(+rs.receiptCount||0).toLocaleString("en-IN")} | Amount: ${money(rs.receiptAmount)}`,
+      ...receiptRows.slice(0,20).map(r=>`- ${r.customerName||"Customer"}: ${money(r.amount)} | ${r.mode||"Receipt"} | No. ${r.VchNo||r.VchCode}`),
+      "",
       "Selected Period Purchases",
       `Purchase bills: ${Math.round(+ps.purchaseBillCount||0).toLocaleString("en-IN")} | Qty: ${Math.round(+ps.purchaseQty||0).toLocaleString("en-IN")} | Amount: ${money(ps.purchaseAmount)}`,
       ...purchaseRows.slice(0,12).map(r=>`- ${r.VchNo||r.VchCode}: ${r.partyName||"Supplier"} | ${money(r.amount)} | Qty ${Math.round(+r.qty||0)}`),
@@ -5455,7 +5461,8 @@ async function srOpenOwnerEmailReport(){
   if(!isAdmin){ openAdm(); toast("Unlock admin for owner email"); return; }
   drawer(false);
   const today=srIsoToday();
-  srLedgerShow("Owner Email","Select date range for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr 1fr auto"><input id="sr-owner-report-from" type="date" value="${today}" aria-label="From date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><input id="sr-owner-report-to" type="date" value="${today}" aria-label="To date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-from').value,document.getElementById('sr-owner-report-to').value)">Generate</button></div><div class="sr-ledger-actions"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"></div><div class="sr-ledger-note">Default send-to email is srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Email is sent through the secured server.</div>`);
+  srLedgerShow("Owner Email","Select date range for sale/profit and purchase bills",`<div class="sr-ledger-actions" style="grid-template-columns:1fr 1fr auto"><input id="sr-owner-report-from" type="date" value="${today}" aria-label="From date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><input id="sr-owner-report-to" type="date" value="${today}" aria-label="To date" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit;min-width:0"><button class="gold" onclick="srRunOwnerEmailReport(document.getElementById('sr-owner-report-from').value,document.getElementById('sr-owner-report-to').value)">Generate</button></div><div class="sr-ledger-actions" style="grid-template-columns:1fr auto"><input id="sr-owner-email-to" type="email" placeholder="srfashionned@gmail.com" style="min-height:44px;border-radius:12px;border:1px solid #334155;background:#07090c;color:#fff;padding:0 12px;font:inherit"><button onclick="srSaveOwnerEmailConfig()">Save</button></div><div class="sr-ledger-note">Default send-to email is srfashionned@gmail.com. Customer ID is srfashionpsd@gmail.com. Instant receipt alerts also use this saved address.</div>`);
+  srLoadOwnerEmailConfig();
 }
 async function srRunOwnerEmailReport(fromDate,toDate){
   let from=/^\d{4}-\d{2}-\d{2}$/.test(fromDate||"")?fromDate:srIsoToday();
@@ -5464,13 +5471,14 @@ async function srRunOwnerEmailReport(fromDate,toDate){
   const period=srReportPeriodLabel(from,to);
   toast("Preparing owner report...");
   try{
-    const [sales, receivables, purchases, payables]=await Promise.all([
+    const [sales, receivables, purchases, payables, receipts]=await Promise.all([
       srLedgerApi(`/api/sales-report?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
       srFetchReceivablesCache(),
       srLedgerApi(`/api/purchase-report?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
-      srLedgerApi("/api/payables")
+      srLedgerApi("/api/payables"),
+      srLedgerApi(`/api/receipts?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
     ]);
-    const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables,from,to);
+    const msg=srOwnerReportTextWithPurchase(sales,receivables,purchases,payables,receipts,from,to);
     const purchaseRows=(purchases&&purchases[1])||[];
     try{await navigator.clipboard.writeText(msg.text)}catch(e){}
     const emailTo=($("sr-owner-email-to")?.value||"").trim();
@@ -5481,6 +5489,32 @@ async function srRunOwnerEmailReport(fromDate,toDate){
   }catch(e){
     toast("Owner report failed · "+e.message);
   }
+}
+async function srLoadOwnerEmailConfig(){
+  if(!adminToken)return;
+  for(const base of ITEM_LEDGER_API_BASES){
+    try{
+      const r=await fetch(base+"/api/owner-email/config",{headers:{"x-sr-admin-token":adminToken},cache:"no-store"});
+      const data=await srReadJsonResponse(r,"Owner email config");
+      if(r.ok&&data.ok&&$("sr-owner-email-to")){$("sr-owner-email-to").value=data.recipient||"";return;}
+    }catch(e){}
+  }
+}
+async function srSaveOwnerEmailConfig(){
+  if(!adminToken){openAdm();return toast("Admin login required");}
+  const recipient=($("sr-owner-email-to")?.value||"").trim();
+  let lastErr=null;
+  for(const base of ITEM_LEDGER_API_BASES){
+    try{
+      const r=await fetch(base+"/api/owner-email/config",{method:"POST",headers:{"Content-Type":"application/json","x-sr-admin-token":adminToken},body:JSON.stringify({recipient})});
+      const data=await srReadJsonResponse(r,"Owner email config");
+      if(!r.ok||!data.ok)throw new Error(data.error||"Save failed");
+      if($("sr-owner-email-to"))$("sr-owner-email-to").value=data.recipient||"";
+      toast("Owner email saved");
+      return;
+    }catch(e){lastErr=e}
+  }
+  toast("Email setup failed · "+(lastErr?.message||"server unavailable"));
 }
 async function srShareOwnerReport(){
   const text=window.srOwnerReportText||"";

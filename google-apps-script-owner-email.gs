@@ -25,6 +25,14 @@ function handleOwnerEmail_(e) {
     toDate = swap;
   }
   const to = validEmail_(p.to) ? String(p.to).trim() : DEFAULT_TO;
+  if (String(p.mode || "") === "receipt-alert") {
+    const report = buildReceiptAlert_(p);
+    GmailApp.sendEmail(to, report.subject, report.text, {
+      name: "SR Fashion Receipt Alert",
+      htmlBody: report.html
+    });
+    return json_({ ok: true, to, from, toDate, subject: report.subject });
+  }
   const report = buildOwnerReport_(from, toDate);
   GmailApp.sendEmail(to, report.subject, report.text, {
     name: "SR Fashion Owner Report",
@@ -33,15 +41,57 @@ function handleOwnerEmail_(e) {
   return json_({ ok: true, to, from, toDate, subject: report.subject });
 }
 
+function buildReceiptAlert_(p) {
+  const date = validDate_(p.receiptDate) ? String(p.receiptDate) : today_();
+  const customer = String(p.receiptCustomer || "Customer");
+  const amount = num_(p.receiptAmount);
+  const mode = String(p.receiptMode || "Receipt");
+  const vchNo = String(p.receiptVchNo || p.receiptVchCode || "");
+  const narration = String(p.receiptNarration || "");
+  const subject = "SR Fashion Receipt - " + money_(amount) + " - " + date;
+  const text = [
+    "SR Fashion Receipt Alert",
+    "Customer ID: " + CUSTOMER_ID,
+    "",
+    "Customer: " + customer,
+    "Amount received: " + money_(amount),
+    "Mode: " + mode,
+    "Receipt No: " + vchNo,
+    "Date: " + date,
+    narration ? "Note: " + narration : "",
+    "",
+    "This receipt was detected live from BUSY."
+  ].filter(Boolean).join("\n");
+  const html =
+    '<div style="margin:0;padding:18px;background:#ecfdf5;font-family:Arial,sans-serif;color:#064e3b">' +
+      '<div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #bbf7d0">' +
+        '<div style="background:#047857;color:#ffffff;padding:18px 20px">' +
+          '<div style="font-size:12px;color:#bbf7d0;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Payment Received</div>' +
+          '<div style="font-size:28px;font-weight:900;margin-top:5px">' + escapeHtml_(money_(amount)) + '</div>' +
+          '<div style="font-size:13px;color:#d1fae5;margin-top:6px">' + escapeHtml_(date) + ' | Receipt ' + escapeHtml_(vchNo) + '</div>' +
+        '</div>' +
+        '<div style="padding:16px">' +
+          rowHtml_("Customer", customer, "BUSY receipt party") +
+          rowHtml_("Mode", mode, narration || "Payment account") +
+          '<div style="margin-top:14px;padding:12px;border-radius:12px;background:#f0fdf4;color:#166534;font-size:12px;line-height:1.5">Detected automatically from BUSY. Customer ID: ' + escapeHtml_(CUSTOMER_ID) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  return { subject: subject, text: text, html: html };
+}
+
 function buildOwnerReport_(from, toDate) {
   const period = from === toDate ? from : from + " to " + toDate;
   const sales = fetchJson_(LIVE_API + "/api/sales-report?from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(toDate));
   const purchases = fetchJson_(LIVE_API + "/api/purchase-report?from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(toDate));
+  const receipts = fetchJson_(LIVE_API + "/api/receipts?from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(toDate));
   const payables = fetchJson_(LIVE_API + "/api/payables");
   const receivables = fetchJson_(RECEIVABLES_URL + "?t=" + Date.now());
 
   const s = (sales[0] || [])[0] || {};
   const ps = (purchases[0] || [])[0] || {};
+  const rs = (receipts[0] || [])[0] || {};
+  const receiptRows = (receipts[1] || []).slice(0, 20);
   const purchaseRows = (purchases[1] || []).slice(0, 12);
   const payableSummary = (payables[0] || [])[0] || {};
   const payableRows = (payables[1] || []).slice(0, 20);
@@ -61,15 +111,19 @@ function buildOwnerReport_(from, toDate) {
     "Sales: " + money_(s.billAmount) + " | Cost: " + money_(s.costPrice) + " | Profit: " + money_(profit) + " | Margin: " + margin.toFixed(1) + "%",
     "Cash: " + money_(s.cashAmount) + " | Credit: " + money_(s.creditAmount),
     "",
-    "Priority 2: Receivables Till Date",
+    "Priority 2: Payments Received Today",
+    "Receipts: " + n_(rs.receiptCount) + " | Amount: " + money_(rs.receiptAmount),
+    receiptRows.length ? receiptRows.map(row => "- " + (row.customerName || "Customer") + ": " + money_(row.amount) + " | " + (row.mode || "Receipt") + " | Bill " + (row.VchNo || row.VchCode)).join("\n") : "- No receipts",
+    "",
+    "Priority 3: Receivables Till Date",
     "Total receivable: " + money_(totalReceivable) + " | Parties: " + n_(debtRows.length),
     debtRows.length ? debtRows.map(row => "- " + row.name + ": " + money_(row.balance) + (row.mobile ? " | " + row.mobile : "")).join("\n") : "- No receivables",
     "",
-    "Priority 3: Payables Till Date",
+    "Priority 4: Payables Till Date",
     "Total payable: " + money_(payableSummary.payableAmount) + " | Suppliers: " + n_(payableSummary.supplierCount),
     payableRows.length ? payableRows.map(row => "- " + (row.supplierName || "Supplier") + ": " + money_(row.payableAmount)).join("\n") : "- No payables",
     "",
-    "Priority 4: Purchase Bills In Selected Period",
+    "Priority 5: Purchase Bills In Selected Period",
     "Purchase bills: " + n_(ps.purchaseBillCount) + " | Qty: " + n_(ps.purchaseQty) + " | Amount: " + money_(ps.purchaseAmount),
     purchaseRows.length ? purchaseRows.map(row => "- " + (row.VchNo || row.VchCode) + ": " + (row.partyName || "Supplier") + " | " + money_(row.amount) + " | Qty " + n_(row.qty)).join("\n") : "- No purchase bills"
   ].join("\n");
@@ -92,9 +146,10 @@ function buildOwnerReport_(from, toDate) {
             metricCard_("Credit", money_(s.creditAmount), "#fee2e2", "#991b1b") +
           '</tr></table>' +
           '<div style="font-size:13px;color:#4b5563;margin:4px 0 14px 0">Bills: <b>' + n_(s.billCount) + '</b> | Qty sold: <b>' + n_(s.qtySold) + '</b> | Cost: <b>' + money_(s.costPrice) + '</b> | Margin: <b style="color:' + profitColor + '">' + margin.toFixed(1) + '%</b></div>' +
-          sectionHtml_("1. Money To Collect", "Receivables till date", money_(totalReceivable) + " from " + n_(debtRows.length) + " parties", "#fff7ed", "#c2410c", receivableRowsHtml_(debtRows)) +
-          sectionHtml_("2. Money To Pay", "Supplier payables till date", money_(payableSummary.payableAmount) + " to " + n_(payableSummary.supplierCount) + " suppliers", "#fef2f2", "#b91c1c", payableRowsHtml_(payableRows)) +
-          sectionHtml_("3. Purchase Bills", "Selected period purchase entry", n_(ps.purchaseBillCount) + " bills | " + money_(ps.purchaseAmount), "#eff6ff", "#1d4ed8", purchaseRowsHtml_(purchaseRows)) +
+          sectionHtml_("1. Payments Received", "Receipts in selected period", n_(rs.receiptCount) + " receipts | " + money_(rs.receiptAmount), "#ecfdf5", "#047857", receiptRowsHtml_(receiptRows)) +
+          sectionHtml_("2. Money To Collect", "Receivables till date", money_(totalReceivable) + " from " + n_(debtRows.length) + " parties", "#fff7ed", "#c2410c", receivableRowsHtml_(debtRows)) +
+          sectionHtml_("3. Money To Pay", "Supplier payables till date", money_(payableSummary.payableAmount) + " to " + n_(payableSummary.supplierCount) + " suppliers", "#fef2f2", "#b91c1c", payableRowsHtml_(payableRows)) +
+          sectionHtml_("4. Purchase Bills", "Selected period purchase entry", n_(ps.purchaseBillCount) + " bills | " + money_(ps.purchaseAmount), "#eff6ff", "#1d4ed8", purchaseRowsHtml_(purchaseRows)) +
           '<div style="margin-top:14px;padding:12px;border-radius:12px;background:#f9fafb;color:#6b7280;font-size:12px;line-height:1.5">This mail is generated automatically from SR Fashion live reports. Top-sold/most-sold items are intentionally hidden to keep the owner report focused on money movement.</div>' +
         '</div>' +
       '</div>' +
@@ -136,6 +191,13 @@ function payableRowsHtml_(rows) {
   if (!rows.length) return '<div style="font-size:13px;color:#6b7280;padding:8px 0">No payables.</div>';
   return rows.slice(0, 12).map(function(row) {
     return rowHtml_(row.supplierName || "Supplier", money_(row.payableAmount), "BUSY balance " + money_(row.rawBalance));
+  }).join("");
+}
+
+function receiptRowsHtml_(rows) {
+  if (!rows.length) return '<div style="font-size:13px;color:#6b7280;padding:8px 0">No receipts in selected period.</div>';
+  return rows.slice(0, 12).map(function(row) {
+    return rowHtml_(row.customerName || "Customer", money_(row.amount), (row.Date || "") + " | " + (row.mode || "Receipt") + " | No. " + (row.VchNo || row.VchCode || ""));
   }).join("");
 }
 

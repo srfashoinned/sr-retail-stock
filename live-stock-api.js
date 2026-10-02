@@ -20,7 +20,10 @@ const UPLOAD_SESSION_FILE = path.join(PRIVATE_DIR, "upload-sessions.json");
 const PAYMENT_CONFIG_FILE = path.join(PRIVATE_DIR, "payment-config.json");
 const PAYMENT_ORDERS_FILE = path.join(PRIVATE_DIR, "payment-orders.json");
 const OWNER_EMAIL_SECRET_FILE = path.join(PRIVATE_DIR, "owner-email-script-secret.txt");
+const OWNER_EMAIL_CONFIG_FILE = path.join(PRIVATE_DIR, "owner-email-config.json");
+const RECEIPT_EMAIL_STATE_FILE = path.join(PRIVATE_DIR, "receipt-email-state.json");
 const OWNER_EMAIL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyt9tQp_Uk98tb-3jSecC-zPdK939l_p0F9c5Ma-tAecnGa4EMfA_NPMJBZg4jQkKM/exec";
+const DEFAULT_OWNER_EMAIL_TO = "srfashionned@gmail.com";
 const AUTH_SESSION_TTL_MS = 2 * 60 * 60 * 1000;
 const AUTH_FAILURE_WINDOW_MS = 15 * 60 * 1000;
 const AUTH_MAX_FAILURES = 5;
@@ -148,6 +151,36 @@ function readAuthSessions() {
 function saveAuthSessions(sessions) {
   fs.mkdirSync(PRIVATE_DIR, { recursive: true });
   fs.writeFileSync(UPLOAD_SESSION_FILE, JSON.stringify(sessions));
+}
+
+function validEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
+function readOwnerEmailConfig() {
+  const config = readJsonFile(OWNER_EMAIL_CONFIG_FILE, {});
+  return {
+    recipient: validEmail(config.recipient) ? String(config.recipient).trim() : DEFAULT_OWNER_EMAIL_TO
+  };
+}
+
+function saveOwnerEmailConfig(config) {
+  fs.mkdirSync(PRIVATE_DIR, { recursive: true });
+  fs.writeFileSync(OWNER_EMAIL_CONFIG_FILE, JSON.stringify(config, null, 2));
+}
+
+async function sendOwnerEmailViaScript({ from, toDate, recipient, extra = {} }) {
+  let secret = "";
+  try { secret = fs.readFileSync(OWNER_EMAIL_SECRET_FILE, "utf8").trim(); } catch {}
+  if (!secret) throw new Error("Owner email is not configured on the server");
+  const target = validEmail(recipient) ? String(recipient).trim() : readOwnerEmailConfig().recipient;
+  const form = new URLSearchParams({ key: secret, from, to: target, toDate });
+  for (const [key, value] of Object.entries(extra)) {
+    if (value !== undefined && value !== null) form.set(key, String(value));
+  }
+  const response = await fetch(OWNER_EMAIL_WEBAPP_URL, { method: "POST", body: form, redirect: "follow" });
+  if (!response.ok) throw new Error("Email service rejected the request");
+  return { to: target, from, toDate };
 }
 
 function makeAuthSession(role) {
@@ -508,19 +541,24 @@ async function handleAuth(req, res, url) {
 }
 
 async function handleOwnerEmail(req, res, url) {
+  if (url.pathname === "/api/owner-email/config" && req.method === "GET") {
+    if (!requireAdminSession(req, res)) return true;
+    return sendJson(res, 200, { ok: true, ...readOwnerEmailConfig() });
+  }
+  if (url.pathname === "/api/owner-email/config" && req.method === "POST") {
+    if (!requireAdminSession(req, res)) return true;
+    const body = JSON.parse((await readBody(req, 16 * 1024)).toString("utf8") || "{}");
+    const recipient = validEmail(body.recipient) ? String(body.recipient).trim() : DEFAULT_OWNER_EMAIL_TO;
+    saveOwnerEmailConfig({ recipient });
+    return sendJson(res, 200, { ok: true, recipient });
+  }
   if (url.pathname !== "/api/owner-email/send" || req.method !== "POST") return false;
   if (!requireAdminSession(req, res)) return true;
   const body = JSON.parse((await readBody(req, 64 * 1024)).toString("utf8") || "{}");
   const from = /^\d{4}-\d{2}-\d{2}$/.test(String(body.from || "")) ? String(body.from) : new Date().toISOString().slice(0, 10);
   const toDate = /^\d{4}-\d{2}-\d{2}$/.test(String(body.toDate || "")) ? String(body.toDate) : from;
-  const recipient = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.to || "")) ? String(body.to).trim() : "srfashionned@gmail.com";
-  let secret = "";
-  try { secret = fs.readFileSync(OWNER_EMAIL_SECRET_FILE, "utf8").trim(); } catch {}
-  if (!secret) return sendJson(res, 503, { ok: false, error: "Owner email is not configured on the server" });
-  const form = new URLSearchParams({ key: secret, from, to: recipient, toDate });
-  const response = await fetch(OWNER_EMAIL_WEBAPP_URL, { method: "POST", body: form, redirect: "follow" });
-  if (!response.ok) return sendJson(res, 502, { ok: false, error: "Email service rejected the request" });
-  return sendJson(res, 200, { ok: true, to: recipient, from, toDate });
+  const result = await sendOwnerEmailViaScript({ from, toDate, recipient: body.to });
+  return sendJson(res, 200, { ok: true, ...result });
 }
 
 function readBody(req, limit = 9 * 1024 * 1024) {
@@ -1254,6 +1292,75 @@ async function busyCustomerMovements() {
   }));
 }
 
+function busyReceiptsQuery(fromDate, toDate, options = {}) {
+  const dateFilter = fromDate && toDate
+    ? `AND H.Date >= CONVERT(date, '${fromDate}') AND H.Date < CONVERT(date, '${addOneDayIso(toDate)}')`
+    : "";
+  const minCodeFilter = Number(options.afterVchCode || 0) > 0 ? `AND H.VchCode > ${Number(options.afterVchCode || 0)}` : "";
+  const top = Number(options.top || 200);
+  return `
+SET NOCOUNT ON;
+WITH CustomerReceipt AS (
+  SELECT
+    H.VchCode,
+    LTRIM(RTRIM(ISNULL(H.VchNo,''))) AS VchNo,
+    H.Date,
+    T.SrNo,
+    T.MasterCode1 AS customerCode,
+    C.Name AS customerName,
+    ISNULL(T.Value1,0) AS amount,
+    ISNULL(T.ShortNar,'') AS narration
+  FROM Tran1 H
+  JOIN Tran2 T ON T.VchCode = H.VchCode
+  JOIN Master1 C ON C.Code = T.MasterCode1
+  WHERE H.VchType = 14
+    AND T.RecType = 1
+    AND ISNULL(T.Value1,0) > 0
+    AND C.MasterType = 2
+    AND ISNULL(H.VchCancelled,0) = 0
+    AND ISNULL(H.Cancelled,0) = 0
+    ${dateFilter}
+    ${minCodeFilter}
+),
+PayMode AS (
+  SELECT H.VchCode, MAX(M.Name) AS modeName
+  FROM Tran1 H
+  JOIN Tran2 T ON T.VchCode = H.VchCode
+  JOIN Master1 M ON M.Code = T.MasterCode1
+  WHERE H.VchType = 14
+    AND T.RecType = 1
+    AND ISNULL(T.Value1,0) < 0
+  GROUP BY H.VchCode
+)
+SELECT TOP ${Math.max(1, Math.min(500, top))}
+  CONVERT(varchar(20), R.VchCode) + CHAR(9)
+  + R.VchNo + CHAR(9)
+  + CONVERT(varchar(10), R.Date, 120) + CHAR(9)
+  + CONVERT(varchar(20), R.customerCode) + CHAR(9)
+  + REPLACE(ISNULL(R.customerName,''), CHAR(9), ' ') + CHAR(9)
+  + CONVERT(varchar(40), CAST(R.amount AS decimal(18,2))) + CHAR(9)
+  + REPLACE(ISNULL(P.modeName,''), CHAR(9), ' ') + CHAR(9)
+  + REPLACE(ISNULL(R.narration,''), CHAR(9), ' ') AS ReportLine
+FROM CustomerReceipt R
+LEFT JOIN PayMode P ON P.VchCode = R.VchCode
+ORDER BY R.Date DESC, R.VchCode DESC, R.SrNo DESC;`;
+}
+
+async function busyReceipts(fromDate, toDate, options = {}) {
+  const rows = parseTabbedObjects(await runBusyProfitLines(busyReceiptsQuery(fromDate, toDate, options)), ["VchCode", "VchNo", "Date", "customerCode", "customerName", "amount", "mode", "narration"]).map(row => ({
+    ...row,
+    VchCode: Number(row.VchCode || 0),
+    customerCode: Number(row.customerCode || 0),
+    amount: Number(row.amount || 0)
+  }));
+  const summary = {
+    receiptCount: rows.length,
+    receiptAmount: rows.reduce((sum, row) => sum + Number(row.amount || 0), 0),
+    latestVchCode: rows.reduce((max, row) => Math.max(max, Number(row.VchCode || 0)), 0)
+  };
+  return [[summary], rows];
+}
+
 function busyCustomerLedgerQuery(customerCode) {
   const code = Number(customerCode || 0);
   const today = todayIso();
@@ -1564,6 +1671,78 @@ function refreshStockInBackground() {
   });
 }
 
+let receiptEmailPollRunning = false;
+
+function readReceiptEmailState() {
+  return readJsonFile(RECEIPT_EMAIL_STATE_FILE, {});
+}
+
+function saveReceiptEmailState(state) {
+  fs.mkdirSync(PRIVATE_DIR, { recursive: true });
+  fs.writeFileSync(RECEIPT_EMAIL_STATE_FILE, JSON.stringify(state, null, 2));
+}
+
+async function pollReceiptEmailAlerts() {
+  if (receiptEmailPollRunning) return;
+  receiptEmailPollRunning = true;
+  try {
+    const today = todayIso();
+    const state = readReceiptEmailState();
+    if (!Number(state.lastVchCode || 0)) {
+      const [summary] = await busyReceipts("", "", { top: 1 });
+      saveReceiptEmailState({
+        lastVchCode: Number((summary && summary[0] && summary[0].latestVchCode) || 0),
+        initializedAt: new Date().toISOString(),
+        lastCheckedAt: new Date().toISOString()
+      });
+      return;
+    }
+
+    const [, rows] = await busyReceipts("", "", { afterVchCode: Number(state.lastVchCode || 0), top: 10 });
+    const fresh = rows.slice().sort((a, b) => Number(a.VchCode || 0) - Number(b.VchCode || 0));
+    if (!fresh.length) {
+      state.lastCheckedAt = new Date().toISOString();
+      saveReceiptEmailState(state);
+      return;
+    }
+
+    for (const row of fresh) {
+      const date = isIsoDate(row.Date) ? row.Date : today;
+      await sendOwnerEmailViaScript({
+        from: date,
+        toDate: date,
+        extra: {
+          mode: "receipt-alert",
+          receiptVchCode: row.VchCode,
+          receiptVchNo: row.VchNo,
+          receiptDate: row.Date,
+          receiptCustomer: row.customerName,
+          receiptAmount: row.amount,
+          receiptMode: row.mode,
+          receiptNarration: row.narration
+        }
+      });
+      state.lastVchCode = Math.max(Number(state.lastVchCode || 0), Number(row.VchCode || 0));
+      state.lastReceipt = {
+        VchCode: row.VchCode,
+        VchNo: row.VchNo,
+        Date: row.Date,
+        customerName: row.customerName,
+        amount: row.amount,
+        emailedAt: new Date().toISOString()
+      };
+      saveReceiptEmailState(state);
+    }
+  } catch (error) {
+    const state = readReceiptEmailState();
+    state.lastError = error.message;
+    state.lastErrorAt = new Date().toISOString();
+    saveReceiptEmailState(state);
+  } finally {
+    receiptEmailPollRunning = false;
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   try {
     cors(res);
@@ -1653,6 +1832,14 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, await busyCustomerMovements());
     }
 
+    if (url.pathname === "/api/receipts") {
+      const today = todayIso();
+      const from = isIsoDate(url.searchParams.get("from")) ? url.searchParams.get("from") : today;
+      const to = isIsoDate(url.searchParams.get("to")) ? url.searchParams.get("to") : from;
+      if (from > to) return sendJson(res, 400, { error: "Invalid receipt report dates" });
+      return sendJson(res, 200, await busyReceipts(from, to));
+    }
+
     if (url.pathname === "/api/customers") {
       return sendJson(res, 200, [await busyCustomers()]);
     }
@@ -1713,6 +1900,8 @@ const server = http.createServer(async (req, res) => {
 // each browser wait for a database query and lets the page see changes quickly.
 setInterval(refreshStockInBackground, 5000).unref();
 refreshStockInBackground();
+setInterval(pollReceiptEmailAlerts, 15000).unref();
+pollReceiptEmailAlerts();
 
 server.listen(PORT, () => {
   console.log(`SR Fashion live stock API running on http://localhost:${PORT}`);

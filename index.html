@@ -1422,7 +1422,15 @@ body{
 .pi{height:27px!important;min-width:0!important;border-radius:8px!important;background:#090b0f!important;border:1px solid #242a34!important;color:#fff!important}
 #pf-go,#pf-clr{height:28px!important;border-radius:9px!important}
 #status{padding:4px 9px!important;font-size:10px!important;color:#858e9c!important}
-#sort-row,#brand-btn,#grp-btn,#pf{display:none!important}
+#sort-row,#brand-btn,#grp-btn,#pf{display:flex!important}
+#sort-row{display:none!important}
+#brand-btn,#grp-btn,#pf{display:none!important}
+#sr-filter-btn{display:flex!important;align-items:center;justify-content:center}
+#advanced-filter-bg{position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);display:none;align-items:flex-end;justify-content:center}
+#advanced-filter-bg.show{display:flex}
+#advanced-filter-panel{width:min(560px,100%);max-height:88dvh;overflow:auto;background:#12161d;border:1px solid #303846;border-radius:20px 20px 0 0;padding:14px 14px calc(16px + env(safe-area-inset-bottom));color:#f6f8fb}
+.af-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.af-head b{font-size:16px}.af-close{width:34px;height:34px;border-radius:10px;border:1px solid #303846;background:#1b2029;color:#fff;font-size:18px}
+.af-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.af-wide{grid-column:1/-1}.af-field{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;color:#9ca7b8}.af-field input,.af-field select{height:39px;min-width:0;border:1px solid #303846;border-radius:9px;background:#090c11;color:#fff;padding:0 10px;font:inherit;font-size:13px}.af-price-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.af-stock{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}.af-stock button{height:33px;flex:0 0 auto;border:1px solid #303846;border-radius:999px;background:#171c24;color:#c9d1dd;padding:0 11px;font:inherit;font-size:12px;font-weight:800}.af-stock button.on{background:var(--sr-gold);border-color:var(--sr-gold);color:#090909}.af-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.af-actions button{height:43px;border-radius:10px;border:1px solid #374150;background:#202733;color:#fff;font:inherit;font-weight:900}.af-actions .apply{background:var(--sr-gold);color:#111;border-color:var(--sr-gold)}
 #stock-row{padding-top:6px!important}
 #scroll{top:auto!important;background:var(--sr-bg)!important}
 .c{
@@ -1646,6 +1654,7 @@ body{
         <line x1="13" y1="14" x2="13" y2="16"/>
       </svg>
     </button>
+    <button id="sr-filter-btn" type="button" onclick="openAdvancedFilters()" title="Filters and sorting" aria-label="Filters and sorting">☷</button>
   </div>
   <div id="sort-row">
     <div class="chip on" data-sort="df">Counter</div>
@@ -1678,6 +1687,26 @@ body{
     <button id="pf-go" onclick="applyPF()">Go</button>
     <button id="pf-clr" onclick="clearPF()">✕</button>
   </div>
+</div>
+
+<div id="advanced-filter-bg" aria-hidden="true">
+  <section id="advanced-filter-panel" role="dialog" aria-modal="true" aria-label="Advanced stock filters">
+    <div class="af-head"><b>Filters & sorting</b><button class="af-close" type="button" onclick="closeAdvancedFilters()" aria-label="Close filters">×</button></div>
+    <div class="af-grid">
+      <label class="af-field"><span>Sort results</span><select id="af-sort"><option value="df">Newest / counter order</option><option value="na">Name A-Z</option><option value="grp">Group A-Z</option><option value="sa">Sale price: low first</option><option value="sd">Sale price: high first</option><option value="stockHigh">Stock: high first</option><option value="stockLow">Stock: low first</option><option value="marginHigh">Margin: high first</option></select></label>
+      <label class="af-field"><span>Brand</span><select id="af-brand"><option value="">All brands</option></select></label>
+      <label class="af-field af-wide"><span>Group</span><select id="af-group"><option value="">All groups</option></select></label>
+      <label class="af-field"><span>Size</span><select id="af-size"><option value="">All sizes</option></select></label>
+      <label class="af-field"><span>Colour</span><select id="af-colour"><option value="">All colours</option></select></label>
+      <div class="af-field af-wide"><span>Availability</span><div class="af-stock" id="af-stock"><button type="button" data-stock="all" class="on">All</button><button type="button" data-stock="in">In stock</button><button type="button" data-stock="low">Low stock</button><button type="button" data-stock="out">Out of stock</button></div></div>
+      <div class="af-field"><span>Sale price range</span><div class="af-price-grid"><input id="af-sale-min" type="number" min="0" placeholder="Min Rs" inputmode="decimal"><input id="af-sale-max" type="number" min="0" placeholder="Max Rs" inputmode="decimal"></div></div>
+      <div class="af-field"><span>MRP range</span><div class="af-price-grid"><input id="af-mrp-min" type="number" min="0" placeholder="Min Rs" inputmode="decimal"><input id="af-mrp-max" type="number" min="0" placeholder="Max Rs" inputmode="decimal"></div></div>
+      <div class="af-field"><span>Wholesale range</span><div class="af-price-grid"><input id="af-wholesale-min" type="number" min="0" placeholder="Min Rs" inputmode="decimal"><input id="af-wholesale-max" type="number" min="0" placeholder="Max Rs" inputmode="decimal"></div></div>
+      <div class="af-field"><span>Purchase range</span><div class="af-price-grid"><input id="af-purchase-min" type="number" min="0" placeholder="Min Rs" inputmode="decimal"><input id="af-purchase-max" type="number" min="0" placeholder="Max Rs" inputmode="decimal"></div></div>
+      <label class="af-field af-wide"><span>Minimum margin %</span><input id="af-margin-min" type="number" min="0" max="1000" placeholder="Example: 20" inputmode="decimal"></label>
+    </div>
+    <div class="af-actions"><button type="button" onclick="clearAdvancedFilters()">Clear all</button><button class="apply" type="button" onclick="applyAdvancedFilters()">Show matching items</button></div>
+  </section>
 </div>
 
 <div id="status"></div>
@@ -2066,6 +2095,7 @@ let activeSort = 'df';
 let activeStock = 'all';
 let activeBrand = '';
 let activeTag = '';
+let advancedFilters = { size:'', colour:'', mrpMin:null, mrpMax:null, wholesaleMin:null, wholesaleMax:null, purchaseMin:null, purchaseMax:null, marginMin:null };
 let expanded = new Set();
 let expandedHeights = {};
 let vsStart  = 0;
@@ -2407,7 +2437,70 @@ function buildBrandChips(){
     if(/^[A-Z]{2,6}$/.test(first)) brandSet.add(first);
   });
   allBrands = [...brandSet].sort();
+  if(typeof refreshAdvancedFilterOptions === 'function') refreshAdvancedFilterOptions();
 }
+
+function srUniqueFieldValues(fields){
+  return [...new Set(raw.map(it => fields.map(field => String(it[field] || '').trim()).find(Boolean)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+}
+function srBrandForItem(it){
+  const first = String(it.name || '').trim().split(/\s+/)[0];
+  return /^[A-Z]{2,12}$/.test(first) ? first : '';
+}
+function srOptionList(id, values, selected, fallback){
+  const el=document.getElementById(id); if(!el) return;
+  el.innerHTML=`<option value="">${fallback}</option>`+values.map(value=>`<option value="${escq(value)}">${escq(value)}</option>`).join('');
+  el.value=selected||'';
+}
+function refreshAdvancedFilterOptions(){
+  srOptionList('af-brand',allBrands,activeBrand,'All brands');
+  srOptionList('af-group',allGroups,activeGroup,'All groups');
+  srOptionList('af-size',srUniqueFieldValues(['size','Size']),advancedFilters.size,'All sizes');
+  srOptionList('af-colour',srUniqueFieldValues(['colour','color','Colour','Color']),advancedFilters.colour,'All colours');
+}
+function srAdvancedNumber(id,value){const el=document.getElementById(id);if(el)el.value=value??''}
+function openAdvancedFilters(){
+  refreshAdvancedFilterOptions();
+  document.getElementById('af-sort').value=activeSort;
+  document.querySelectorAll('#af-stock button').forEach(btn=>btn.classList.toggle('on',btn.dataset.stock===activeStock));
+  srAdvancedNumber('af-sale-min',pMin); srAdvancedNumber('af-sale-max',pMax);
+  srAdvancedNumber('af-mrp-min',advancedFilters.mrpMin); srAdvancedNumber('af-mrp-max',advancedFilters.mrpMax);
+  srAdvancedNumber('af-wholesale-min',advancedFilters.wholesaleMin); srAdvancedNumber('af-wholesale-max',advancedFilters.wholesaleMax);
+  srAdvancedNumber('af-purchase-min',advancedFilters.purchaseMin); srAdvancedNumber('af-purchase-max',advancedFilters.purchaseMax);
+  srAdvancedNumber('af-margin-min',advancedFilters.marginMin);
+  document.getElementById('advanced-filter-bg').classList.add('show');
+  document.getElementById('advanced-filter-bg').setAttribute('aria-hidden','false');
+}
+function closeAdvancedFilters(){
+  document.getElementById('advanced-filter-bg').classList.remove('show');
+  document.getElementById('advanced-filter-bg').setAttribute('aria-hidden','true');
+}
+function srReadFilterNumber(id){const value=document.getElementById(id).value.trim();return value===''?null:Number(value)}
+function applyAdvancedFilters(){
+  activeSort=document.getElementById('af-sort').value;
+  activeBrand=document.getElementById('af-brand').value;
+  activeGroup=document.getElementById('af-group').value;
+  advancedFilters={size:document.getElementById('af-size').value,colour:document.getElementById('af-colour').value,mrpMin:srReadFilterNumber('af-mrp-min'),mrpMax:srReadFilterNumber('af-mrp-max'),wholesaleMin:srReadFilterNumber('af-wholesale-min'),wholesaleMax:srReadFilterNumber('af-wholesale-max'),purchaseMin:srReadFilterNumber('af-purchase-min'),purchaseMax:srReadFilterNumber('af-purchase-max'),marginMin:srReadFilterNumber('af-margin-min')};
+  pMin=srReadFilterNumber('af-sale-min'); pMax=srReadFilterNumber('af-sale-max');
+  activeStock=document.querySelector('#af-stock button.on')?.dataset.stock||'all';
+  document.querySelectorAll('#stock-row .stock-chip').forEach(btn=>btn.classList.toggle('on',btn.dataset.stock===activeStock));
+  document.querySelectorAll('#sort-row .chip').forEach(btn=>btn.classList.toggle('on',btn.dataset.sort===activeSort));
+  const groupLabel=document.getElementById('grp-btn-label'), groupButton=document.getElementById('grp-btn');
+  groupLabel.textContent=activeGroup||'All Groups'; groupButton.classList.toggle('active',!!activeGroup);
+  const brandLabel=document.getElementById('brand-btn-label'), brandButton=document.getElementById('brand-btn');
+  brandLabel.textContent=activeBrand||'All Brands'; brandButton.classList.toggle('active',!!activeBrand);
+  closeAdvancedFilters(); applyAll();
+  toast('Filters applied');
+}
+function clearAdvancedFilters(){
+  activeGroup=''; activeBrand=''; activeStock='all'; activeSort='df'; pMin=null; pMax=null;
+  advancedFilters={size:'', colour:'', mrpMin:null, mrpMax:null, wholesaleMin:null, wholesaleMax:null, purchaseMin:null, purchaseMax:null, marginMin:null};
+  document.getElementById('grp-btn-label').textContent='All Groups'; document.getElementById('grp-btn').classList.remove('active');
+  document.getElementById('brand-btn-label').textContent='All Brands'; document.getElementById('brand-btn').classList.remove('active');
+  closeAdvancedFilters(); applyAll(); toast('All filters cleared');
+}
+document.getElementById('af-stock').addEventListener('click',event=>{const button=event.target.closest('button[data-stock]');if(!button)return;document.querySelectorAll('#af-stock button').forEach(item=>item.classList.toggle('on',item===button));});
+document.getElementById('advanced-filter-bg').addEventListener('click',event=>{if(event.target===event.currentTarget)closeAdvancedFilters();});
 
 function openBrandModal(){
   renderBrandList('');
@@ -2596,6 +2689,7 @@ function srResetHiddenFiltersForSearch(){
   activeBrand = "";
   activeTag = "";
   activeStock = "all";
+  advancedFilters={size:'', colour:'', mrpMin:null, mrpMax:null, wholesaleMin:null, wholesaleMax:null, purchaseMin:null, purchaseMax:null, marginMin:null};
   const gl=document.getElementById("grp-btn-label"), gb=document.getElementById("grp-btn");
   if(gl) gl.textContent = "All Groups";
   if(gb) gb.classList.remove("active");
@@ -2631,10 +2725,9 @@ function applyAll(){
   q = q.replace(/\blow stock\b/g,()=>{smartLow=true;return " "});
   q = q.replace(/\bin stock\b/g,()=>{smartIn=true;return " "});
   q = q.replace(/\s+/g," ").trim();
-  if(q){
-    srResetHiddenFiltersForSearch();
-  }
-  const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='' || activeTag;
+  const af=advancedFilters;
+  const hasAdvancedFilter = af.size || af.colour || af.mrpMin!==null || af.mrpMax!==null || af.wholesaleMin!==null || af.wholesaleMax!==null || af.purchaseMin!==null || af.purchaseMax!==null || af.marginMin!==null;
+  const hasFilter = q || pMin!==null || pMax!==null || activeGroup || activeSort!=='df' || activeStock!=='all' || activeBrand!=='' || activeTag || hasAdvancedFilter;
   if(!hasFilter){ showWelcome(); return; }
   expanded.clear();
   expandedHeights = {};
@@ -2646,6 +2739,15 @@ function applyAll(){
     if(activeGroup && it.group!==activeGroup) continue;
     if(pMin!==null && pn(it.sale)<pMin) continue;
     if(pMax!==null && pn(it.sale)>pMax) continue;
+    if(af.mrpMin!==null && pn(it.mrp)<af.mrpMin) continue;
+    if(af.mrpMax!==null && pn(it.mrp)>af.mrpMax) continue;
+    if(af.wholesaleMin!==null && pn(it.wholesale)<af.wholesaleMin) continue;
+    if(af.wholesaleMax!==null && pn(it.wholesale)>af.wholesaleMax) continue;
+    if(af.purchaseMin!==null && pn(it.purchase)<af.purchaseMin) continue;
+    if(af.purchaseMax!==null && pn(it.purchase)>af.purchaseMax) continue;
+    if(af.marginMin!==null && (pn(it.sale)<=0 || ((pn(it.sale)-pn(it.purchase))*100/pn(it.sale))<af.marginMin)) continue;
+    if(af.size && String(it.size||it.Size||'').trim()!==af.size) continue;
+    if(af.colour && String(it.colour||it.color||it.Colour||it.Color||'').trim()!==af.colour) continue;
     if(smartMin!==null && pn(it.sale)<smartMin) continue;
     if(smartMax!==null && pn(it.sale)>smartMax) continue;
     if(smartLow && !(Number(it.stock||0)>0 && Number(it.stock||0)<=LOW_STOCK_THRESHOLD)) continue;
@@ -2670,6 +2772,9 @@ function applyAll(){
   else if(activeSort==='na') out.sort((a,b)=>(raw[a].name||'').localeCompare(raw[b].name||''));
   else if(activeSort==='sa') out.sort((a,b)=>pn(raw[a].sale)-pn(raw[b].sale));
   else if(activeSort==='sd') out.sort((a,b)=>pn(raw[b].sale)-pn(raw[a].sale));
+  else if(activeSort==='stockHigh') out.sort((a,b)=>pn(raw[b].stock)-pn(raw[a].stock));
+  else if(activeSort==='stockLow') out.sort((a,b)=>pn(raw[a].stock)-pn(raw[b].stock));
+  else if(activeSort==='marginHigh') out.sort((a,b)=>((pn(raw[b].sale)-pn(raw[b].purchase))/Math.max(1,pn(raw[b].sale)))-((pn(raw[a].sale)-pn(raw[a].purchase))/Math.max(1,pn(raw[a].sale))));
 
   pool = out;
   measureCardHeight();
